@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>
+      Мои курсы — PixelStart
+    </title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/api.js" defer>
+    </script>
+    <script src="../assets/app.js" defer>
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+          </span>
+          <span>
+            pixel
+            <span>
+              start
+            </span>
+            <b>
+              kids
+            </b>
+          </span>
+        </a>
+        <p class="side-label">
+          Обучение
+        </p>
+        <nav class="side-nav">
+          <a href="index.html">
+            <span class="nav-icon">
+              ⌂
+            </span>
+            <span>
+              Журнал
+            </span>
+          </a>
+          <a class="active" href="courses.html">
+            <span class="nav-icon">
+              ▦
+            </span>
+            <span>
+              Мои курсы
+            </span>
+          </a>
+          <a href="catalog.html">
+            <span class="nav-icon">
+              +
+            </span>
+            <span>
+              Каталог
+            </span>
+          </a>
+        </nav>
+        <p class="side-label" style="margin-top:30px">
+          Аккаунт
+        </p>
+        <nav class="side-nav">
+          <a href="profile.html">
+            <span class="nav-icon">
+              ●
+            </span>
+            <span>
+              Профиль
+            </span>
+          </a>
+          <a href="settings.html">
+            <span class="nav-icon">
+              ⚙
+            </span>
+            <span>
+              Настройки
+            </span>
+          </a>
+        </nav>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="crumbs">
+            Обучение /
+            <strong>
+              Мои курсы
+            </strong>
+          </div>
+          <a class="button button-lime" href="catalog.html">
+            Добавить курс
+            <span>
+              +
+            </span>
+          </a>
+        </header>
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">
+                Курсы аккаунта
+              </p>
+              <h1>
+                Мои
+                <em>
+                  курсы
+                </em>
+              </h1>
+            </div>
+            <p class="page-lede">
+              Список строится из потоков, к которым аккаунт подключён и принял участие.
+            </p>
+          </div>
+          <section class="card">
+            <h2>
+              Загрузить мои потоки
+            </h2>
+            <p>
+              GET `/users/{user_id}/streams` требует id из профиля.
+            </p>
+            <pre class="data-output" data-load="/users/me">
+              Загрузка профиля...
+            </pre>
+          </section>
+          <div class="grid grid-2" style="margin-top:18px">
+            <a class="card accent-card" href="course/index.html">
+              <h2>
+                Игры в Scratch
+              </h2>
+              <p>
+                Поток «Первые игры» · 68% прогресса
+              </p>
+              <span class="button button-dark">
+                Продолжить
+                <span>
+                  ↗
+                </span>
+              </span>
+            </a>
+            <a class="card soft-blue" href="catalog.html">
+              <h2>
+                Найти новый маршрут
+              </h2>
+              <p>
+                Открыть доступные курсы и подать заявку в поток.
+              </p>
+              <span class="button button-soft">
+                Открыть каталог
+                <span>
+                  ↗
+                </span>
+              </span>
+            </a>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="toast" role="status">
+    </div>
+  </body>
+</html>

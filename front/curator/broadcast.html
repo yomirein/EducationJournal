@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Объявление — PixelStart
+    </title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/api.js" defer>
+    </script>
+    <script src="../assets/app.js" defer>
+    </script>
+  </head>
+  <body class="curator-theme">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+          </span>
+          <span>
+            pixel
+            <span>
+              start
+            </span>
+            <b>
+              curator
+            </b>
+          </span>
+        </a>
+        <nav class="side-nav">
+          <a href="index.html">
+            <span class="nav-icon">
+              ▦
+            </span>
+            <span>
+              Панель
+            </span>
+          </a>
+          <a href="participants.html">
+            <span class="nav-icon">
+              ●
+            </span>
+            <span>
+              Ученики
+            </span>
+          </a>
+          <a href="review.html">
+            <span class="nav-icon">
+              ✓
+            </span>
+            <span>
+              Проверка
+            </span>
+          </a>
+          <a class="active" href="broadcast.html">
+            <span class="nav-icon">
+              ✉
+            </span>
+            <span>
+              Объявления
+            </span>
+          </a>
+        </nav>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="crumbs">
+            Поток /
+            <strong>
+              Объявления
+            </strong>
+          </div>
+          <a class="button button-soft" href="index.html">
+            Назад
+            <span>
+              ↙
+            </span>
+          </a>
+        </header>
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">
+                POST /streams/{stream_id}/broadcasts
+              </p>
+              <h1>
+                Сообщение
+                <em>
+                  потоку
+                </em>
+              </h1>
+            </div>
+          </div>
+          <section class="card">
+            <form class="auth-form" data-form="broadcast">
+              <div class="field">
+                <label for="stream_id">
+                  ID потока
+                </label>
+                <input id="stream_id" name="stream_id" type="number" value="1" required>
+              </div>
+              <div class="field">
+                <label for="text">
+                  Текст объявления
+                </label>
+                <textarea id="text" name="text" required placeholder="Поддерживается Markdown на уровне текста">
+                </textarea>
+              </div>
+              <button class="button button-dark" type="submit">
+                Опубликовать
+                <span>
+                  ↗
+                </span>
+              </button>
+            </form>
+          </section>
+          <section class="card" style="margin-top:18px">
+            <h2>
+              Предыдущие объявления
+            </h2>
+            <div class="entry-actions">
+              <input name="stream_id" type="number" value="1" aria-label="ID потока">
+              <button class="button button-soft" type="button" data-load-target="broadcasts">
+                Загрузить
+              </button>
+            </div>
+            <pre class="data-output" data-result="broadcasts">
+              Нажми «Загрузить».
+            </pre>
+          </section>
+        </div>
+      </main>
+    </div>
+    <div class="toast" role="status">
+    </div>
+  </body>
+</html>
