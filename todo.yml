@@ -182,7 +182,6 @@
       /course
         /lesson
           /task
-
     GET
       /users
         /me
