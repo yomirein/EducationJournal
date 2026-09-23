@@ -16,7 +16,16 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_token(subject: str, token_type: str, minutes: int) -> str:
     now = datetime.now(timezone.utc)
-    return jwt.encode({"sub": subject, "type": token_type, "iat": now, "exp": now + timedelta(minutes=minutes)}, settings.secret_key, algorithm=settings.algorithm)
+    return jwt.encode(
+        {
+            "sub": subject,
+            "type": token_type,
+            "iat": now,
+            "exp": now + timedelta(minutes=minutes),
+        },
+        settings.secret_key,
+        algorithm=settings.algorithm,
+    )
 
 
 def verify_token(token: str, token_type: str) -> str | None:

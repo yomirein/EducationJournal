@@ -23,6 +23,12 @@ async def login(data: Login, db: AsyncSession = Depends(get_session)):
 @router.post("/refresh", response_model=TokenPair)
 async def refresh(refresh_token: str, db: AsyncSession = Depends(get_session)):
     subject = verify_token(refresh_token, "refresh")
-    if not subject: raise HTTPException(401, "Invalid or expired refresh token")
-    if not await AuthService(db).users.by_id(int(subject)): raise HTTPException(401, "User not found")
-    return {"access_token": create_token(subject, "access", settings.access_token_expire), "refresh_token": refresh_token, "token_type": "bearer"}
+    if not subject:
+        raise HTTPException(401, "Invalid or expired refresh token")
+    if not await AuthService(db).users.by_id(int(subject)):
+        raise HTTPException(401, "User not found")
+    return {
+        "access_token": create_token(subject, "access", settings.access_token_expire),
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
