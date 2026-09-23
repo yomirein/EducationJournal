@@ -18,6 +18,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
 
 volumes:
   postgres_data:
