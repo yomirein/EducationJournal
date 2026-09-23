@@ -9,6 +9,7 @@
 - [ ] Course CRUD
 - [ ] Stream CRUD
 - [ ] Database
+- [ ] Server side Python, Scratch and KuMir student code check prototype
 
 ### Frontend
 - [ ] Login
@@ -37,6 +38,7 @@
 - [ ] Join requests
 - [ ] Broadcasts
 - [ ] Statistics
+- [ ] Student code checking
 
 ### Frontend
 - [ ] Course page
