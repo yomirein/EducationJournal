@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>
+      Вход — PixelStart
+    </title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/api.js" defer>
+    </script>
+    <script src="../assets/app.js" defer>
+    </script>
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-art">
+        <div class="auth-art-content">
+          <a class="brand brand-large" href="../index.html">
+            <span class="brand-mark">
+              <i>
+              </i>
+              <i>
+              </i>
+              <i>
+              </i>
+              <i>
+              </i>
+            </span>
+            <span>
+              pixel
+              <span>
+                start
+              </span>
+              <b>
+                kids
+              </b>
+            </span>
+          </a>
+          <h1>
+            С возвращением.
+            <br>
+            <em>
+              Продолжим?
+            </em>
+          </h1>
+          <p>
+            Твои курсы, задания и обратная связь ждут внутри.
+          </p>
+        </div>
+      </section>
+      <section class="auth-form-side">
+        <div class="auth-card">
+          <a class="brand" href="../index.html">
+            <span class="brand-mark">
+              <i>
+              </i>
+              <i>
+              </i>
+              <i>
+              </i>
+              <i>
+              </i>
+            </span>
+            <span>
+              pixel
+              <span>
+                start
+              </span>
+              <b>
+                kids
+              </b>
+            </span>
+          </a>
+          <h2>
+            Войти
+          </h2>
+          <p>
+            Данные отправятся в `POST /auth/login`.
+          </p>
+          <form class="auth-form" data-form="login">
+            <div class="field">
+              <label for="login">
+                Логин или почта
+              </label>
+              <input id="login" name="login" required>
+            </div>
+            <div class="field">
+              <label for="password">
+                Пароль
+              </label>
+              <input id="password" name="password" type="password" required>
+            </div>
+            <button class="button button-dark" type="submit">
+              Войти
+              <span>
+                ↗
+              </span>
+            </button>
+          </form>
+          <p class="auth-switch">
+            <a href="reset.html">
+              Восстановить пароль
+            </a>
+            ·
+            <a href="register.html">
+              Создать аккаунт
+            </a>
+          </p>
+        </div>
+      </section>
+    </main>
+    <div class="toast" role="status">
+    </div>
+  </body>
+</html>

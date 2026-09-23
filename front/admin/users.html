@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Пользователи — PixelStart
+    </title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/api.js" defer>
+    </script>
+    <script src="../assets/app.js" defer>
+    </script>
+  </head>
+  <body class="admin-theme">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+          </span>
+          <span>
+            pixel
+            <span>
+              start
+            </span>
+            <b>
+              admin
+            </b>
+          </span>
+        </a>
+        <nav class="side-nav">
+          <a href="index.html">
+            <span class="nav-icon">
+              ▦
+            </span>
+            <span>
+              Панель
+            </span>
+          </a>
+          <a class="active" href="users.html">
+            <span class="nav-icon">
+              ●
+            </span>
+            <span>
+              Пользователи
+            </span>
+          </a>
+          <a href="streams.html">
+            <span class="nav-icon">
+              ↔
+            </span>
+            <span>
+              Потоки
+            </span>
+          </a>
+          <a href="course.html">
+            <span class="nav-icon">
+              +
+            </span>
+            <span>
+              Курс
+            </span>
+          </a>
+        </nav>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="crumbs">
+            Админ-панель /
+            <strong>
+              Пользователи
+            </strong>
+          </div>
+          <a class="button button-soft" href="index.html">
+            Назад
+            <span>
+              ↙
+            </span>
+          </a>
+        </header>
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">
+                GET /panel/users
+              </p>
+              <h1>
+                Пользователи и
+                <em>
+                  роли
+                </em>
+              </h1>
+            </div>
+          </div>
+          <section class="card">
+            <div class="field-grid">
+              <div class="field">
+                <label for="role">
+                  Фильтр роли
+                </label>
+                <select id="role">
+                  <option value="">
+                    Все
+                  </option>
+                  <option value="student">
+                    student
+                  </option>
+                  <option value="curator">
+                    curator
+                  </option>
+                  <option value="admin">
+                    admin
+                  </option>
+                </select>
+              </div>
+              <button class="button button-soft" type="button" data-load-target="users">
+                Загрузить пользователей
+                <span>
+                  ↗
+                </span>
+              </button>
+            </div>
+            <pre class="data-output" data-result="users">
+              Нажми «Загрузить пользователей».
+            </pre>
+          </section>
+          <section class="card" style="margin-top:18px">
+            <h2>
+              Изменить роль или оплату
+            </h2>
+            <form class="auth-form" data-form="user-patch">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="user_id">
+                    ID пользователя
+                  </label>
+                  <input id="user_id" name="user_id" type="number" required>
+                </div>
+                <div class="field">
+                  <label for="user_role">
+                    Роль
+                  </label>
+                  <select id="user_role" name="role">
+                    <option value="student">
+                      student
+                    </option>
+                    <option value="curator">
+                      curator
+                    </option>
+                    <option value="admin">
+                      admin
+                    </option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="payment">
+                    Оплата
+                  </label>
+                  <select id="payment" name="payment">
+                    <option value="true">
+                      Оплачено
+                    </option>
+                    <option value="false">
+                      Не оплачено
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <button class="button button-dark" type="submit">
+                Применить изменения
+                <span>
+                  ↗
+                </span>
+              </button>
+            </form>
+          </section>
+        </div>
+      </main>
+    </div>
+    <div class="toast" role="status">
+    </div>
+  </body>
+</html>

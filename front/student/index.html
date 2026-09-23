@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>
+      Журнал — PixelStart
+    </title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/api.js" defer>
+    </script>
+    <script src="../assets/app.js" defer>
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+            <i>
+            </i>
+          </span>
+          <span>
+            pixel
+            <span>
+              start
+            </span>
+            <b>
+              kids
+            </b>
+          </span>
+        </a>
+        <p class="side-label">
+          Обучение
+        </p>
+        <nav class="side-nav">
+          <a class="active" href="index.html">
+            <span class="nav-icon">
+              ⌂
+            </span>
+            <span>
+              Журнал
+            </span>
+          </a>
+          <a href="courses.html">
+            <span class="nav-icon">
+              ▦
+            </span>
+            <span>
+              Мои курсы
+            </span>
+          </a>
+          <a href="catalog.html">
+            <span class="nav-icon">
+              +
+            </span>
+            <span>
+              Каталог
+            </span>
+          </a>
+        </nav>
+        <p class="side-label" style="margin-top:30px">
+          Аккаунт
+        </p>
+        <nav class="side-nav">
+          <a href="profile.html">
+            <span class="nav-icon">
+              ●
+            </span>
+            <span>
+              Профиль
+            </span>
+          </a>
+          <a href="settings.html">
+            <span class="nav-icon">
+              ⚙
+            </span>
+            <span>
+              Настройки
+            </span>
+          </a>
+        </nav>
+        <div class="side-user">
+          <strong data-user-name>
+            Мой аккаунт
+          </strong>
+          <span data-user-role>
+            Загрузка профиля...
+          </span>
+          <span class="role">
+            Student
+          </span>
+        </div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="crumbs">
+            Обучение /
+            <strong>
+              Журнал
+            </strong>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" type="button" data-load="/users/me/schedule" aria-label="Обновить расписание">
+              ↻
+            </button>
+            <button class="button button-soft" type="button" data-logout>
+              Выйти
+            </button>
+          </div>
+        </header>
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">
+                Личный маршрут
+              </p>
+              <h1>
+                Твоя следующая
+                <br>
+                <em>
+                  точка роста
+                </em>
+              </h1>
+            </div>
+            <a class="button button-dark" href="tasks.html">
+              Открыть задание
+              <span>
+                ↗
+              </span>
+            </a>
+          </div>
+          <div class="grid grid-3">
+            <div class="card stat-card accent-card">
+              <span class="eyebrow">
+                Прогресс курса
+              </span>
+              <strong class="stat-value">
+                68%
+              </strong>
+              <div class="progress">
+                <span style="width:68%">
+                </span>
+              </div>
+            </div>
+            <div class="card stat-card soft-blue">
+              <span class="eyebrow">
+                Рейтинг
+              </span>
+              <strong class="stat-value" data-load="/users/me/rating">
+                ...
+              </strong>
+              <span class="stat-label">
+                данные из аккаунта
+              </span>
+            </div>
+            <div class="card stat-card soft-yellow">
+              <span class="eyebrow">
+                Серия
+              </span>
+              <strong class="stat-value">
+                6 дней
+              </strong>
+              <span class="stat-label">
+                учёбы без пропусков
+              </span>
+            </div>
+          </div>
+          <div class="grid grid-2" style="margin-top:18px">
+            <section class="card">
+              <p class="eyebrow">
+                Расписание
+              </p>
+              <h2>
+                Ближайшие шаги
+              </h2>
+              <pre class="data-output" data-load="/users/me/schedule">
+                Загрузка расписания...
+              </pre>
+            </section>
+            <section class="card">
+              <p class="eyebrow">
+                История
+              </p>
+              <h2>
+                Последние задания
+              </h2>
+              <pre class="data-output" data-load="/users/me/history">
+                Загрузка истории...
+              </pre>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="toast" role="status">
+    </div>
+  </body>
+</html>

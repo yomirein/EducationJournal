@@ -7,11 +7,25 @@ services:
       POSTGRES_PASSWORD: postgres
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learning"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api:
     build: .
     env_file: .env
     ports: ["8000:8000"]
     volumes: ["./uploads:/app/uploads"]
     depends_on: [db]
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
 volumes:
   pgdata:
