@@ -1,0 +1,29 @@
+"""Initial learning platform schema."""
+from alembic import op
+import sqlalchemy as sa
+
+revision = "0001_initial"
+down_revision = None
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table("users", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("first_name", sa.String(100), nullable=False), sa.Column("last_name", sa.String(100), nullable=False), sa.Column("username", sa.String(50), nullable=False), sa.Column("email", sa.String(320), nullable=False), sa.Column("password_hash", sa.String(255), nullable=False), sa.Column("description", sa.Text()), sa.Column("role", sa.Enum("admin", "curator", "student", name="user_roles"), nullable=False), sa.Column("confirmed_docs", sa.JSON(), nullable=False), sa.Column("payment", sa.Boolean(), nullable=False), sa.UniqueConstraint("username"), sa.UniqueConstraint("email"))
+    op.create_index("ix_users_username", "users", ["username"]); op.create_index("ix_users_email", "users", ["email"]); op.create_index("ix_users_role", "users", ["role"])
+    op.create_table("courses", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("title", sa.String(200), nullable=False), sa.Column("description", sa.Text(), nullable=False), sa.Column("type", sa.String(50), nullable=False)); op.create_index("ix_courses_title", "courses", ["title"])
+    op.create_table("modules", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("name", sa.String(200), nullable=False), sa.Column("description", sa.Text(), nullable=False))
+    op.create_table("course_modules", sa.Column("course_id", sa.Integer(), sa.ForeignKey("courses.id", ondelete="CASCADE"), primary_key=True), sa.Column("module_id", sa.Integer(), sa.ForeignKey("modules.id", ondelete="CASCADE"), primary_key=True), sa.Column("position", sa.Integer(), nullable=False))
+    op.create_table("lessons", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("module_id", sa.Integer(), sa.ForeignKey("modules.id", ondelete="CASCADE"), nullable=False), sa.Column("type", sa.String(50), nullable=False), sa.Column("duration", sa.Integer(), nullable=False)); op.create_index("ix_lessons_module_id", "lessons", ["module_id"])
+    op.create_table("tasks", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("lesson_id", sa.Integer(), sa.ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False), sa.Column("type", sa.Enum("minecraft_edu", "scratch", "algorithm", "custom", name="step_types"), nullable=False), sa.Column("description", sa.Text(), nullable=False), sa.Column("created_at", sa.DateTime(timezone=True), nullable=False), sa.Column("answer_json", sa.JSON())); op.create_index("ix_tasks_lesson_id", "tasks", ["lesson_id"])
+    op.create_table("streams", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("course_id", sa.Integer(), sa.ForeignKey("courses.id", ondelete="CASCADE"), nullable=False), sa.Column("curator_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False), sa.Column("name", sa.String(200), nullable=False), sa.Column("start_date", sa.DateTime(timezone=True), nullable=False), sa.Column("end_date", sa.DateTime(timezone=True), nullable=False), sa.CheckConstraint("start_date < end_date", name="ck_stream_dates")); op.create_index("ix_streams_course_id", "streams", ["course_id"]); op.create_index("ix_streams_curator_id", "streams", ["curator_id"])
+    op.create_table("stream_participants", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False), sa.Column("stream_id", sa.Integer(), sa.ForeignKey("streams.id", ondelete="CASCADE"), nullable=False), sa.Column("status", sa.String(12), nullable=False), sa.Column("user_stream_rating", sa.Float(), nullable=False), sa.UniqueConstraint("user_id", "stream_id"), sa.CheckConstraint("status IN ('pending','accepted','rejected')")); op.create_index("ix_stream_participants_user_id", "stream_participants", ["user_id"]); op.create_index("ix_stream_participants_stream_id", "stream_participants", ["stream_id"])
+    op.create_table("stream_ratings", sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True), sa.Column("rating", sa.Float(), nullable=False))
+    op.create_table("submissions", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("task_id", sa.Integer(), sa.ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False), sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False), sa.Column("file_id", sa.Text()), sa.Column("input", sa.Text()), sa.Column("feedback_message", sa.Text()), sa.Column("grade", sa.Integer(), nullable=False), sa.UniqueConstraint("task_id", "user_id"), sa.CheckConstraint("grade >= -1 AND grade <= 100", name="ck_submission_grade")); op.create_index("ix_submissions_task_id", "submissions", ["task_id"]); op.create_index("ix_submissions_user_id", "submissions", ["user_id"])
+    op.create_table("broadcasts", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("timestamp", sa.DateTime(timezone=True), nullable=False), sa.Column("curator_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False), sa.Column("text", sa.Text(), nullable=False))
+    op.create_table("stream_broadcasts", sa.Column("id", sa.Integer(), primary_key=True), sa.Column("stream_id", sa.Integer(), sa.ForeignKey("streams.id", ondelete="CASCADE"), nullable=False), sa.Column("broadcast_id", sa.Integer(), sa.ForeignKey("broadcasts.id", ondelete="CASCADE"), nullable=False, unique=True)); op.create_index("ix_stream_broadcasts_stream_id", "stream_broadcasts", ["stream_id"])
+
+
+def downgrade():
+    for table in ("stream_broadcasts", "broadcasts", "submissions", "stream_ratings", "stream_participants", "streams", "tasks", "lessons", "course_modules", "modules", "courses", "users"):
+        op.drop_table(table)
