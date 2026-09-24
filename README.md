@@ -21,6 +21,8 @@ PIXELSTART_ALLOW_DEMO_SEED=1 ./.venv/bin/python seed.py
 
 Для существующей PostgreSQL задайте в `.env` `DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:5432/DBNAME`. Не коммитьте `.env`.
 
+Если в новой базе нужен первый администратор, задайте в `.env` `FIRST_ADMIN_USERNAME`, `FIRST_ADMIN_EMAIL`, `FIRST_ADMIN_PASSWORD`, `FIRST_ADMIN_FIRST_NAME` и `FIRST_ADMIN_LAST_NAME`. При запуске приложение создаст его, только если администраторов ещё нет. Используйте собственный длинный пароль; при отсутствии этих переменных автоматическое создание пропускается.
+
 ## Docker Compose
 
 Один FastAPI-сервис раздаёт API и страницы с одного адреса. Отдельный Nginx не требуется.
@@ -79,6 +81,8 @@ node --check front/simulators/scratch-ru/js/app.js
 ```
 
 Проверяйте вручную светлую и тёмную темы, ширину телефона и планшета, ответы с одним и несколькими вариантами, Scratch в развёрнутом и обычном виде, Python на открытых и скрытых тестах и очередь ручной проверки.
+
+`test.py` из репозитория дополнительно проверяет API, создаёт пользователей и меняет роли. Запускайте его только на отдельной демонстрационной базе с явным флагом `PIXELSTART_ALLOW_API_SMOKE=1`; для входа администратора задайте `FIRST_ADMIN_USERNAME` и `FIRST_ADMIN_PASSWORD` в окружении. Для этого отдельного скрипта нужен пакет `requests` (`./.venv/bin/pip install requests`).
 
 ## Границы текущей архитектуры
 
