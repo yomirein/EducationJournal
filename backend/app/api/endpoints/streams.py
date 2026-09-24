@@ -83,6 +83,27 @@ async def participants(
     )
 
 
+
+@router.post('/{stream_id}/participants/{user_id}/accept')
+async def accept_participant(
+    stream_id: int,
+    user_id: int,
+    curator=Depends(require_role(UserRole.curator)),
+    db: AsyncSession = Depends(get_session),
+):
+    return await decide(stream_id, user_id, 'accept', curator, db)
+
+
+@router.post('/{stream_id}/participants/{user_id}/reject')
+async def reject_participant(
+    stream_id: int,
+    user_id: int,
+    curator=Depends(require_role(UserRole.curator)),
+    db: AsyncSession = Depends(get_session),
+):
+    return await decide(stream_id, user_id, 'reject', curator, db)
+
+
 @router.post("/{stream_id}/participants/{user_id}/{decision}")
 async def decide(
     stream_id: int,
