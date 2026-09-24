@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.deps import get_current_user
 from backend.app.core.config import settings
@@ -11,8 +11,26 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserOut, status_code=201)
-async def register(data: UserCreate, db: AsyncSession = Depends(get_session)):
-    return await AuthService(db).register(data)
+async def register(
+    data: UserCreate,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_session),
+):
+    return await AuthService(db).register(data, background_tasks)
+
+
+@router.post("/verify-email", response_model=UserOut)
+async def verify_email(token: str, db: AsyncSession = Depends(get_session)):
+    return await AuthService(db).verify_email(token)
+
+
+@router.post("/resend-verification", status_code=204)
+async def resend_verification(
+    email: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_session),
+):
+    await AuthService(db).resend_verification(email, background_tasks)
 
 
 @router.post("/login", response_model=TokenPair)

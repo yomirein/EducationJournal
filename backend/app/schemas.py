@@ -25,6 +25,7 @@ class UserOut(ORM):
     role: UserRole
     confirmed_docs: list
     payment: bool
+    is_verified: bool
 
 
 class UserUpdate(BaseModel):

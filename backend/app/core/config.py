@@ -13,6 +13,18 @@ class Settings(BaseSettings):
     first_admin_password: str | None = None
     first_admin_first_name: str = "Admin"
     first_admin_last_name: str = "Admin"
+
+    # Email verification settings
+    mail_server: str = "smtp.gmail.com"
+    mail_port: int = 587
+    mail_username: str | None = None
+    mail_password: str | None = None
+    mail_from: str | None = None
+    mail_starttls: bool = True
+    mail_ssl_tls: bool = False
+    verification_token_expire: int = 1440  # 24 hours in minutes
+    frontend_url: str = "http://localhost:3000"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

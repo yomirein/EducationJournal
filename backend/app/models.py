@@ -64,6 +64,7 @@ class User(Base):
     )
     confirmed_docs: Mapped[list] = mapped_column(JSON, default=list)
     payment: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
 
 class Course(Base):

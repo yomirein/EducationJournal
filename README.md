@@ -38,6 +38,28 @@ docker compose exec -e PIXELSTART_ALLOW_DEMO_SEED=1 api python seed.py
 
 Сайт: `http://127.0.0.1:8000/`. Демо-логины создаются только при явном запуске `seed.py`; быстрый вход на главной отображается только на localhost. Пароли из демонстрационного засева нельзя использовать в публичном развёртывании.
 
+## Email-подтверждение регистрации
+
+Платформа поддерживает подтверждение email-адресов при регистрации. Письма отправляются асинхронно через SMTP. При отсутствии SMTP-настроек регистрация работает без отправки писем.
+
+Для настройки задайте в `.env`:
+
+```env
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=youremail@gmail.com
+MAIL_PASSWORD=<app-password>
+MAIL_FROM=youremail@gmail.com
+MAIL_STARTTLS=True
+```
+
+Для Gmail требуется включить 2FA и создать App Password: https://myaccount.google.com/apppasswords. Подробная инструкция по настройке различных почтовых сервисов и тестированию в `instructions/EMAIL_SETUP.md`.
+
+**API-эндпоинты:**
+- `POST /auth/register` — регистрация с автоматической отправкой письма
+- `POST /auth/verify-email?token={token}` — подтверждение email по токену
+- `POST /auth/resend-verification?email={email}` — повторная отправка письма
+
 ## Как устроено обучение
 
 - **Ученик:** каталог → курс → модуль → урок → задание → результат в журнале. Прогресс и XP вычисляются из сохранённых работ. Для задач Python зачёт требует прохождения всех тестов; проекты ждут рецензии куратора.
@@ -50,13 +72,17 @@ docker compose exec -e PIXELSTART_ALLOW_DEMO_SEED=1 api python seed.py
 
 ## Структура
 
-```tree
+```
 EducationJournal/
 ├── backend/app/
 │   ├── api/endpoints/       # Auth, курсы, работы, потоки, пользователи, план
+│   ├── core/                # Конфигурация, безопасность, email
 │   ├── fixtures/            # Программа из учебного пакета
 │   ├── evaluator.py         # Проверка ответов и Python-запуск
 │   ├── models.py            # Модели SQLAlchemy
+│   ├── schemas.py           # Pydantic-схемы
+│   ├── services.py          # Бизнес-логика
+│   ├── repositories.py      # Слой работы с БД
 │   └── db.py                # Подключение к БД
 ├── front/
 │   ├── assets/              # Общие стили, API-клиент, логика страниц
@@ -64,11 +90,14 @@ EducationJournal/
 │   ├── curator/             # Кабинет куратора
 │   ├── admin/               # Администрирование
 │   └── simulators/          # Scratch и тренировочный Minecraft-мир
-├── migrations/             # Миграции Alembic
-├── tests/                  # Проверки программы и оценивания
-├── main.py                 # Единый HTTP-сервер
-├── seed.py                 # Разрушающий демо-засев с явным флагом
-└── docker-compose.yml      # API + PostgreSQL
+├── migrations/              # Миграции Alembic
+├── tests/                   # Проверки программы и оценивания
+├── instructions/            # Инструкции по настройке email и др.
+├── main.py                  # Единый HTTP-сервер
+├── seed.py                  # Разрушающий демо-засев с явным флагом
+├── test.py                  # API smoke-тесты
+├── test_mail.py             # Тест email-верификации
+└── docker-compose.yml       # API + PostgreSQL
 ```
 
 ## Проверка перед показом
@@ -83,6 +112,15 @@ node --check front/simulators/scratch-ru/js/app.js
 Проверяйте вручную светлую и тёмную темы, ширину телефона и планшета, ответы с одним и несколькими вариантами, Scratch в развёрнутом и обычном виде, Python на открытых и скрытых тестах и очередь ручной проверки.
 
 `test.py` из репозитория дополнительно проверяет API, создаёт пользователей и меняет роли. Запускайте его только на отдельной демонстрационной базе с явным флагом `PIXELSTART_ALLOW_API_SMOKE=1`; для входа администратора задайте `FIRST_ADMIN_USERNAME` и `FIRST_ADMIN_PASSWORD` в окружении. Для этого отдельного скрипта нужен пакет `requests` (`./.venv/bin/pip install requests`).
+
+Для проверки email-верификации:
+
+```bash
+./.venv/bin/pip install requests
+./.venv/bin/python test_mail.py
+```
+
+Полная инструкция по тестированию email в `instructions/EMAIL_SETUP.md`.
 
 ## Границы текущей архитектуры
 
