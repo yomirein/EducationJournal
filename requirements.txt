@@ -11,3 +11,4 @@ python-multipart>=0.0.9
 email-validator>=2.2
 aiofiles>=24.1
 fastapi-mail>=1.4,<2
+psycopg[binary]
