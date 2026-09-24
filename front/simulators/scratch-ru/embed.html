@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Скретч 3.0 — Виджет урока</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Компактный режим виджета для iframe */
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: #F3F4F6;
+    }
+    .embed-header {
+      height: 44px;
+      background: #4D97FE;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 50;
+    }
+    .task-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .task-badge {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .embed-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-submit-task {
+      background: #10B981;
+      border: 1px solid #059669;
+      color: #FFFFFF;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-submit-task:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+    .btn-submit-task.success {
+      background: #059669;
+      box-shadow: 0 0 12px #34D399;
+    }
+    /* Скрываем лишние кнопки меню в режиме iframe */
+    .scratch-header, #btn-open-demos, #btn-save-project, #btn-load-project {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Верхняя строка виджета с заданием и кнопкой сдачи -->
+  <div class="embed-header">
+    <div class="task-banner">
+      <span class="task-badge">Задание</span>
+      <span id="embed-task-text">Составьте программу: заставьте котика сделать 12 шагов и мяукнуть!</span>
+    </div>
+    <div class="embed-controls">
+      <button class="btn-flag" id="btn-green-flag" title="Запустить скрипты (Зелёный флаг)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <button class="btn-stop" id="btn-stop" title="Остановить (Красный стоп)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+      </button>
+      <button class="btn-submit-task" id="btn-submit-task">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Проверить и сдать</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Основной контейнер приложения -->
+  <div class="scratch-app" style="height: calc(100vh - 44px);">
+    
+    <!-- Левая часть: вкладки и воркспейс -->
+    <main class="main-work-area">
+      <nav class="tabs-bar">
+        <div class="tab-item active" data-tab="code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Код</span>
+        </div>
+        <div class="tab-item" data-tab="costumes">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+          <span>Костюмы</span>
+        </div>
+        <div class="tab-item" data-tab="sounds">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span>Звуки</span>
+        </div>
+      </nav>
+
+      <div class="tab-content-panel active" id="panel-code">
+        <div class="code-editor-layout">
+          <!-- Сайдбар категорий блоков -->
+          <div class="category-sidebar">
+            <button class="category-btn active" id="btn-show-all-cats" title="Все блоки">
+              <div class="category-dot" style="background: linear-gradient(135deg, #4C97FF, #FFAB19);"></div>
+              <span class="category-name">Все</span>
+            </button>
+            <button class="category-btn" data-category="motion">
+              <div class="category-dot" style="background: var(--cat-motion);"></div>
+              <span class="category-name">Движение</span>
+            </button>
+            <button class="category-btn" data-category="looks">
+              <div class="category-dot" style="background: var(--cat-looks);"></div>
+              <span class="category-name">Внешний вид</span>
+            </button>
+            <button class="category-btn" data-category="sound">
+              <div class="category-dot" style="background: var(--cat-sound);"></div>
+              <span class="category-name">Звук</span>
+            </button>
+            <button class="category-btn" data-category="events">
+              <div class="category-dot" style="background: var(--cat-events);"></div>
+              <span class="category-name">События</span>
+            </button>
+            <button class="category-btn" data-category="control">
+              <div class="category-dot" style="background: var(--cat-control);"></div>
+              <span class="category-name">Управление</span>
+            </button>
+            <button class="category-btn" data-category="sensing">
+              <div class="category-dot" style="background: var(--cat-sensing);"></div>
+              <span class="category-name">Сенсоры</span>
+            </button>
+            <button class="category-btn" data-category="variables">
+              <div class="category-dot" style="background: var(--cat-variables);"></div>
+              <span class="category-name">Переменные</span>
+            </button>
+            <button class="category-btn" data-category="pen">
+              <div class="category-dot" style="background: var(--cat-pen);"></div>
+              <span class="category-name">Перо</span>
+            </button>
+          </div>
+
+          <div class="blocks-palette" id="blocks-palette"></div>
+
+          <div class="workspace-container" id="workspace-container">
+            <div class="workspace-canvas" id="workspace-canvas"></div>
+            <div class="zoom-controls">
+              <button class="zoom-btn" id="btn-zoom-in" title="Приблизить">+</button>
+              <button class="zoom-btn" id="btn-zoom-reset" title="Масштаб 100%">=</button>
+              <button class="zoom-btn" id="btn-zoom-out" title="Отдалить">-</button>
+              <span class="zoom-val" id="zoom-val">100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content-panel" id="panel-costumes">
+        <div class="costumes-panel">
+          <div class="costumes-sidebar" id="costumes-list"></div>
+          <div class="costume-editor-area" id="costume-active-canvas"></div>
+        </div>
+      </div>
+
+      <div class="tab-content-panel" id="panel-sounds">
+        <div class="sounds-panel">
+          <div class="sounds-list" id="sounds-list"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Правая часть: сцена 480x360 и управление -->
+    <aside class="stage-and-sprites-area">
+      <div class="stage-toolbar">
+        <div class="stage-mouse-pos" id="stage-mouse-pos">x: 0 y: 0</div>
+        <span style="font-size: 11px; color: #64748B;">Фон: <strong id="current-backdrop-name">Поляна</strong></span>
+      </div>
+
+      <div class="stage-container" id="stage-container">
+        <canvas id="stage-canvas"></canvas>
+        <canvas id="pen-canvas"></canvas>
+      </div>
+
+      <div class="sprite-properties-panel">
+        <div class="prop-group" style="grid-column: span 2;">
+          <label>Имя</label>
+          <input type="text" id="prop-sprite-name" class="prop-input" value="Котик">
+        </div>
+        <div class="prop-group">
+          <label>X</label>
+          <input type="number" id="prop-x" class="prop-input" value="0">
+        </div>
+        <div class="prop-group">
+          <label>Y</label>
+          <input type="number" id="prop-y" class="prop-input" value="0">
+        </div>
+        <div class="prop-group">
+          <label>Вид</label>
+          <button class="btn-icon-toggle active" id="btn-show-sprite" title="Показать">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn-icon-toggle" id="btn-hide-sprite" title="Спрятать">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </button>
+        </div>
+        <div class="prop-group">
+          <label>Разм</label>
+          <input type="number" id="prop-size" class="prop-input" value="100">
+        </div>
+        <div class="prop-group" style="grid-column: span 2;">
+          <label>Напр</label>
+          <input type="number" id="prop-dir" class="prop-input" value="90">
+        </div>
+      </div>
+
+      <div class="sprites-tray" style="min-height: 120px;">
+        <div class="sprites-list-container" id="sprites-list-container"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Модальное окно -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Скретч</span>
+        <button class="modal-close-btn" id="btn-modal-close">&times;</button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Базовые скрипты -->
+  <script src="js/audio.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/workspace.js"></script>
+  <script src="js/stage.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/demos.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- iframe Bridge API для обмена данными с родительской страницей -->
+  <script>
+    (function initIframeBridge() {
+      // Конфигурация текущей задачи
+      let currentTaskConfig = {
+        taskText: "Составьте программу: заставьте котика сделать 12 шагов и мяукнуть!",
+        requiredBlocks: ["motion_movesteps", "sound_playmeow"],
+        goalCriteria: { minSteps: 10 }
+      };
+
+      // 1. Слушаем входные сообщения от родителя (top-uchebnik)
+      window.addEventListener("message", (event) => {
+        if (!event.data || typeof event.data !== "object") return;
+        
+        if (event.data.type === "SCRATCH_INIT" || event.data.action === "LOAD_TASK") {
+          const config = event.data.config || event.data.payload || {};
+          currentTaskConfig = { ...currentTaskConfig, ...config };
+
+          // Обновляем текст задания в шапке
+          if (config.taskTitle || config.taskText) {
+            document.getElementById("embed-task-text").textContent = config.taskTitle || config.taskText;
+          }
+
+          // Предзагрузка начальных блоков, если переданы
+          if (config.initialBlocks && window.scratchWorkspace) {
+            window.scratchWorkspace.deserialize(config.initialBlocks);
+          }
+
+          console.log("[Scratch-Embed] Конфигурация задачи загружена:", currentTaskConfig);
+        }
+
+        // Запрос выгрузки текущего кода
+        if (event.data.type === "GET_CODE") {
+          sendSubmission();
+        }
+      });
+
+      // 2. Отправка результата родителю при нажатии на кнопку «Проверить и сдать»
+      const submitBtn = document.getElementById("btn-submit-task");
+      submitBtn?.addEventListener("click", () => {
+        sendSubmission();
+      });
+
+      function sendSubmission() {
+        const codeTree = window.scratchWorkspace ? window.scratchWorkspace.serialize() : [];
+        
+        // Валидация решения по критериям задачи
+        const allBlockIds = [];
+        function collectBlockIds(block) {
+          if (!block) return;
+          allBlockIds.push(block.blockId);
+          if (block.substack) block.substack.forEach(collectBlockIds);
+          if (block.next) collectBlockIds(block.next);
+        }
+        codeTree.forEach(collectBlockIds);
+
+        // Проверяем наличие требуемых блоков
+        const reqs = currentTaskConfig.requiredBlocks || [];
+        const hasAllRequired = reqs.every(reqId => allBlockIds.includes(reqId));
+
+        const cat = window.scratchStage?.sprites[0];
+        const hasMoved = cat && (cat.x !== -120 || cat.y !== -30);
+
+        const isSuccess = hasAllRequired || (allBlockIds.length >= 3 && hasMoved);
+
+        const resultPayload = {
+          type: "SCRATCH_SUBMISSION",
+          payload: {
+            status: isSuccess ? "CORRECT" : "WRONG",
+            score: isSuccess ? 100 : 40,
+            blocksCount: allBlockIds.length,
+            usedBlocks: allBlockIds,
+            codeTree: codeTree,
+            spriteState: {
+              x: cat?.x,
+              y: cat?.y,
+              direction: cat?.direction,
+              costumeIndex: cat?.costumeIndex
+            },
+            timestamp: new Date().toISOString()
+          }
+        };
+
+        // Визуальный фидбек на кнопке
+        submitBtn.classList.add(isSuccess ? "success" : "wrong");
+        submitBtn.innerHTML = isSuccess 
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Сдано успешно!</span>' 
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Есть ошибки!</span>';
+        setTimeout(() => {
+          submitBtn.classList.remove("success", "wrong");
+          submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Проверить и сдать</span>';
+        }, 2500);
+
+        // Отправляем JSON родителю
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(resultPayload, "*");
+        }
+        console.log("[Scratch-Embed] Отправлен результат родителю:", resultPayload);
+      }
+
+      // Сообщаем родителю, что виджет готов принимать конфигурацию
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "SCRATCH_READY" }, "*");
+      }
+    })();
+  </script>
+
+</body>
+</html>

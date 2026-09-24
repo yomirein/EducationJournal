@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Блок Куба: Развивающая игра по программированию на Python и C++</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Плашка достижения Minecraft -->
+  <div id="achievementToast" class="achievement-toast hidden">
+    <div class="ach-icon-box">
+      <svg class="pixel-icon" viewBox="0 0 16 16" width="24" height="24">
+        <path d="M5 2h6v2h2v2h2v4h-2v2h-2v2H9v2H7v-2H5v-2H3V8H1V6h2V4h2V2z" fill="#2DEDDA" />
+        <path d="M6 4h4v2h2v4h-2v2H8v2H7v-2H5V8H3V6h3V4z" fill="#1BBC9B" />
+      </svg>
+    </div>
+    <div class="ach-text">
+      <div class="ach-title">ДОСТИЖЕНИЕ ПОЛУЧЕНО!</div>
+      <div id="achSubtitle" class="ach-desc">Алмазный алгоритм</div>
+    </div>
+  </div>
+
+  <div class="game-container">
+    <!-- Шапка игры -->
+    <header class="game-header">
+      <div class="logo-area">
+        <svg class="pixel-icon icon-logo" viewBox="0 0 24 24" width="28" height="28">
+          <path d="M14 2h4v2h2v4h-2v2h-2v-2h-2V6h-2V4h2V2z" fill="#2DEDDA" />
+          <path d="M12 6h2v2h-2V6zm4-2h2v2h-2V4z" fill="#E0F7FA" />
+          <path d="M10 8h2v2h-2V8zm-2 2h2v2H8v-2zm-2 2h2v2H6v-2zm-2 2h2v2H4v-2zm-2 2h2v2H2v-2z" fill="#8D5B28" />
+          <path d="M12 10h2v2h-2v-2zm-2 2h2v2h-2v-2zm-2 2h2v2H8v-2zm-2 2h2v2H6v-2z" fill="#613813" />
+        </svg>
+        <div class="title-wrap">
+          <h1 class="game-title">БЛОК КУБА</h1>
+          <span class="game-subtitle">Программирование на Python и C++</span>
+        </div>
+      </div>
+
+      <!-- Селектор уровней -->
+      <div class="level-nav">
+        <button id="prevLevelBtn" class="mc-btn mc-btn-sm" title="Предыдущий уровень">
+          <svg class="pixel-icon" viewBox="0 0 16 16" width="12" height="12"><path d="M10 2v2H8v2H6v4h2v2h2v2h2v-2H8v-4h2V4h2V2h-2z" fill="#ffffff"/></svg>
+        </button>
+        <div class="level-badge">
+          <span id="levelIndicator" class="level-number">УРОВЕНЬ 1</span>
+          <span id="levelSubtitle" class="level-topic">Линейные алгоритмы</span>
+        </div>
+        <button id="nextLevelBtn" class="mc-btn mc-btn-sm" title="Следующий уровень">
+          <svg class="pixel-icon" viewBox="0 0 16 16" width="12" height="12"><path d="M6 2v2h2v2h2v4H8v2H6v2H4v-2h2v-4H4V4h2V2h2z" fill="#ffffff"/></svg>
+        </button>
+      </div>
+
+      <!-- Инвентарь и статистика -->
+      <div class="stats-bar">
+        <div class="stat-item" title="Собрано алмазов">
+          <svg class="pixel-icon" viewBox="0 0 16 16" width="18" height="18">
+            <path d="M5 2h6v2h2v2h2v4h-2v2h-2v2H9v2H7v-2H5v-2H3V8H1V6h2V4h2V2z" fill="#2DEDDA" />
+            <path d="M6 4h4v2h2v4h-2v2H8v2H7v-2H5V8H3V6h3V4z" fill="#1BBC9B" />
+          </svg>
+          <span id="diamondCounter" class="stat-val">0 / 0</span>
+        </div>
+        <div class="stat-item" title="Сделано шагов">
+          <svg class="pixel-icon" viewBox="0 0 16 16" width="18" height="18">
+            <path d="M3 2h5v6h4v4h2v2H2V2h1z" fill="#757575" />
+            <path d="M2 12h12v2H2v-2z" fill="#333333" />
+          </svg>
+          <span id="stepCounter" class="stat-val">0</span>
+        </div>
+        <button id="soundToggleBtn" class="mc-btn mc-btn-icon" title="Звук">
+          <svg id="soundOnIcon" class="pixel-icon" viewBox="0 0 16 16" width="14" height="14">
+            <path d="M2 5h3l4-4v14L5 11H2V5zm10 0v2h1v2h-1v2h2V9h1V7h-1V5h-2z" fill="#ffffff"/>
+          </svg>
+          <svg id="soundOffIcon" class="pixel-icon hidden" viewBox="0 0 16 16" width="14" height="14">
+            <path d="M2 5h3l4-4v14L5 11H2V5zm9 2l3 3m0-3l-3 3" stroke="#ff6b6b" stroke-width="2" stroke-linecap="square"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Основная рабочая область -->
+    <main class="game-main">
+      <!-- ЛЕВАЯ КОЛОНКА: 2.5D Изометрический мир и HUD -->
+      <section class="world-column">
+        <!-- Карточка цели и кнопка подсказки -->
+        <div class="goal-card">
+          <div class="goal-header">
+            <span class="goal-tag">МИССИЯ ДЛЯ СТИВА</span>
+            <span id="goalMaxSteps" class="goal-limit">Лимит: 10 шагов</span>
+          </div>
+          <p id="goalDescription" class="goal-text">Стив оказался в шахте...</p>
+          
+          <div class="goal-footer">
+            <button id="getHintBtn" class="hint-trigger-btn">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="12" height="12">
+                <path d="M7 2h2v2H7V2zm-4 4h2v2H3V6zm10 0h-2v2h2V6zM5 8h6v2H5V8zm2 3h2v3H7v-3z" fill="#FFCA28"/>
+              </svg>
+              <span id="hintBtnText">Подсказка (осталось 3)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Сердечки здоровья Стива (HUD) -->
+        <div class="hearts-hud">
+          <div id="heartsContainer" class="hearts-row">
+            <!-- 10 сердечек генерируются кодом -->
+          </div>
+        </div>
+
+        <!-- 2.5D Изометрический канвас мира -->
+        <div class="canvas-wrapper">
+          <canvas id="worldCanvas" width="360" height="340"></canvas>
+          <div id="statusToast" class="status-toast hidden"></div>
+        </div>
+
+        <!-- Аутентичный 9-слотовый Хотбар Minecraft -->
+        <div class="hotbar-section">
+          <div class="hotbar-label">ХОТБАР КОМАНД (КЛАВИШИ 1–8 ИЛИ КЛИК)</div>
+          <div class="hotbar-slots">
+            <button class="hotbar-slot" data-key="1" data-cmd="right" title="Шаг вправо [1]">
+              <span class="slot-num">1</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2 7h8V4l5 4-5 4V9H2V7z" fill="#111111"/></svg>
+              <span id="lblRight" class="cmd-name">move_right()</span>
+            </button>
+            <button class="hotbar-slot" data-key="2" data-cmd="left" title="Шаг влево [2]">
+              <span class="slot-num">2</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M14 7H6V4L1 8l5 4V9h8V7z" fill="#111111"/></svg>
+              <span id="lblLeft" class="cmd-name">move_left()</span>
+            </button>
+            <button class="hotbar-slot" data-key="3" data-cmd="up" title="Шаг вверх [3]">
+              <span class="slot-num">3</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M7 14V6H4l4-5 4 5H9v8H7z" fill="#111111"/></svg>
+              <span id="lblUp" class="cmd-name">move_up()</span>
+            </button>
+            <button class="hotbar-slot" data-key="4" data-cmd="down" title="Шаг вниз [4]">
+              <span class="slot-num">4</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M7 2v8H4l4 5 4-5H9V2H7z" fill="#111111"/></svg>
+              <span id="lblDown" class="cmd-name">move_down()</span>
+            </button>
+            <button class="hotbar-slot hotbar-action" data-key="5" data-cmd="break" title="Добыть руду киркой [5]">
+              <span class="slot-num">5</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M10 2h4v4h-2v2h-2v-2h-2V4h2V2z" fill="#2DEDDA"/><path d="M8 6h2v2H8zm-2 2h2v2H6zm-2 2h2v2H4zm-2 2h2v2H2z" fill="#8D5B28"/></svg>
+              <span id="lblBreak" class="cmd-name">destroy()</span>
+            </button>
+            <button class="hotbar-slot hotbar-action" data-key="6" data-cmd="place" title="Поставить блок моста [6]">
+              <span class="slot-num">6</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2 2h12v12H2V2z" fill="#8D5B28"/><path d="M3 3h10v2H3V3zm0 4h10v2H3V7zm0 4h10v2H3v-2z" fill="#613813"/></svg>
+              <span id="lblPlace" class="cmd-name">place()</span>
+            </button>
+            <button class="hotbar-slot hotbar-control" data-key="7" data-cmd="loop" title="Вставить цикл [7]">
+              <span class="slot-num">7</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M3 4h8v2h2v5h-2v2H5v-2H3v-2h2v2h6V6H3v2H1V4h2z" fill="#d97706"/></svg>
+              <span id="lblLoop" class="cmd-name">for in range</span>
+            </button>
+            <button class="hotbar-slot hotbar-control" data-key="8" data-cmd="while" title="Вставить while [8]">
+              <span class="slot-num">8</span>
+              <svg class="slot-svg" viewBox="0 0 16 16" width="16" height="16"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm1 3v4H5V8h2V5h2z" fill="#b45309"/></svg>
+              <span id="lblWhile" class="cmd-name">while</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Полоска опыта Minecraft -->
+        <div class="xp-bar-container">
+          <div class="xp-bar">
+            <div id="xpProgress" class="xp-fill" style="width: 25%;"></div>
+          </div>
+          <span id="xpLevel" class="xp-number">1</span>
+        </div>
+      </section>
+
+      <!-- ПРАВАЯ КОЛОНКА: IDE Редактор с цветной подсветкой синтаксиса -->
+      <section class="code-column">
+        <!-- Панель управления и выбор языка -->
+        <div class="control-panel">
+          <div class="btn-group">
+            <button id="runBtn" class="mc-btn mc-btn-green">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="10" height="10"><path d="M3 2l11 6-11 6V2z" fill="#ffffff"/></svg>
+              ПУСК
+            </button>
+            <button id="stepBtn" class="mc-btn mc-btn-blue" title="Шаг (F8)">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="10" height="10"><path d="M2 2l7 6-7 6V2zm8 0h3v12h-3V2z" fill="#ffffff"/></svg>
+              ШАГ
+            </button>
+            <button id="pauseBtn" class="mc-btn mc-btn-yellow hidden">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="10" height="10"><path d="M3 2h4v12H3V2zm6 0h4v12H9V2z" fill="#ffffff"/></svg>
+              ПАУЗА
+            </button>
+            <button id="resetBtn" class="mc-btn mc-btn-red" title="Сбросить мир">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="10" height="10"><path d="M8 2a6 6 0 105.6 4H11A4 4 0 118 4V1L4 4l4 3V4a5 5 0 010 0z" fill="#ffffff"/></svg>
+              СБРОС
+            </button>
+          </div>
+
+          <div class="lang-and-speed">
+            <div class="lang-selector">
+              <button id="langPyBtn" class="lang-btn active">Python</button>
+              <button id="langCppBtn" class="lang-btn">C++</button>
+            </div>
+
+            <div class="speed-control">
+              <span class="speed-label">Скорость:</span>
+              <select id="speedSelect" class="mc-select">
+                <option value="500">Медленно</option>
+                <option value="300" selected>Обычно</option>
+                <option value="120">Быстро</option>
+                <option value="30">Турбо</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Окно IDE Редактора с Syntax Highlight Overlay -->
+        <div class="editor-window">
+          <div class="editor-header">
+            <div class="editor-tab active">
+              <svg class="pixel-icon" viewBox="0 0 16 16" width="14" height="14">
+                <path d="M3 1h7l4 4v9H3V1zm6 1v4h4" fill="#9e9e9e"/>
+              </svg>
+              <span id="editorTabTitle" class="tab-title">main.py</span>
+            </div>
+            <div class="editor-actions">
+              <button id="clearCodeBtn" class="link-btn" title="Очистить код">Очистить</button>
+              <button id="restoreCodeBtn" class="link-btn" title="Восстановить шаблон">Шаблон</button>
+            </div>
+          </div>
+
+          <div class="editor-body">
+            <div id="lineNumbers" class="line-numbers">
+              <div>1</div><div>2</div><div>3</div><div>4</div>
+            </div>
+            <div class="code-overlay-container">
+              <!-- Цветная подсветка токенов -->
+              <pre id="codePre" class="code-pre" aria-hidden="true"><code id="codeHighlight"></code></pre>
+              <!-- Прозрачный инпут ввода -->
+              <textarea id="codeTextarea" class="code-textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+            </div>
+          </div>
+
+          <!-- Консоль сообщений -->
+          <div class="editor-console">
+            <div class="console-title">КОНСОЛЬ СТИВА:</div>
+            <div id="consoleOutput" class="console-text">Готов к выполнению алгоритма. Составьте программу и нажмите «Пуск».</div>
+          </div>
+        </div>
+
+        <!-- Справочник синтаксиса -->
+        <details class="syntax-guide">
+          <summary class="guide-summary">
+            <svg class="pixel-icon" viewBox="0 0 16 16" width="12" height="12"><path d="M7 2h2v2H7V2zm-4 4h2v2H3V6zm10 0h-2v2h2V6zM5 8h6v2H5V8zm2 3h2v3H7v-3z" fill="#2DEDDA"/></svg>
+            Шпаргалка команд для текущего языка
+          </summary>
+          <div class="guide-content">
+            <div id="pySyntaxGuide" class="guide-grid">
+              <div class="guide-col">
+                <strong>Движение и действия (Python):</strong>
+                <ul>
+                  <li><code>move_right()</code>, <code>move_left()</code></li>
+                  <li><code>move_up()</code>, <code>move_down()</code></li>
+                  <li><code>destroy()</code> — добыть руду киркой</li>
+                  <li><code>place()</code> — поставить блок моста</li>
+                </ul>
+              </div>
+              <div class="guide-col">
+                <strong>Циклы и условия (Python):</strong>
+                <ul>
+                  <li><code>for i in range(3):</code></li>
+                  <li><code>while is_clear_forward():</code></li>
+                  <li><code>if is_lava_ahead():</code></li>
+                  <li><code>if is_diamond_ahead():</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div id="cppSyntaxGuide" class="guide-grid hidden">
+              <div class="guide-col">
+                <strong>Движение и действия (C++):</strong>
+                <ul>
+                  <li><code>move_right();</code>, <code>move_left();</code></li>
+                  <li><code>move_up();</code>, <code>move_down();</code></li>
+                  <li><code>destroy();</code> — добыть руду</li>
+                  <li><code>place();</code> — построить мост</li>
+                </ul>
+              </div>
+              <div class="guide-col">
+                <strong>Циклы и условия (C++):</strong>
+                <ul>
+                  <li><code>for (int i = 0; i &lt; 3; i++) { ... }</code></li>
+                  <li><code>while (is_clear_forward()) { ... }</code></li>
+                  <li><code>if (is_lava_ahead()) { ... }</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <!-- Модалка умной подсказки -->
+    <div id="hintModal" class="modal-overlay hidden">
+      <div class="mc-modal-box hint-modal-box">
+        <div class="modal-banner">ПОДСКАЗКА ДЛЯ РАУНДА</div>
+        <div id="hintStepBadge" class="hint-step-badge">Подсказка 1 из 3</div>
+        <p id="hintModalText" class="hint-body-text">Текст подсказки...</p>
+        <button id="closeHintModalBtn" class="mc-btn mc-btn-green">ПОНЯТНО, ДАЛЬШЕ САМ!</button>
+      </div>
+    </div>
+
+    <!-- Модальное окно победы -->
+    <div id="victoryModal" class="modal-overlay hidden">
+      <div class="mc-modal-box">
+        <div class="modal-banner">УРОВЕНЬ ПРОЙДЕН!</div>
+        
+        <svg class="victory-cup-svg" viewBox="0 0 32 32" width="56" height="56">
+          <path d="M8 4h16v10c0 4-3 7-7 8v4h5v2H10v-2h5v-4c-4-1-7-4-7-8V4z" fill="#FFCA28"/>
+          <path d="M4 6h4v6H4c-1 0-2-1-2-2V8c0-1 1-2 2-2zm24 0h-4v6h4c1 0 2-1 2-2V8c0-1-1-2-2-2z" fill="#FFB300"/>
+          <path d="M10 6h12v4H10V6z" fill="#FFE082"/>
+        </svg>
+        
+        <div class="stars-row">
+          <svg class="star-svg filled" viewBox="0 0 24 24" width="32" height="32">
+            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.3 7.2-6.3-4.5-6.3 4.5 2.3-7.2-6-4.8h7.6z" fill="currentColor"/>
+          </svg>
+          <svg id="star2" class="star-svg filled" viewBox="0 0 24 24" width="32" height="32">
+            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.3 7.2-6.3-4.5-6.3 4.5 2.3-7.2-6-4.8h7.6z" fill="currentColor"/>
+          </svg>
+          <svg id="star3" class="star-svg filled" viewBox="0 0 24 24" width="32" height="32">
+            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.3 7.2-6.3-4.5-6.3 4.5 2.3-7.2-6-4.8h7.6z" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <h2 id="victoryTitle" class="victory-heading">Превосходный алгоритм!</h2>
+        <p id="victoryDetails" class="victory-p">Стив успешно выполнил все задачи уровня.</p>
+
+        <div class="results-grid">
+          <div class="result-box">
+            <div class="res-num" id="resSteps">4</div>
+            <div class="res-lbl">Шагов</div>
+          </div>
+          <div class="result-box">
+            <div class="res-num" id="resDiamonds">0</div>
+            <div class="res-lbl">Алмазов</div>
+          </div>
+          <div class="result-box">
+            <div class="res-num" id="resXp">+105</div>
+            <div class="res-lbl">Опыта XP</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="retryLevelBtn" class="mc-btn mc-btn-yellow">ПЕРЕИГРАТЬ</button>
+          <button id="submitResultBtn" class="mc-btn mc-btn-blue" title="Отправить JSON в LMS">СДАТЬ РАБОТУ</button>
+          <button id="modalNextLevelBtn" class="mc-btn mc-btn-green">СЛЕДУЮЩИЙ УРОВЕНЬ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Скрипты игры -->
+  <script src="js/audio.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

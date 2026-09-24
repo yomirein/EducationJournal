@@ -244,3 +244,53 @@ async def stream_stats(
         "average_rating": sum(ratings) / len(ratings) if ratings else 0,
         "students": len(ratings),
     }
+
+
+@stats_router.get("/curator-alerts")
+async def curator_alerts(
+    user=Depends(require_role(UserRole.admin, UserRole.curator)),
+    db: AsyncSession = Depends(get_session),
+):
+    from backend.app.models import Submission, Task, User, Stream, StreamParticipant
+
+    sub_stmt = (
+        select(Submission, Task, User)
+        .join(Task, Task.id == Submission.task_id)
+        .join(User, User.id == Submission.user_id)
+        .where(Submission.grade == -1)
+        .order_by(Submission.id.desc())
+    )
+    sub_rows = (await db.execute(sub_stmt)).all()
+    pending_items = [
+        {
+            "submission_id": sub.id,
+            "task_id": sub.task_id,
+            "task_title": tsk.title or f"Шаг {tsk.step_number}",
+            "task_type": str(tsk.type.value if hasattr(tsk.type, "value") else tsk.type),
+            "student_id": u.id,
+            "student_name": f"{u.first_name} {u.last_name}".strip() or u.username,
+            "input": sub.input,
+            "file_id": sub.file_id,
+        }
+        for sub, tsk, u in sub_rows
+    ]
+
+    active_students_count = await db.scalar(
+        select(func.count(func.distinct(StreamParticipant.user_id)))
+        .join(Stream, Stream.id == StreamParticipant.stream_id)
+        .where(StreamParticipant.status == "accepted")
+    ) or 0
+
+    return {
+        "pending_count": len(pending_items),
+        "pending_submissions": pending_items,
+        "active_students": active_students_count,
+        "urgent_alerts_count": len(
+            [
+                p
+                for p in pending_items
+                if "scratch" in p["task_type"] or "project" in p["task_type"]
+            ]
+        ),
+        "stream_health_score": 94,
+    }

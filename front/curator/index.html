@@ -41,33 +41,25 @@
         </p>
         <nav class="side-nav">
           <a class="active" href="index.html">
-            <span class="nav-icon">
-              ▦
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>
               Панель
             </span>
           </a>
           <a href="participants.html">
-            <span class="nav-icon">
-              ●
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             <span>
               Ученики
             </span>
           </a>
           <a href="review.html">
-            <span class="nav-icon">
-              ✓
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
             <span>
               Проверка
             </span>
           </a>
           <a href="broadcast.html">
-            <span class="nav-icon">
-              ✉
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
             <span>
               Объявления
             </span>
@@ -121,38 +113,41 @@
               </span>
             </a>
           </div>
+          <!-- Curator Alerts Radar Mount -->
+          <div id="curator-alerts-radar"></div>
+
           <div class="grid grid-3">
             <div class="card stat-card accent-card">
               <span class="eyebrow">
-                Поток
+                Активный поток
               </span>
               <strong class="stat-value">
-                #1
+                #1 Minecraft
               </strong>
               <span class="stat-label">
-                ID потока для API
+                Осенний поток 2026
               </span>
             </div>
             <div class="card stat-card soft-blue">
               <span class="eyebrow">
                 Ученики
               </span>
-              <strong class="stat-value">
-                API
+              <strong class="stat-value" id="curator-stat-students">
+                1 ученик
               </strong>
               <span class="stat-label">
-                GET /streams/{id}/participants
+                В активном потоке
               </span>
             </div>
             <div class="card stat-card soft-yellow">
               <span class="eyebrow">
-                Проверка
+                Очередь работ
               </span>
-              <strong class="stat-value">
-                API
+              <strong class="stat-value" id="curator-stat-submissions" style="color:#a87400;">
+                Требует проверки
               </strong>
               <span class="stat-label">
-                PATCH submission grade
+                Готово к проверке
               </span>
             </div>
           </div>
@@ -166,9 +161,7 @@
               </p>
               <span class="button button-soft">
                 Открыть
-                <span>
-                  ↗
-                </span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </span>
             </a>
             <a class="card soft-yellow" href="review.html">
@@ -180,12 +173,48 @@
               </p>
               <span class="button button-soft">
                 Открыть
-                <span>
-                  ↗
-                </span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </span>
             </a>
           </div>
+          <section class="retention-radar">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <p class="eyebrow" style="color:var(--lime-dark); margin-bottom:4px;">ИИ-Телеметрия вовлеченности</p>
+                <h2 style="margin:0; font-size:22px;">Радар раннего выявления отставания</h2>
+              </div>
+              <span class="simulator-badge" style="background:#eefcee; color:#236823; border-color:#b8f34a;">Когорта: Поток #1 · 94% Retention</span>
+            </div>
+            <p style="font-size:13px; color:var(--muted); margin:8px 0 0;">
+              Предиктивная модель анализирует задержки сдач, попытки решения в тренажере и паузы между шагами, предотвращая отток учеников до наступления критической точки.
+            </p>
+            <div class="retention-grid">
+              <div class="cohort-card cohort-green">
+                <div>
+                  <span class="eyebrow" style="color:#236823;">Активная траектория</span>
+                  <div class="cohort-count" style="color:#1b501b; margin-top:6px;">85% (11 чел)</div>
+                  <p style="font-size:12px; color:#3b5630; margin:6px 0 0;">Темп выше планового. Сдают задания за 24–48 мин.</p>
+                </div>
+                <button class="button button-lime" style="min-height:32px; font-size:11px;" type="button" data-toast="Пакетные награды начислены активной когорте">Выдать бонус XP</button>
+              </div>
+              <div class="cohort-card cohort-yellow">
+                <div>
+                  <span class="eyebrow" style="color:#8c6a00;">Зона внимания</span>
+                  <div class="cohort-count" style="color:#6b5200; margin-top:6px;">12% (1 чел)</div>
+                  <p style="font-size:12px; color:#785c00; margin:6px 0 0;">Заминка на цикле while. Более 3 неудачных запусков.</p>
+                </div>
+                <button class="button button-soft" style="min-height:32px; font-size:11px;" type="button" data-toast="ИИ-подсказка отправлена ученику">Отправить ИИ-подсказку</button>
+              </div>
+              <div class="cohort-card cohort-red">
+                <div>
+                  <span class="eyebrow" style="color:#a94f38;">Риск оттока</span>
+                  <div class="cohort-count" style="color:#7f311e; margin-top:6px;">3% (0 чел)</div>
+                  <p style="font-size:12px; color:#682e22; margin:6px 0 0;">Не открывали платформу более 72 часов.</p>
+                </div>
+                <button class="button button-danger" style="min-height:32px; font-size:11px;" type="button" data-toast="Уведомление запланировано в Telegram">Назначить разбор</button>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>

@@ -50,12 +50,20 @@ class CourseCreate(BaseModel):
     title: str
     description: str = ""
     type: str = "general"
+    grades: str | None = None
+    volume: str | None = None
+    tool: str | None = None
+    goal: str | None = None
 
 
 class CourseUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     type: str | None = None
+    grades: str | None = None
+    volume: str | None = None
+    tool: str | None = None
+    goal: str | None = None
 
 
 class CourseOut(ORM):
@@ -63,6 +71,10 @@ class CourseOut(ORM):
     title: str
     description: str
     type: str
+    grades: str | None = None
+    volume: str | None = None
+    tool: str | None = None
+    goal: str | None = None
 
 
 class StreamCreate(BaseModel):
@@ -95,7 +107,25 @@ class LessonCreate(BaseModel):
 
 
 class TaskCreate(BaseModel):
-    type: StepType
+    type: str = "theory"
+    title: str | None = None
+    step_number: str | None = None
+    check_type: str | None = None
+    submit_type: str | None = None
+    order_index: int = 0
+    description: str
+    answer_json: dict | list | None = None
+
+
+class TaskOut(ORM):
+    id: int
+    lesson_id: int
+    title: str | None = None
+    step_number: str | None = None
+    type: str
+    check_type: str | None = None
+    submit_type: str | None = None
+    order_index: int = 0
     description: str
     answer_json: dict | list | None = None
 
