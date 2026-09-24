@@ -1,4 +1,5 @@
-const API_BASE = window.PIXELSTART_API || 'http://127.0.0.1:8000';
+(() => {
+const API_BASE = window.PIXELSTART_API || (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000');
 
 const auth = {
   get access() {
@@ -64,3 +65,4 @@ const api = {
 };
 
 window.pixelApi = api;
+})();

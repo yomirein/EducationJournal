@@ -11,6 +11,9 @@ from backend.app.models import (
     Broadcast,
     StreamBroadcast,
     Task,
+    Lesson,
+    Module,
+    course_modules,
     Submission,
     User,
 )
@@ -23,7 +26,7 @@ async def owned(stream_id, user, db):
     item = await db.get(Stream, stream_id)
     if not item:
         raise HTTPException(404, "Stream not found")
-    if item.curator_id != user.id:
+    if user.role != UserRole.admin and item.curator_id != user.id:
         raise HTTPException(403, "Stream access denied")
     return item
 
@@ -158,6 +161,101 @@ async def broadcasts(
     )
 
 
+@router.get("/my/submissions")
+async def my_curator_submissions(
+    curator=Depends(require_role(UserRole.curator)),
+    db: AsyncSession = Depends(get_session),
+):
+    stmt = (
+        select(Submission, User, Task, Stream)
+        .join(User, User.id == Submission.user_id)
+        .join(Task, Task.id == Submission.task_id)
+        .join(Lesson, Lesson.id == Task.lesson_id)
+        .join(Module, Module.id == Lesson.module_id)
+        .join(course_modules, course_modules.c.module_id == Module.id)
+        .join(Stream, Stream.course_id == course_modules.c.course_id)
+        .join(StreamParticipant, (StreamParticipant.stream_id == Stream.id) & (StreamParticipant.user_id == Submission.user_id))
+    )
+    if curator.role != UserRole.admin:
+        stmt = stmt.where(Stream.curator_id == curator.id)
+    stmt = stmt.order_by(Submission.id.desc())
+    rows = await db.execute(stmt)
+    return [
+        {
+            "id": sub.id,
+            "stream_id": st.id,
+            "stream_name": st.name,
+            "task_id": sub.task_id,
+            "step_number": tsk.step_number,
+            "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
+            "task_type": tsk.type,
+            "check_type": tsk.check_type,
+            "submit_type": tsk.submit_type,
+            "task_description": tsk.description,
+            "criteria": (tsk.answer_json or {}).get("criteria"),
+            "reference_solution": (tsk.answer_json or {}).get("reference_solution"),
+            "sample_tests": (tsk.answer_json or {}).get("sample_tests"),
+            "user_id": sub.user_id,
+            "student_name": f"{usr.first_name} {usr.last_name}",
+            "student_username": usr.username,
+            "student_email": usr.email,
+            "file_id": sub.file_id,
+            "input": sub.input,
+            "grade": sub.grade,
+            "feedback_message": sub.feedback_message,
+        }
+        for sub, usr, tsk, st in rows.all()
+    ]
+
+
+@router.get("/{stream_id}/submissions")
+async def all_stream_submissions(
+    stream_id: int,
+    curator=Depends(require_role(UserRole.curator)),
+    db: AsyncSession = Depends(get_session),
+):
+    await owned(stream_id, curator, db)
+    stmt = (
+        select(Submission, User, Task, Stream)
+        .join(User, User.id == Submission.user_id)
+        .join(Task, Task.id == Submission.task_id)
+        .join(Lesson, Lesson.id == Task.lesson_id)
+        .join(Module, Module.id == Lesson.module_id)
+        .join(course_modules, course_modules.c.module_id == Module.id)
+        .join(Stream, Stream.course_id == course_modules.c.course_id)
+        .join(StreamParticipant, (StreamParticipant.stream_id == Stream.id) & (StreamParticipant.user_id == Submission.user_id))
+        .where(Stream.id == stream_id)
+        .order_by(Submission.id.desc())
+    )
+    rows = await db.execute(stmt)
+    return [
+        {
+            "id": sub.id,
+            "stream_id": st.id,
+            "stream_name": st.name,
+            "task_id": sub.task_id,
+            "step_number": tsk.step_number,
+            "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
+            "task_type": tsk.type,
+            "check_type": tsk.check_type,
+            "submit_type": tsk.submit_type,
+            "task_description": tsk.description,
+            "criteria": (tsk.answer_json or {}).get("criteria"),
+            "reference_solution": (tsk.answer_json or {}).get("reference_solution"),
+            "sample_tests": (tsk.answer_json or {}).get("sample_tests"),
+            "user_id": sub.user_id,
+            "student_name": f"{usr.first_name} {usr.last_name}",
+            "student_username": usr.username,
+            "student_email": usr.email,
+            "file_id": sub.file_id,
+            "input": sub.input,
+            "grade": sub.grade,
+            "feedback_message": sub.feedback_message,
+        }
+        for sub, usr, tsk, st in rows.all()
+    ]
+
+
 @router.get("/{stream_id}/tasks/{task_id}/submissions")
 async def submissions(
     stream_id: int,
@@ -166,20 +264,30 @@ async def submissions(
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, curator, db)
-    return list(
-        (
-            await db.scalars(
-                select(Submission)
-                .join(
-                    StreamParticipant, StreamParticipant.user_id == Submission.user_id
-                )
-                .where(
-                    StreamParticipant.stream_id == stream_id,
-                    Submission.task_id == task_id,
-                )
-            )
-        ).all()
+    stmt = (
+        select(Submission, User)
+        .join(StreamParticipant, StreamParticipant.user_id == Submission.user_id)
+        .join(User, User.id == Submission.user_id)
+        .where(
+            StreamParticipant.stream_id == stream_id,
+            Submission.task_id == task_id,
+        )
     )
+    rows = await db.execute(stmt)
+    return [
+        {
+            "id": sub.id,
+            "task_id": sub.task_id,
+            "user_id": sub.user_id,
+            "student_name": f"{usr.first_name} {usr.last_name}",
+            "student_username": usr.username,
+            "file_id": sub.file_id,
+            "input": sub.input,
+            "grade": sub.grade,
+            "feedback_message": sub.feedback_message,
+        }
+        for sub, usr in rows.all()
+    ]
 
 
 @router.patch("/{stream_id}/tasks/{task_id}/submissions/{submission_id}")

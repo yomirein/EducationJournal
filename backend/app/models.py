@@ -30,8 +30,12 @@ class UserRole(str, Enum):
 
 
 class StepType(str, Enum):
-    minecraft_edu = "minecraft_edu"
+    theory = "theory"
+    quiz = "quiz"
     scratch = "scratch"
+    minecraft_edu = "minecraft_edu"
+    code_test = "code_test"
+    project = "project"
     algorithm = "algorithm"
     custom = "custom"
 
@@ -68,6 +72,10 @@ class Course(Base):
     title: Mapped[str] = mapped_column(String(200), index=True)
     description: Mapped[str] = mapped_column(Text, default="")
     type: Mapped[str] = mapped_column(String(50), default="general")
+    grades: Mapped[str | None] = mapped_column(String(100))
+    volume: Mapped[str | None] = mapped_column(String(100))
+    tool: Mapped[str | None] = mapped_column(String(200))
+    goal: Mapped[str | None] = mapped_column(Text)
     modules: Mapped[list["Module"]] = relationship(
         secondary=course_modules, back_populates="courses"
     )
@@ -106,7 +114,12 @@ class Task(Base):
     lesson_id: Mapped[int] = mapped_column(
         ForeignKey("lessons.id", ondelete="CASCADE"), index=True
     )
-    type: Mapped[StepType] = mapped_column(SAEnum(StepType, name="step_types"))
+    title: Mapped[str | None] = mapped_column(String(200))
+    step_number: Mapped[str | None] = mapped_column(String(20))
+    type: Mapped[str] = mapped_column(String(50), default="theory")
+    check_type: Mapped[str | None] = mapped_column(String(100))
+    submit_type: Mapped[str | None] = mapped_column(String(100))
+    order_index: Mapped[int] = mapped_column(Integer, default=0)
     description: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow

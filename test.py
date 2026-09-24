@@ -1,10 +1,11 @@
+import os
 import requests
 
-BASE = "http://localhost:8000"
+BASE = os.getenv("PIXELSTART_TEST_BASE", "http://localhost:8000")
 
 # Credentials from .env
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "supersecret123"
+ADMIN_USERNAME = os.getenv("FIRST_ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("FIRST_ADMIN_PASSWORD", "")
 
 USERS = [
     {"first_name": "Curator", "last_name": "Test", "username": "curator_test", "email": "curator@test.com", "password": "secret123"},
@@ -149,6 +150,10 @@ def test_update_me():
 
 
 if __name__ == "__main__":
+    if os.getenv("PIXELSTART_ALLOW_API_SMOKE") != "1":
+        raise SystemExit("API smoke test changes demo data. Set PIXELSTART_ALLOW_API_SMOKE=1 for a disposable database.")
+    if not ADMIN_PASSWORD:
+        raise SystemExit("Set FIRST_ADMIN_PASSWORD in the environment before running the API smoke test.")
     test_health()
     test_register()
     test_login()

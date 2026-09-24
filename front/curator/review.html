@@ -6,10 +6,10 @@
     <title>
       Проверка — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css">
-    <script src="../assets/api.js" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260924e">
+    <script src="../assets/api.js?v=20260924" defer>
     </script>
-    <script src="../assets/app.js" defer>
+    <script src="../assets/app.js?v=20260924d" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -39,7 +39,7 @@
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon">
-              ▦
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </span>
             <span>
               Панель
@@ -47,7 +47,7 @@
           </a>
           <a href="participants.html">
             <span class="nav-icon">
-              ●
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </span>
             <span>
               Ученики
@@ -55,7 +55,7 @@
           </a>
           <a class="active" href="review.html">
             <span class="nav-icon">
-              ✓
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </span>
             <span>
               Проверка
@@ -63,7 +63,7 @@
           </a>
           <a href="broadcast.html">
             <span class="nav-icon">
-              ✉
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             </span>
             <span>
               Объявления
@@ -81,28 +81,30 @@
           </div>
           <a class="button button-soft" href="index.html">
             Назад
-            <span>
-              ↙
-            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </a>
         </header>
         <div class="content">
           <div class="page-head">
             <div>
               <p class="eyebrow">
-                PATCH /streams/{stream}/tasks/{task}/submissions
+                Проверка и обратная связь
               </p>
               <h1>
-                Проверка
+                Очередь
                 <em>
-                  работ
+                  решений
                 </em>
               </h1>
             </div>
+            <p class="page-lede">
+              Выбирай работу ученика, запускай предпросмотр кода и алгоритма, выставляй оценки в один клик.
+            </p>
           </div>
-          <section class="card">
+          <div id="submissions-board-section" class="card" style="margin-bottom:22px;"></div>
+          <section class="card" style="opacity:0.85;">
             <h2>
-              Выставить оценку
+              Ручной ввод (API Fallback)
             </h2>
             <form class="auth-form" data-form="grade">
               <div class="field-grid">
@@ -140,9 +142,7 @@
               </div>
               <button class="button button-dark" type="submit">
                 Сохранить оценку
-                <span>
-                  ↗
-                </span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </button>
             </form>
           </section>

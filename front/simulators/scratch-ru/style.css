@@ -1,0 +1,1096 @@
+/* style.css - Стилизация Скретч 3.0 на русском языке */
+
+:root {
+  --color-scratch-blue: #4D97FE;
+  --color-scratch-darkblue: #3373CC;
+  --color-scratch-bg: #E9F1FC;
+  --color-panel-bg: #FFFFFF;
+  --color-border: #D0DBE5;
+  --color-text-main: #575E75;
+  --color-text-dark: #2D3748;
+
+  --cat-motion: #4C97FF;
+  --cat-looks: #9966FF;
+  --cat-sound: #CF63CF;
+  --cat-events: #FFBF00;
+  --cat-control: #FFAB19;
+  --cat-sensing: #5CB1D6;
+  --cat-operators: #59C059;
+  --cat-variables: #FF8C1A;
+  --cat-pen: #0FBD8C;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--color-scratch-bg);
+  color: var(--color-text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =========================================
+   1. ВЕРХНЕЕ МЕНЮ (HEADER)
+   ========================================= */
+.scratch-header {
+  height: 48px;
+  background: linear-gradient(180deg, #4D97FE 0%, #3B82F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.header-left, .header-center, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scratch-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  cursor: pointer;
+}
+
+.scratch-logo-icon {
+  font-size: 24px;
+  animation: catPulse 2s infinite ease-in-out;
+}
+
+@keyframes catPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15) rotate(4deg); }
+}
+
+.menu-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.menu-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.project-title-input {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #3B82F6;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  outline: none;
+  min-width: 220px;
+  transition: border-color 0.2s;
+}
+
+.project-title-input:focus {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+/* =========================================
+   2. ОСНОВНОЙ МАКЕТ (LAYOUT)
+   ========================================= */
+.scratch-app {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Левая часть: вкладки Код/Костюмы/Звуки + Воркспейс */
+.main-work-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-border);
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+/* Переключатели вкладок: «Код», «Костюмы», «Звуки» */
+.tabs-bar {
+  height: 42px;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #737B92;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+}
+
+.tab-item:hover {
+  color: #4D97FE;
+}
+
+.tab-item.active {
+  color: #4D97FE;
+  border-bottom-color: #4D97FE;
+}
+
+.tab-content-panel {
+  flex: 1;
+  display: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.tab-content-panel.active {
+  display: flex;
+}
+
+/* Панель «Код» (сайдбар категорий + палитра + воркспейс) */
+.code-editor-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 2.1 Боковой переключатель категорий */
+.category-sidebar {
+  width: 68px;
+  background: #F9FAFB;
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 2px;
+  width: 60px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.category-btn:hover {
+  background: #E5E7EB;
+}
+
+.category-btn.active {
+  background: #E0E7FF;
+}
+
+.category-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.category-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4B5563;
+  text-align: center;
+}
+
+/* 2.2 Палитра доступных блоков */
+.blocks-palette {
+  width: 280px;
+  background: #F3F4F6;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.palette-category-title {
+  font-size: 14px;
+  font-weight: 800;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 2.3 Холст воркспейса */
+.workspace-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  cursor: grab;
+}
+
+.workspace-container:active {
+  cursor: grabbing;
+}
+
+.workspace-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+
+/* Зум-контролы на воркспейсе */
+.zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  gap: 4px;
+  z-index: 10;
+}
+
+.zoom-btn {
+  background: none;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.zoom-btn:hover {
+  background: #F3F4F6;
+}
+
+.zoom-val {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 4px;
+  color: #64748B;
+}
+
+/* Контейнер стека блоков */
+.scratch-stack {
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  cursor: grab;
+  z-index: 5;
+}
+
+/* =========================================
+   3. БЛОКИ КОДА (SCRATCH BLOCKS)
+   ========================================= */
+.scratch-block {
+  display: inline-flex;
+  flex-direction: column;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  margin-bottom: -1px; /* плотное прилегание в стеке */
+  transition: filter 0.15s;
+}
+
+.scratch-block.in-palette {
+  margin-bottom: 8px;
+  display: inline-flex;
+}
+
+.scratch-block.dragging, .scratch-stack.dragging {
+  cursor: grabbing !important;
+  opacity: 0.95;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3) !important;
+  pointer-events: none;
+}
+
+/* Подсветка выполняющегося блока (Scratch Glow) */
+.scratch-block.running-glow {
+  filter: drop-shadow(0 0 10px #FFEA00) brightness(1.08);
+  outline: 2px solid #FFEA00;
+  border-radius: 6px;
+  z-index: 50;
+}
+
+.block-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+/* Верхняя шапочка события (Event Hat) */
+.scratch-block.block-hat {
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  padding-top: 2px;
+}
+
+/* Поля ввода внутри блока */
+.block-input {
+  background: #FFFFFF;
+  color: #2D3748;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  text-align: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Скрываем спиннеры у числовых инпутов */
+.block-input::-webkit-outer-spin-button,
+.block-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.block-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.block-input.input-number {
+  min-width: 44px;
+}
+
+.block-input.input-text {
+  min-width: 65px;
+}
+
+.block-select {
+  border-radius: 12px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #FFFFFF;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%232D3748' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 8px 5px;
+  padding-right: 22px;
+  padding-left: 10px;
+}
+
+.block-color {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  vertical-align: middle;
+}
+
+/* C-образный блок (Loops & Conditions) */
+.block-c_block {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-body {
+  min-height: 24px;
+  margin-left: 16px;
+  border-left: 14px solid;
+  border-color: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding-left: 2px;
+}
+
+.c-footer {
+  height: 14px;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Индикатор примагничивания */
+.snap-indicator {
+  position: fixed;
+  background: #FDE047;
+  border: 2px solid #EAB308;
+  border-radius: 3px;
+  box-shadow: 0 0 10px #FACC15;
+  pointer-events: none;
+  z-index: 10000;
+  display: none;
+}
+
+/* =========================================
+   4. ПРАВАЯ ЧАСТЬ: СЦЕНА И СПРАЙТЫ (STAGE)
+   ========================================= */
+.stage-and-sprites-area {
+  width: 480px;
+  background: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Панель управления сценой: Флаг, Стоп, Координаты мыши */
+.stage-toolbar {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stage-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-flag {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #10B981;
+  border: 2px solid #059669;
+  color: #FFFFFF;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.btn-flag:hover {
+  transform: scale(1.08);
+  background: #059669;
+}
+
+.btn-flag.active {
+  box-shadow: 0 0 12px #10B981;
+  animation: flagRun 1s infinite alternate;
+}
+
+@keyframes flagRun {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.2); }
+}
+
+.btn-stop {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid #DC2626;
+  color: #FFFFFF;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.btn-stop:hover {
+  transform: scale(1.08);
+  background: #DC2626;
+}
+
+.stage-mouse-pos {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Контейнер сцены 480x360 */
+.stage-container {
+  width: 480px;
+  height: 360px;
+  position: relative;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  overflow: hidden;
+}
+
+#stage-canvas, #pen-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 480px;
+  height: 360px;
+}
+
+#pen-canvas {
+  pointer-events: none;
+}
+
+/* =========================================
+   5. ПАНЕЛЬ СВОЙСТВ СПРАЙТА
+   ========================================= */
+.sprite-properties-panel {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  font-size: 12px;
+}
+
+.prop-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prop-group label {
+  font-weight: 700;
+  color: #64748B;
+  min-width: 14px;
+}
+
+.prop-input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+
+.prop-input:focus {
+  border-color: #4D97FE;
+}
+
+.btn-icon-toggle {
+  background: #F1F5F9;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-icon-toggle.active {
+  background: #4D97FE;
+  color: #FFFFFF;
+  border-color: #3B82F6;
+}
+
+/* =========================================
+   6. ПАНЕЛЬ СПРАЙТОВ И ФОНОВ (ТАСКА И КАРТОЧКИ)
+   ========================================= */
+.sprites-tray {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #F8FAFC;
+}
+
+.sprites-tray-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sprites-tray-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.sprites-list-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sprite-card {
+  width: 80px;
+  height: 90px;
+  background: #FFFFFF;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sprite-card:hover {
+  border-color: #93C5FD;
+}
+
+.sprite-card.active {
+  border-color: #4D97FE;
+  box-shadow: 0 0 0 2px rgba(77, 151, 254, 0.3);
+  background: #EFF6FF;
+}
+
+.sprite-thumb {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sprite-thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sprite-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-top: 4px;
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Кнопки действий спрайтов и фонов */
+.action-buttons-row {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* =========================================
+   7. ВКЛАДКИ КОСТЮМЫ И ЗВУКИ
+   ========================================= */
+.costumes-panel, .sounds-panel {
+  flex: 1;
+  display: flex;
+  padding: 16px;
+  gap: 20px;
+  background: #FFFFFF;
+}
+
+.costumes-sidebar {
+  width: 160px;
+  border-right: 1px solid var(--color-border);
+  padding-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.costume-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.costume-item.active {
+  border-color: #4D97FE;
+  background: #EFF6FF;
+}
+
+.costume-num {
+  font-weight: bold;
+  font-size: 12px;
+  color: #64748B;
+}
+
+.costume-preview {
+  width: 36px;
+  height: 36px;
+}
+
+.costume-preview svg {
+  width: 100%;
+  height: 100%;
+}
+
+.costume-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.costume-editor-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+}
+
+.costume-editor-area svg {
+  width: 220px;
+  height: 220px;
+}
+
+.sounds-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 600px;
+}
+
+.sound-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #F8FAFC;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* =========================================
+   8. КНОПКИ И ОБЩИЕ ЭЛЕМЕНТЫ
+   ========================================= */
+.btn-primary {
+  background: #4D97FE;
+  border: 1px solid #3B82F6;
+  color: #FFFFFF;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-primary:hover {
+  background: #3B82F6;
+}
+
+.btn-secondary {
+  background: #F1F5F9;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-dark);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #E2E8F0;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* =========================================
+   9. МОДАЛЬНЫЕ ОКНА (MODALS)
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-window {
+  background: #FFFFFF;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 650px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+  padding: 12px 18px;
+  background: #F8FAFC;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text-dark);
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #94A3B8;
+}
+
+.modal-close-btn:hover {
+  color: #EF4444;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 15px;
+  margin: 12px 0 20px;
+  outline: none;
+}
+
+.modal-input:focus {
+  border-color: #4D97FE;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Сетки библиотеки спрайтов и фонов */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.library-card {
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.library-card:hover {
+  border-color: #4D97FE;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(77, 151, 254, 0.2);
+}
+
+.library-card-thumb {
+  width: 60px;
+  height: 60px;
+}
+
+.library-card-thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
+.library-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  text-align: center;
+}
+
+/* Карточки демо-проектов */
+.demos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.demo-card {
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #F8FAFC;
+}
+
+.demo-card:hover {
+  border-color: #4D97FE;
+  background: #EFF6FF;
+  transform: translateY(-2px);
+}
+
+.demo-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text-dark);
+}
+
+.demo-card-desc {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+/* Keep the editor usable on tablets and phones without changing Scratch colors. */
+@media (max-width: 1050px) {
+  .scratch-header {
+    height: auto;
+    min-height: 48px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .header-left, .header-center, .header-right { flex-wrap: wrap; }
+  .project-title-input { min-width: 180px; max-width: 100%; }
+  .scratch-app { display: block; overflow-y: auto; }
+  .main-work-area { height: 460px; min-height: 460px; width: 100%; border-right: 0; border-bottom: 1px solid var(--color-border); }
+  .stage-and-sprites-area { width: 100%; min-height: 520px; overflow: visible; }
+  .category-sidebar { width: 54px; flex: 0 0 54px; }
+  .category-btn { width: 48px; }
+  .blocks-palette { width: 190px; flex: 0 0 190px; }
+  .workspace-container { min-width: 0; }
+}
+
+@media (max-width: 600px) {
+  .scratch-header .menu-button { padding: 6px 8px; }
+  .scratch-header .menu-button span { font-size: 11px; }
+  .project-title-input { width: 100%; }
+  .header-center { flex: 1 1 100%; }
+  .main-work-area { height: 560px; min-height: 560px; }
+  .code-editor-layout { flex-direction: column; }
+  .category-sidebar {
+    width: 100%;
+    height: 58px;
+    flex: 0 0 58px;
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .category-btn { flex: 0 0 52px; }
+  .blocks-palette {
+    width: 100%;
+    height: 154px;
+    flex: 0 0 154px;
+    padding: 8px 12px;
+    overflow: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .palette-category-section { min-width: max-content; }
+  .workspace-container { min-height: 220px; }
+  .stage-toolbar { padding: 0 10px; }
+  .stage-container { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+  #stage-canvas, #pen-canvas { width: 100%; height: 100%; }
+  .sprite-properties-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sprites-tray { min-height: 180px; }
+  .demos-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

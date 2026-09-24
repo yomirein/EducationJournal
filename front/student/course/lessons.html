@@ -6,8 +6,10 @@
     <title>
       Уроки — PixelStart
     </title>
-    <link rel="stylesheet" href="../../assets/styles.css">
-    <script src="../../assets/app.js" defer>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260924e">
+    <script src="../../assets/api.js?v=20260924" defer>
+    </script>
+    <script src="../../assets/app.js?v=20260924d" defer>
     </script>
   </head>
   <body>
@@ -37,7 +39,7 @@
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon">
-              01
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </span>
             <span>
               Модули
@@ -45,7 +47,7 @@
           </a>
           <a class="active" href="lessons.html">
             <span class="nav-icon">
-              ▤
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             </span>
             <span>
               Уроки
@@ -53,7 +55,7 @@
           </a>
           <a href="tasks.html">
             <span class="nav-icon">
-              ✓
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </span>
             <span>
               Задания
@@ -71,61 +73,51 @@
           </div>
           <a class="button button-soft" href="index.html">
             Модули
-            <span>
-              ↙
-            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </a>
         </header>
         <div class="content">
           <div class="page-head">
             <div>
-              <p class="eyebrow">
-                Модуль 03 · 4 урока
+              <p class="eyebrow" data-module-eyebrow>
+                Курс · Загрузка модулей...
               </p>
-              <h1>
-                Условия
+              <h1 data-module-title>
+                Уроки
                 <em>
-                  в игре
+                  курса
                 </em>
               </h1>
             </div>
-            <p class="page-lede">
-              Урок объясняет принцип, а следующее действие ведёт к заданию.
+            <p class="page-lede" data-module-desc>
+              Теория, концепции и практические задания из официальной программы.
             </p>
           </div>
-          <div class="lesson-layout">
+          <div class="lesson-layout" data-lessons-page>
             <aside class="lesson-sidebar card">
-              <h3>
-                Модуль 03
+              <h3 data-sidebar-module-title>
+                Модуль
               </h3>
-              <p>
-                Условия в игре
+              <p data-sidebar-module-desc>
+                Выбор модуля
               </p>
               <div class="progress">
-                <span style="width:60%">
+                <span data-sidebar-progress style="width:0%">
                 </span>
               </div>
-              <nav class="lesson-nav">
-                <a class="active" href="lessons.html">
-                  01 · Что такое условие
-                </a>
-                <a href="tasks.html">
-                  02 · Практика с if
-                </a>
-                <a href="tasks.html">
-                  03 · Столкновения
-                </a>
+              <nav class="lesson-nav" data-lesson-nav>
+                <div style="padding:12px; color:var(--text-muted); font-size:12px;">Загрузка уроков...</div>
               </nav>
             </aside>
-            <section class="lesson-main">
+            <section class="lesson-main" data-lesson-main>
               <p class="eyebrow">
-                Урок 01 · 12 минут
+                Загрузка материала…
               </p>
               <h2>
-                Если произошло событие
+                Открываем урок
               </h2>
               <p>
-                Условие помогает программе принимать решения. Если герой коснулся монетки, мы увеличиваем счёт.
+                Подготавливаем содержание курса.
               </p>
               <div class="lesson-content">
                 <h3>
@@ -150,9 +142,7 @@
                 </div>
                 <a class="button button-dark" style="margin-top:22px" href="tasks.html">
                   Перейти к заданию
-                  <span>
-                    ↗
-                  </span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                 </a>
               </div>
             </section>

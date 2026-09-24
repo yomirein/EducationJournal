@@ -20,12 +20,5 @@ services:
     volumes: ["./uploads:/app/uploads"]
     depends_on: [db]
 
-  frontend:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    volumes:
-      - ./frontend:/usr/share/nginx/html:ro
-
 volumes:
   pgdata:

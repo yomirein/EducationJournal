@@ -6,10 +6,10 @@
     <title>
       Панель куратора — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css">
-    <script src="../assets/api.js" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260924e">
+    <script src="../assets/api.js?v=20260924" defer>
     </script>
-    <script src="../assets/app.js" defer>
+    <script src="../assets/app.js?v=20260924d" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -41,33 +41,25 @@
         </p>
         <nav class="side-nav">
           <a class="active" href="index.html">
-            <span class="nav-icon">
-              ▦
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>
               Панель
             </span>
           </a>
           <a href="participants.html">
-            <span class="nav-icon">
-              ●
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             <span>
               Ученики
             </span>
           </a>
           <a href="review.html">
-            <span class="nav-icon">
-              ✓
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
             <span>
               Проверка
             </span>
           </a>
           <a href="broadcast.html">
-            <span class="nav-icon">
-              ✉
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
             <span>
               Объявления
             </span>
@@ -121,38 +113,41 @@
               </span>
             </a>
           </div>
+          <!-- Curator Alerts Radar Mount -->
+          <div id="curator-alerts-radar"></div>
+
           <div class="grid grid-3">
             <div class="card stat-card accent-card">
               <span class="eyebrow">
-                Поток
+                Учебные потоки
               </span>
-              <strong class="stat-value">
-                #1
+              <strong class="stat-value" id="curator-stat-streams">
+                —
               </strong>
               <span class="stat-label">
-                ID потока для API
+                Создано на платформе
               </span>
             </div>
             <div class="card stat-card soft-blue">
               <span class="eyebrow">
                 Ученики
               </span>
-              <strong class="stat-value">
-                API
+              <strong class="stat-value" id="curator-stat-students">
+                —
               </strong>
               <span class="stat-label">
-                GET /streams/{id}/participants
+                В активном потоке
               </span>
             </div>
             <div class="card stat-card soft-yellow">
               <span class="eyebrow">
-                Проверка
+                Очередь работ
               </span>
-              <strong class="stat-value">
-                API
+              <strong class="stat-value" id="curator-stat-submissions" style="color:#a87400;">
+                Требует проверки
               </strong>
               <span class="stat-label">
-                PATCH submission grade
+                Готово к проверке
               </span>
             </div>
           </div>
@@ -162,13 +157,11 @@
                 Заявки и ученики
               </h2>
               <p>
-                Принять или отклонить заявку через `/participants/{user_id}/{decision}`.
+                Управляйте доступом учеников к учебным потокам.
               </p>
               <span class="button button-soft">
                 Открыть
-                <span>
-                  ↗
-                </span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </span>
             </a>
             <a class="card soft-yellow" href="review.html">
@@ -176,16 +169,46 @@
                 Проверка работ
               </h2>
               <p>
-                Выставить оценку, написать feedback или удалить файл с причиной.
+                Читайте решения, выставляйте оценки и пишите обратную связь.
               </p>
               <span class="button button-soft">
                 Открыть
-                <span>
-                  ↗
-                </span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
               </span>
             </a>
           </div>
+          <section class="retention-radar">
+            <div>
+              <p class="eyebrow" style="color:var(--lime-dark); margin-bottom:4px;">Рабочий маршрут куратора</p>
+              <h2 style="margin:0; font-size:22px;">Помогайте ученикам двигаться дальше</h2>
+            </div>
+            <p style="font-size:13px; color:var(--muted); margin:8px 0 18px;">
+              Заявки, проекты Scratch и Minecraft Education, оценки и объявления собраны в одном месте.
+            </p>
+            <div class="retention-grid">
+              <a class="cohort-card cohort-green" href="participants.html">
+                <div>
+                  <span class="eyebrow" style="color:#236823;">01 / Доступ</span>
+                  <div class="cohort-count" style="color:#1b501b; margin-top:6px;">Заявки учеников</div>
+                  <p style="font-size:12px; color:#3b5630; margin:6px 0 0;">Примите ученика в учебный поток.</p>
+                </div>
+              </a>
+              <a class="cohort-card cohort-yellow" href="review.html">
+                <div>
+                  <span class="eyebrow" style="color:#8c6a00;">02 / Проверка</span>
+                  <div class="cohort-count" style="color:#6b5200; margin-top:6px;">Работы на оценку</div>
+                  <p style="font-size:12px; color:#785c00; margin:6px 0 0;">Проверьте проекты и дайте конкретный отзыв.</p>
+                </div>
+              </a>
+              <a class="cohort-card cohort-red" href="broadcast.html">
+                <div>
+                  <span class="eyebrow" style="color:#a94f38;">03 / Связь</span>
+                  <div class="cohort-count" style="color:#7f311e; margin-top:6px;">Объявления</div>
+                  <p style="font-size:12px; color:#682e22; margin:6px 0 0;">Сообщите группе о следующем занятии.</p>
+                </div>
+              </a>
+            </div>
+          </section>
         </div>
       </main>
     </div>

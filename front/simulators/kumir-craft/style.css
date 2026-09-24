@@ -1,0 +1,995 @@
+/* style.css - Профессиональный интерфейс игры «БЛОК КУБА» (Minecraft Dungeons Style) */
+
+:root {
+  --mc-dark: #1b1b1e;
+  --mc-darker: #101012;
+  --mc-stone: #333338;
+  --mc-stone-light: #484852;
+  --mc-green: #2e7d32;
+  --mc-green-hover: #388e3c;
+  --mc-diamond: #2dedda;
+  --mc-gold: #ffca28;
+  --mc-red: #d32f2f;
+  --mc-blue: #1565c0;
+  --mc-xp: #55ff55;
+  --mc-xp-bg: #1c361c;
+  --mc-font-pixel: 'Press Start 2P', monospace;
+  --mc-font-code: 'JetBrains Mono', monospace;
+  --mc-font-main: 'Nunito', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--mc-darker);
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(38, 38, 45, 0.9) 0%, rgba(12, 12, 14, 0.98) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0, 0, 0, 0.2) 4px, rgba(0, 0, 0, 0.2) 8px);
+  color: #eeeeee;
+  font-family: var(--mc-font-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+/* Всплывающее достижение Minecraft (Achievement Toast) */
+.achievement-toast {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  background: #242429;
+  border: 3px solid #3e3e48;
+  box-shadow: 
+    inset 2px 2px 0 #5a5a66, 
+    inset -2px -2px 0 #121214,
+    0 8px 24px rgba(0, 0, 0, 0.8);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2000;
+  transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease;
+}
+
+.achievement-toast.hidden {
+  transform: translateY(-80px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ach-icon-box {
+  background: #151518;
+  border: 2px solid #3c3c44;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ach-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ach-title {
+  font-family: var(--mc-font-pixel);
+  font-size: 8px;
+  color: var(--mc-gold);
+  letter-spacing: 0.5px;
+}
+
+.ach-desc {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Главный контейнер */
+.game-container {
+  width: 100%;
+  max-width: 1140px;
+  background: var(--mc-dark);
+  border: 4px solid #4a4a52;
+  box-shadow: 
+    inset -4px -4px 0 #101012, 
+    inset 4px 4px 0 #6c6c78,
+    0 12px 35px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pixel-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.icon-logo {
+  filter: drop-shadow(2px 2px 0 #000);
+}
+
+/* ШАПКА */
+.game-header {
+  background: #27272c;
+  border-bottom: 3px solid #101012;
+  padding: 10px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-title {
+  font-family: var(--mc-font-pixel);
+  font-size: 15px;
+  color: #ffffff;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #000000;
+}
+
+.game-subtitle {
+  font-size: 11px;
+  color: #aaaaaa;
+  font-weight: 600;
+}
+
+/* Навигация уровней */
+.level-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1a1a1d;
+  padding: 4px 10px;
+  border: 2px solid #383840;
+  box-shadow: inset 2px 2px 0 #0c0c0e, inset -2px -2px 0 #464650;
+}
+
+.level-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+}
+
+.level-number {
+  font-family: var(--mc-font-pixel);
+  font-size: 11px;
+  color: var(--mc-gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.level-topic {
+  font-size: 11px;
+  color: #cccccc;
+  font-weight: 600;
+}
+
+/* Статистика */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #18181a;
+  padding: 6px 12px;
+  border: 2px solid #333338;
+  box-shadow: inset 1px 1px 0 #08080a, inset -1px -1px 0 #404046;
+}
+
+.stat-val {
+  font-family: var(--mc-font-pixel);
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ОСНОВНАЯ ЧАСТЬ */
+.game-main {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: #202024;
+}
+
+@media (max-width: 900px) {
+  .game-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ЛЕВАЯ КОЛОНКА */
+.world-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Карточка цели и подсказок */
+.goal-card {
+  background: #2a2a30;
+  border: 2px solid #44444e;
+  box-shadow: inset 2px 2px 0 #585864, inset -2px -2px 0 #161618;
+  padding: 10px 12px;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.goal-tag {
+  font-family: var(--mc-font-pixel);
+  font-size: 8px;
+  color: var(--mc-gold);
+  letter-spacing: 0.5px;
+}
+
+.goal-limit {
+  font-size: 11px;
+  color: #aaaaaa;
+  font-weight: 700;
+}
+
+.goal-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #f0f0f0;
+}
+
+.goal-footer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hint-trigger-btn {
+  background: #33333a;
+  border: 1px solid #555562;
+  color: #ffca28;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.hint-trigger-btn:hover {
+  background: #3e3e48;
+  filter: brightness(1.2);
+}
+
+.hint-trigger-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* Сердечки здоровья Стива */
+.hearts-hud {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.hearts-row {
+  display: flex;
+  gap: 4px;
+}
+
+.heart-svg {
+  width: 14px;
+  height: 14px;
+  fill: #d32f2f;
+  filter: drop-shadow(1px 1px 0 #000);
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.heart-svg.empty {
+  fill: #44444a;
+  opacity: 0.4;
+}
+
+/* Канвас мира (2.5D изометрия) */
+.canvas-wrapper {
+  position: relative;
+  width: 360px;
+  height: 340px;
+  margin: 0 auto;
+  border: 4px solid #101012;
+  box-shadow: 
+    inset 2px 2px 0 #000,
+    0 6px 16px rgba(0, 0, 0, 0.75);
+  background: #141416;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#worldCanvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.status-toast {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: rgba(20, 20, 24, 0.94);
+  border: 2px solid var(--mc-red);
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ff8888;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s ease;
+}
+
+.status-toast.success {
+  border-color: var(--mc-xp);
+  color: #aaffaa;
+}
+
+.status-toast.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+
+/* Аутентичный хотбар Minecraft */
+.hotbar-section {
+  background: #25252a;
+  border: 2px solid #3a3a42;
+  box-shadow: inset 2px 2px 0 #4e4e58, inset -2px -2px 0 #121214;
+  padding: 8px 8px;
+}
+
+.hotbar-label {
+  font-family: var(--mc-font-pixel);
+  font-size: 7px;
+  color: #aaaaaa;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.hotbar-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.hotbar-slot {
+  background: #87878e;
+  border: 2px solid #333333;
+  box-shadow: 
+    inset -2px -2px 0 #4a4a4a, 
+    inset 2px 2px 0 #ffffff;
+  padding: 6px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.05s ease, filter 0.1s ease;
+}
+
+.hotbar-slot:hover {
+  background: #9b9ba4;
+  filter: brightness(1.15);
+}
+
+.hotbar-slot:active {
+  box-shadow: 
+    inset 2px 2px 0 #333333, 
+    inset -2px -2px 0 #ffffff;
+  transform: translate(1px, 1px);
+}
+
+.slot-num {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  font-family: var(--mc-font-pixel);
+  font-size: 6px;
+  color: #222222;
+  opacity: 0.6;
+}
+
+.slot-svg {
+  display: block;
+}
+
+.cmd-name {
+  font-family: var(--mc-font-code);
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #111111;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Полоска опыта */
+.xp-bar-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.xp-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--mc-xp-bg);
+  border: 2px solid #0f1c0f;
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  background: var(--mc-xp);
+  box-shadow: 0 0 8px rgba(85, 255, 85, 0.6);
+  transition: width 0.3s ease;
+}
+
+.xp-number {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -4px;
+  font-family: var(--mc-font-pixel);
+  font-size: 10px;
+  color: var(--mc-xp);
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+}
+
+/* ПРАВАЯ КОЛОНКА */
+.code-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #27272c;
+  border: 2px solid #3a3a42;
+  box-shadow: inset 2px 2px 0 #4e4e58, inset -2px -2px 0 #141416;
+  padding: 8px 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-and-speed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lang-selector {
+  display: flex;
+  background: #18181b;
+  border: 2px solid #36363d;
+  padding: 2px;
+}
+
+.lang-btn {
+  font-family: var(--mc-font-pixel);
+  font-size: 8px;
+  background: transparent;
+  color: #888888;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lang-btn.active {
+  background: #2e7d32;
+  color: #ffffff;
+  box-shadow: inset 1px 1px 0 #4caf50, inset -1px -1px 0 #1b5e20;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-label {
+  font-size: 11px;
+  color: #bbbbbb;
+  font-weight: 700;
+}
+
+/* Кнопки UI */
+.mc-btn {
+  font-family: var(--mc-font-pixel);
+  font-size: 9px;
+  padding: 7px 12px;
+  background: #686870;
+  color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 
+    inset -2px -2px 0 #363639, 
+    inset 2px 2px 0 #94949c;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-shadow: 1px 1px 0 #000000;
+  transition: filter 0.1s ease;
+}
+
+.mc-btn:hover {
+  filter: brightness(1.15);
+}
+
+.mc-btn:active {
+  box-shadow: 
+    inset 2px 2px 0 #363639, 
+    inset -2px -2px 0 #94949c;
+  transform: translate(1px, 1px);
+}
+
+.mc-btn-sm {
+  padding: 4px 7px;
+  font-size: 9px;
+}
+
+.mc-btn-icon {
+  padding: 6px 9px;
+}
+
+.mc-btn-green {
+  background: #2e7d32;
+  box-shadow: 
+    inset -2px -2px 0 #1b5e20, 
+    inset 2px 2px 0 #4caf50;
+}
+
+.mc-btn-blue {
+  background: #1565c0;
+  box-shadow: 
+    inset -2px -2px 0 #0d47a1, 
+    inset 2px 2px 0 #42a5f5;
+}
+
+.mc-btn-yellow {
+  background: #f57f17;
+  box-shadow: 
+    inset -2px -2px 0 #bc5100, 
+    inset 2px 2px 0 #ffb04c;
+}
+
+.mc-btn-red {
+  background: #c62828;
+  box-shadow: 
+    inset -2px -2px 0 #8e0000, 
+    inset 2px 2px 0 #ef5350;
+}
+
+.mc-select {
+  background: #18181b;
+  border: 2px solid #3e3e44;
+  color: #ffffff;
+  font-family: var(--mc-font-main);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 3px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Окно IDE Редактора */
+.editor-window {
+  background: #18181a;
+  border: 3px solid #2f2f34;
+  box-shadow: 
+    inset 2px 2px 0 #0d0d0f, 
+    inset -2px -2px 0 #42424a;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  background: #222226;
+  border-bottom: 2px solid #101012;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mc-font-pixel);
+  font-size: 8px;
+  color: #ffffff;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #999999;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: var(--mc-diamond);
+}
+
+.editor-body {
+  display: flex;
+  position: relative;
+  min-height: 250px;
+  background: #121214;
+}
+
+.line-numbers {
+  width: 36px;
+  background: #18181c;
+  border-right: 1px solid #26262c;
+  color: #555560;
+  font-family: var(--mc-font-code);
+  font-size: 13px;
+  line-height: 22px;
+  text-align: right;
+  padding: 10px 6px;
+  user-select: none;
+}
+
+.line-numbers .active-line {
+  color: var(--mc-gold);
+  font-weight: 700;
+  background: rgba(255, 202, 40, 0.15);
+}
+
+/* Двухслойный контейнер Syntax Highlighter */
+.code-overlay-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.code-pre,
+.code-textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 10px 12px;
+  font-family: var(--mc-font-code);
+  font-size: 13px;
+  line-height: 22px;
+  white-space: pre;
+  tab-size: 4;
+  overflow: auto;
+}
+
+.code-pre {
+  pointer-events: none;
+  background: transparent;
+  color: #d4d4d4;
+  z-index: 1;
+}
+
+.code-textarea {
+  background: transparent;
+  color: transparent;
+  caret-color: #55ff55;
+  border: none;
+  outline: none;
+  resize: none;
+  z-index: 2;
+  user-select: text;
+}
+
+/* Токены подсветки синтаксиса Python & C++ */
+.tok-kw {
+  color: #C586C0;
+  font-weight: 700;
+} /* for, while, def, return, int, if */
+
+.tok-fn {
+  color: #DCDCAA;
+  font-weight: 700;
+} /* move_right, destroy, place */
+
+.tok-cond {
+  color: #4EC9B0;
+} /* is_clear_forward, is_lava_ahead */
+
+.tok-num {
+  color: #B5CEA8;
+} /* 0, 1, 2, 3 */
+
+.tok-str {
+  color: #CE9178;
+} /* "string" */
+
+.tok-comm {
+  color: #6A9955;
+  font-style: italic;
+} /* # comment */
+
+/* Консоль */
+.editor-console {
+  background: #18181c;
+  border-top: 2px solid #26262c;
+  padding: 8px 12px;
+  font-family: var(--mc-font-code);
+  font-size: 12px;
+}
+
+.console-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888888;
+  margin-bottom: 2px;
+}
+
+.console-text {
+  color: #bbbbbb;
+  min-height: 18px;
+}
+
+.console-text.error {
+  color: #ff6b6b;
+}
+
+.console-text.success {
+  color: var(--mc-xp);
+}
+
+/* Справочник */
+.syntax-guide {
+  background: #222227;
+  border: 2px solid #36363e;
+  box-shadow: inset 1px 1px 0 #44444e, inset -1px -1px 0 #141416;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.guide-summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--mc-diamond);
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-content {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #303038;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.guide-col ul {
+  list-style: none;
+  margin-top: 4px;
+}
+
+.guide-col li {
+  margin-bottom: 4px;
+  color: #cccccc;
+}
+
+.guide-col code {
+  background: #141416;
+  padding: 2px 5px;
+  border: 1px solid #2e2e34;
+  color: var(--mc-gold);
+  font-family: var(--mc-font-code);
+  font-size: 11px;
+}
+
+/* МОДАЛЬНЫЕ ОКНА */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.mc-modal-box {
+  background: #27272c;
+  border: 4px solid #484852;
+  box-shadow: 
+    inset -4px -4px 0 #141416, 
+    inset 4px 4px 0 #747480,
+    0 15px 40px rgba(0, 0, 0, 0.9);
+  width: 90%;
+  max-width: 440px;
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: modalPop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.hint-modal-box {
+  max-width: 400px;
+}
+
+.hint-step-badge {
+  font-family: var(--mc-font-pixel);
+  font-size: 9px;
+  color: var(--mc-gold);
+  background: #18181c;
+  padding: 4px 10px;
+  border: 1px solid #3a3a42;
+}
+
+.hint-body-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #f0f0f0;
+  background: #1b1b1e;
+  padding: 12px;
+  border: 1px solid #34343c;
+  text-align: left;
+  width: 100%;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-banner {
+  font-family: var(--mc-font-pixel);
+  font-size: 13px;
+  color: var(--mc-gold);
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+
+.victory-cup-svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.stars-row {
+  display: flex;
+  gap: 10px;
+}
+
+.star-svg {
+  color: #404046;
+}
+
+.star-svg.filled {
+  color: var(--mc-gold);
+  filter: drop-shadow(0 0 6px rgba(255, 202, 40, 0.8));
+}
+
+.victory-heading {
+  font-family: var(--mc-font-pixel);
+  font-size: 11px;
+  color: #ffffff;
+}
+
+.victory-p {
+  font-size: 13px;
+  color: #bbbbbb;
+  line-height: 1.4;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin: 6px 0;
+}
+
+.result-box {
+  background: #18181a;
+  border: 2px solid #34343a;
+  padding: 8px 4px;
+}
+
+.res-num {
+  font-family: var(--mc-font-pixel);
+  font-size: 13px;
+  color: var(--mc-diamond);
+}
+
+.res-lbl {
+  font-size: 11px;
+  color: #888888;
+  margin-top: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modal-actions .mc-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.hidden {
+  display: none !important;
+}

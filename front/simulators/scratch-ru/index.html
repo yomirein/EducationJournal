@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Скретч 3.0 — Среда визуального программирования</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23FFAB19%22/><text y=%2270%22 x=%2225%22 font-size=%2265%22 font-family=%22sans-serif%22 font-weight=%22bold%22 fill=%22white%22>S</text></svg>">
+</head>
+<body>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ / ШАПКА -->
+  <header class="scratch-header">
+    <div class="header-left">
+      <div class="scratch-logo" id="logo-home">
+        <span class="scratch-logo-icon" style="font-weight:900; font-size:16px; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; background:#fff; color:#FF8C1A; border-radius:6px;">S</span>
+        <span>СКРЕТЧ</span>
+      </div>
+
+      <button class="menu-button" id="btn-open-demos">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/></svg>
+        <span>Примеры проектов</span>
+      </button>
+
+      <button class="menu-button" id="btn-save-project">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Сохранить</span>
+      </button>
+
+      <button class="menu-button" id="btn-load-project">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Загрузить</span>
+      </button>
+      <input type="file" id="input-file-load" accept=".json" style="display: none;">
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="project-title-input" class="project-title-input" value="Прогулка котика" title="Название проекта">
+    </div>
+
+    <div class="header-right">
+      <button class="menu-button" id="btn-new-variable" style="background: rgba(255, 140, 26, 0.4); border-color: #FF8C1A;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+        <span>Создать переменную</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ -->
+  <div class="scratch-app">
+    
+    <!-- ЛЕВАЯ ЧАСТЬ: ВКЛАДКИ И РАБОЧАЯ ЗОНА -->
+    <main class="main-work-area">
+      <!-- Вкладки: Код, Костюмы, Звуки -->
+      <nav class="tabs-bar">
+        <div class="tab-item active" data-tab="code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Код</span>
+        </div>
+        <div class="tab-item" data-tab="costumes">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+          <span>Костюмы</span>
+        </div>
+        <div class="tab-item" data-tab="sounds">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span>Звуки</span>
+        </div>
+      </nav>
+
+      <!-- ПАНЕЛЬ «КОД» -->
+      <div class="tab-content-panel active" id="panel-code">
+        <div class="code-editor-layout">
+          
+          <!-- Сайдбар категорий блоков -->
+          <div class="category-sidebar">
+            <button class="category-btn" id="btn-show-all-cats" title="Все блоки">
+              <div class="category-dot" style="background: linear-gradient(135deg, #4C97FF, #FFAB19);"></div>
+              <span class="category-name">Все</span>
+            </button>
+            <button class="category-btn" data-category="motion">
+              <div class="category-dot" style="background: var(--cat-motion);"></div>
+              <span class="category-name">Движение</span>
+            </button>
+            <button class="category-btn" data-category="looks">
+              <div class="category-dot" style="background: var(--cat-looks);"></div>
+              <span class="category-name">Внешний вид</span>
+            </button>
+            <button class="category-btn" data-category="sound">
+              <div class="category-dot" style="background: var(--cat-sound);"></div>
+              <span class="category-name">Звук</span>
+            </button>
+            <button class="category-btn" data-category="events">
+              <div class="category-dot" style="background: var(--cat-events);"></div>
+              <span class="category-name">События</span>
+            </button>
+            <button class="category-btn" data-category="control">
+              <div class="category-dot" style="background: var(--cat-control);"></div>
+              <span class="category-name">Управление</span>
+            </button>
+            <button class="category-btn" data-category="sensing">
+              <div class="category-dot" style="background: var(--cat-sensing);"></div>
+              <span class="category-name">Сенсоры</span>
+            </button>
+            <button class="category-btn" data-category="operators">
+              <div class="category-dot" style="background: var(--cat-operators);"></div>
+              <span class="category-name">Операторы</span>
+            </button>
+            <button class="category-btn" data-category="variables">
+              <div class="category-dot" style="background: var(--cat-variables);"></div>
+              <span class="category-name">Переменные</span>
+            </button>
+            <button class="category-btn" data-category="pen">
+              <div class="category-dot" style="background: var(--cat-pen);"></div>
+              <span class="category-name">Перо</span>
+            </button>
+          </div>
+
+          <!-- Палитра блоков -->
+          <div class="blocks-palette" id="blocks-palette">
+            <!-- Блоки рендерятся скриптом -->
+          </div>
+
+          <!-- Поле составления скриптов (Воркспейс) -->
+          <div class="workspace-container" id="workspace-container">
+            <div class="workspace-canvas" id="workspace-canvas">
+              <!-- Сюда перетаскиваются блоки -->
+            </div>
+
+            <!-- Контролы зума -->
+            <div class="zoom-controls">
+              <button class="zoom-btn" id="btn-zoom-in" title="Приблизить">+</button>
+              <button class="zoom-btn" id="btn-zoom-reset" title="Масштаб 100%">=</button>
+              <button class="zoom-btn" id="btn-zoom-out" title="Отдалить">-</button>
+              <span class="zoom-val" id="zoom-val">100%</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ПАНЕЛЬ «КОСТЮМЫ» -->
+      <div class="tab-content-panel" id="panel-costumes">
+        <div class="costumes-panel">
+          <div class="costumes-sidebar" id="costumes-list">
+            <!-- Список костюмов активного спрайта -->
+          </div>
+          <div class="costume-editor-area" id="costume-active-canvas">
+            <!-- Предпросмотр выбранного костюма -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛЬ «ЗВУКИ» -->
+      <div class="tab-content-panel" id="panel-sounds">
+        <div class="sounds-panel">
+          <div class="sounds-list" id="sounds-list">
+            <!-- Список звуков и кнопки прослушивания -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ПРАВАЯ ЧАСТЬ: СЦЕНА И СПРАЙТЫ -->
+    <aside class="stage-and-sprites-area">
+      
+      <!-- Панель управления сценой (Флаг, Стоп, Координаты) -->
+      <div class="stage-toolbar">
+        <div class="stage-btn-group">
+          <button class="btn-flag" id="btn-green-flag" title="Запустить скрипты (Зелёный флаг)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+          <button class="btn-stop" id="btn-stop" title="Остановить всё (Красный стоп)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          </button>
+        </div>
+        <div class="stage-mouse-pos" id="stage-mouse-pos">x: 0 y: 0</div>
+      </div>
+
+      <!-- Холст сцены (480x360) -->
+      <div class="stage-container" id="stage-container">
+        <canvas id="stage-canvas"></canvas>
+        <canvas id="pen-canvas"></canvas>
+      </div>
+
+      <!-- Панель свойств активного спрайта -->
+      <div class="sprite-properties-panel">
+        <div class="prop-group" style="grid-column: span 2;">
+          <label>Имя</label>
+          <input type="text" id="prop-sprite-name" class="prop-input" value="Котик">
+        </div>
+        <div class="prop-group">
+          <label>X</label>
+          <input type="number" id="prop-x" class="prop-input" value="0">
+        </div>
+        <div class="prop-group">
+          <label>Y</label>
+          <input type="number" id="prop-y" class="prop-input" value="0">
+        </div>
+
+        <div class="prop-group">
+          <label>Вид</label>
+          <button class="btn-icon-toggle active" id="btn-show-sprite" title="Показать">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn-icon-toggle" id="btn-hide-sprite" title="Спрятать">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </button>
+        </div>
+        <div class="prop-group">
+          <label>Разм</label>
+          <input type="number" id="prop-size" class="prop-input" value="100">
+        </div>
+        <div class="prop-group" style="grid-column: span 2;">
+          <label>Напр</label>
+          <input type="number" id="prop-dir" class="prop-input" value="90">
+        </div>
+      </div>
+
+      <!-- Лоток со спрайтами и фонами -->
+      <div class="sprites-tray">
+        <div class="sprites-tray-header">
+          <span class="sprites-tray-title">Спрайты проекта</span>
+          <span style="font-size: 11px; color: #64748B;">Фон: <strong id="current-backdrop-name">Поляна</strong></span>
+        </div>
+
+        <div class="sprites-list-container" id="sprites-list-container">
+          <!-- Карточки спрайтов рендерятся скриптом -->
+        </div>
+
+        <div class="action-buttons-row">
+          <button class="btn-primary btn-sm" id="btn-add-sprite" style="flex: 1;">
+            + Выбрать спрайт
+          </button>
+          <button class="btn-secondary btn-sm" id="btn-add-backdrop" style="flex: 1;">
+            + Выбрать фон
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Скретч</span>
+        <button class="modal-close-btn" id="btn-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Контент модалки -->
+      </div>
+    </div>
+  </div>
+
+  <!-- СКРИПТЫ -->
+  <script src="js/audio.js"></script>
+  <script src="js/sprites.js?v=2"></script>
+  <script src="js/blocks.js?v=2"></script>
+  <script src="js/workspace.js"></script>
+  <script src="js/stage.js"></script>
+  <script src="js/engine.js?v=2"></script>
+  <script src="js/demos.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
+
+</body>
+</html>

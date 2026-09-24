@@ -9,7 +9,6 @@ from backend.app.core.security import hash_password
 from backend.app.db import SessionLocal
 from backend.app.models import User, UserRole
 
-
 async def _ensure_first_admin():
     if not (settings.first_admin_username and settings.first_admin_email and settings.first_admin_password):
         return
@@ -36,11 +35,38 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Learning Platform API", version="1.0.0", lifespan=lifespan)
-for router in (auth.router, users.router, courses.router, streams.router, panel.router, panel.stats_router, files.router, schedule.router):
+
+@app.middleware("http")
+async def browser_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+# API routers
+for router in (
+    auth.router,
+    users.router,
+    courses.router,
+    streams.router,
+    panel.router,
+    panel.stats_router,
+    files.router,
+    schedule.router,
+):
     app.include_router(router)
+
+# Uploads directory
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 
-@app.get("/health", tags=["system"])
-async def health(): return {"status": "ok"}
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["system"])
+async def health():
+    return {"status": "ok"}
+
+
+# Frontend static files mount (mounted last as catch-all for web UI)
+front_path = Path(__file__).resolve().parent / "front"
+if front_path.exists():
+    app.mount("/", StaticFiles(directory=str(front_path), html=True), name="front")
