@@ -1,5 +1,4 @@
-(() => {
-const API_BASE = window.PIXELSTART_API || (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000');
+const API_BASE = window.PIXELSTART_API || localStorage.getItem('pixelstart_api_url') || 'http://127.0.0.1:8000';
 
 const auth = {
   get access() {
@@ -19,6 +18,7 @@ const auth = {
   }
 };
 
+// Sends an API request and refreshes the session once after an expired access token.
 async function request(path, options = {}, canRefresh = true) {
   const headers = new Headers(options.headers || {});
   
@@ -48,7 +48,7 @@ async function request(path, options = {}, canRefresh = true) {
   
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
-    throw new Error(detail.detail || `API error ${response.status}`);
+    throw new Error(detail.detail || detail.message || `Ошибка API: ${response.status}`);
   }
   
   return response.status === 204 ? null : response.json();
@@ -65,4 +65,3 @@ const api = {
 };
 
 window.pixelApi = api;
-})();
