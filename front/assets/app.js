@@ -8,6 +8,7 @@
 
 const api = window.pixelApi;
 const toast = document.querySelector('.toast');
+const isPassedSubmission = item => item.grade >= 50 && (item.task_type !== 'code_test' || item.grade === 100);
 
 const showMessage = (message, isError = false) => {
   if (!toast) return;
@@ -433,6 +434,7 @@ function initTopbarThemeToggle() {
    ========================================================================== */
 function initDemoSwitcher() {
   if (document.querySelector('.demo-switcher')) return;
+  if (!['127.0.0.1', 'localhost'].includes(window.location.hostname)) return;
 
   const path = window.location.pathname;
   let currentRole = 'student';
@@ -449,15 +451,15 @@ function initDemoSwitcher() {
       <div class="demo-tray-section">
         <span class="demo-tray-label">Быстрый переход к курсам:</span>
         <div class="demo-tray-grid">
-          <a class="demo-tray-link" href="/student/course/tasks.html?course=7" title="Курс 1: Алгоритмы и Scratch">
+          <a class="demo-tray-link" data-demo-course="scratch" href="/student/courses.html" title="Курс 1: Scratch">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             <span>Scratch 3.0</span>
           </a>
-          <a class="demo-tray-link" href="/student/course/tasks.html?course=8" title="Курс 2: Minecraft & MakeCode">
+          <a class="demo-tray-link" data-demo-course="minecraft" href="/student/courses.html" title="Курс 2: Minecraft Education">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            <span>Кумир-Крафт</span>
+            <span>Minecraft Education</span>
           </a>
-          <a class="demo-tray-link" href="/student/course/tasks.html?course=9" title="Курс 3: Python 3 & Олимпиады">
+          <a class="demo-tray-link" data-demo-course="python" href="/student/courses.html" title="Курс 3: Python 3">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             <span>Python 3 IDE</span>
           </a>
@@ -492,6 +494,14 @@ function initDemoSwitcher() {
   if (document.body) {
     document.body.appendChild(switcher);
   }
+  api.get('/courses').then(courses => {
+    const patterns = { scratch: /scratch/i, minecraft: /minecraft/i, python: /python/i };
+    for (const [kind, pattern] of Object.entries(patterns)) {
+      const course = courses.find(item => pattern.test(item.title || ''));
+      const link = switcher.querySelector(`[data-demo-course="${kind}"]`);
+      if (course && link) link.href = `/student/course/tasks.html?course=${course.id}`;
+    }
+  }).catch(() => {});
 
   const tray = switcher.querySelector('#demo-nav-tray');
   const trayToggle = switcher.querySelector('#demo-tray-toggle');
@@ -553,7 +563,6 @@ function initTasksPage() {
   const studioRoot = document.getElementById('studio-tablet-root');
   if (!taskPage && !studioRoot) return;
 
-  initAudioGuide();
   initAiCodeInspector();
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -563,9 +572,11 @@ function initTasksPage() {
     let courseId = urlParams.get('course') || localStorage.getItem('pixelstart_active_course');
     if (!courseId) {
       const allCourses = await api.get('/courses').catch(() => []);
-      courseId = (allCourses && allCourses.length > 0) ? String(allCourses[0].id) : '7';
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
     }
     localStorage.setItem('pixelstart_active_course', courseId);
+    updateCourseLinks(courseId);
     
     // Normalize URL
     if (!urlParams.get('course')) {
@@ -575,8 +586,8 @@ function initTasksPage() {
       window.history.replaceState(null, '', curUrl.toString());
     }
 
-    const tasks = await api.get(`/courses/${courseId}/tasks`).catch(() => []);
-    if (!tasks || tasks.length === 0) return;
+    const tasks = await api.get(`/courses/${courseId}/tasks`);
+    if (!tasks?.length) throw new Error('В этом курсе пока нет заданий.');
 
     let currentTask = tasks.find(t => t.id === requestedTaskId) || tasks[0];
 
@@ -648,6 +659,35 @@ function initTasksPage() {
     const workbenchBadge = document.getElementById('workbench-badge');
     const workbenchReloadBtn = document.getElementById('workbench-reload-btn');
     const workbenchMount = document.getElementById('workbench-content-mount');
+    const scratchExpandBtn = document.getElementById('scratch-expand-btn');
+    let scratchViewSnapshot = null;
+    const restoreScratchView = () => {
+      if (!scratchViewSnapshot) return;
+      studioRoot.classList.remove('scratch-expanded');
+      studioRoot.classList.toggle('is-fullscreen', scratchViewSnapshot.fullscreen);
+      fullscreenBtn?.classList.toggle('active', scratchViewSnapshot.fullscreen);
+      bodyContainer.className = `studio-body mode-${scratchViewSnapshot.mode}`;
+      viewToggles?.querySelectorAll('[data-view-mode]').forEach(button => button.classList.toggle('active', button.dataset.viewMode === scratchViewSnapshot.mode));
+      scratchViewSnapshot = null;
+      scratchExpandBtn.textContent = 'Развернуть Scratch';
+      scratchExpandBtn.setAttribute('aria-expanded', 'false');
+    };
+    scratchExpandBtn?.addEventListener('click', () => {
+      if (scratchViewSnapshot) return restoreScratchView();
+      scratchViewSnapshot = {
+        fullscreen: studioRoot.classList.contains('is-fullscreen'),
+        mode: bodyContainer.className.match(/mode-(split|info|workbench)/)?.[1] || 'split'
+      };
+      studioRoot.classList.add('is-fullscreen', 'scratch-expanded');
+      fullscreenBtn?.classList.add('active');
+      bodyContainer.className = 'studio-body mode-workbench';
+      viewToggles?.querySelectorAll('[data-view-mode]').forEach(button => button.classList.toggle('active', button.dataset.viewMode === 'workbench'));
+      scratchExpandBtn.textContent = 'Свернуть Scratch';
+      scratchExpandBtn.setAttribute('aria-expanded', 'true');
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && scratchViewSnapshot) restoreScratchView();
+    });
 
     if (workbenchReloadBtn) {
       workbenchReloadBtn.onclick = () => {
@@ -716,7 +756,14 @@ function initTasksPage() {
       });
 
       setTimeout(() => {
-        stepperWrap.querySelector('.task-step-btn.active')?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        const scroller = stepperWrap.querySelector('.task-stepper');
+        const activeStep = scroller?.querySelector('.task-step-btn.active');
+        if (scroller && activeStep) {
+          scroller.scrollTo({
+            left: activeStep.offsetLeft - scroller.offsetLeft - (scroller.clientWidth - activeStep.clientWidth) / 2,
+            behavior: 'smooth'
+          });
+        }
       }, 50);
     };
 
@@ -725,6 +772,8 @@ function initTasksPage() {
     // -----------------------------------------------------------
     const renderWorkbench = async (task) => {
       if (!workbenchMount) return;
+      if (task.type !== 'scratch') restoreScratchView();
+      if (scratchExpandBtn) scratchExpandBtn.hidden = task.type !== 'scratch';
       workbenchMount.innerHTML = '';
       const meta = task.answer_json || {};
       const stepType = task.type || 'theory';
@@ -734,7 +783,7 @@ function initTasksPage() {
         if (workbenchTitleText) workbenchTitleText.innerHTML = `Scratch 3.0 · Блочная лаборатория`;
         if (workbenchBadge) workbenchBadge.textContent = 'Интерактивно';
 
-        const frameUrl = `/simulators/scratch-ru/embed.html?task=${encodeURIComponent(task.step_number || task.id)}&course=${courseId}`;
+        const frameUrl = `/simulators/scratch-ru/embed.html?task=${encodeURIComponent(task.step_number || task.id)}&course=${courseId}&v=5`;
         workbenchMount.innerHTML = `
           <div style="flex:1; display:flex; flex-direction:column; height:100%; position:relative;">
             <iframe class="workbench-iframe" id="scratch-workbench-iframe" src="${frameUrl}"></iframe>
@@ -748,10 +797,10 @@ function initTasksPage() {
             config: {
               taskTitle: task.title,
               taskText: task.description,
-              requiredBlocks: meta.required_blocks || ["motion_movesteps"],
+              submitMode: /число/i.test(task.submit_type || '') ? 'number' : 'review',
               criteria: meta.criteria
             }
-          }, '*');
+          }, window.location.origin);
         };
       }
 
@@ -780,7 +829,7 @@ function initTasksPage() {
         if (workbenchBadge) workbenchBadge.textContent = 'Автопроверка';
 
         const sampleTests = meta.sample_tests || [];
-        const defaultPySnippet = `# Python 3 решение задачи\nimport sys\n\ndef main():\n    # Считывание входных данных\n    pass\n\nif __name__ == '__main__':\n    main()\n`;
+        const defaultPySnippet = `# Введите решение. Читайте данные через input(), выводите через print().\n`;
 
         workbenchMount.innerHTML = `
           <div class="workbench-code-container">
@@ -816,7 +865,7 @@ function initTasksPage() {
               <textarea class="code-editor-textarea" id="python-code-input" spellcheck="false" style="flex:1; min-height:220px;">${defaultPySnippet}</textarea>
               <div class="code-actions-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <span style="font-size:12px; color:#a4c2b0;">
-                  Тестов жюри: ${(sampleTests.length || 0) + (meta.hidden_tests ? meta.hidden_tests.length : 4)}
+                  Примеров: ${sampleTests.length}. Остальные тесты скрыты до сдачи.
                 </span>
                 <div style="display:flex; gap:8px;">
                   <button class="button button-soft" id="btn-dry-run-tests" type="button" style="padding:8px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
@@ -912,19 +961,19 @@ function initTasksPage() {
               if (res.grade === 100) {
                 consoleBox.innerHTML += `
                   <div class="console-line-ok" style="font-weight:700; margin-top:8px; border-top:1px solid rgba(0,255,150,0.2); padding-top:6px;">
-                    [ACCEPTED] Полный балл: 100 / 100. ${isSubmission ? 'Решение зачтено в журнал!' : 'Все тесты пройдены! Можно сдавать.'}
+                    ${isSubmission ? '[ACCEPTED] Полный балл: 100 / 100. Решение зачтено в журнал.' : '[SAMPLES OK] Все открытые примеры пройдены. Скрытые тесты запустятся при сдаче.'}
                   </div>
                 `;
                 playChime(true);
                 if (isSubmission) {
                   triggerCelebration('Тесты пройдены!', 'Задача полностью зачтена: 100 / 100 баллов!', 150);
                 } else {
-                  showMessage('Все тесты пройдены! Нажмите «Сдать решение на оценку».');
+                  showMessage('Открытые примеры пройдены. Можно сдавать решение.');
                 }
               } else {
                 consoleBox.innerHTML += `
                   <div class="console-line-fail" style="font-weight:700; margin-top:8px; border-top:1px solid rgba(255,100,100,0.2); padding-top:6px;">
-                    [FAILED] Набрано: ${res.grade} / 100 баллов. ${escapeHtml(res.feedback_message || '')}
+                    [FAILED] ${isSubmission ? 'Оценка' : 'Примеры'}: ${res.grade} / 100. ${escapeHtml(res.feedback_message || '')}
                   </div>
                 `;
                 playChime(false);
@@ -963,12 +1012,12 @@ function initTasksPage() {
             </p>
             <div class="quiz-options-list">
               ${options.map((opt, oIdx) => `
-                <div class="quiz-option-card ${isMultiple ? 'checkbox' : 'radio'}" data-opt-idx="${oIdx}" data-opt-val="${escapeHtml(opt)}">
+                <button class="quiz-option-card ${isMultiple ? 'checkbox' : 'radio'}" type="button" aria-pressed="false" data-opt-idx="${oIdx}" data-opt-val="${escapeHtml(opt)}">
                   <div class="quiz-indicator">
                     <span class="quiz-indicator-dot"></span>
                   </div>
                   <span class="quiz-option-text">${escapeHtml(opt)}</span>
-                </div>
+                </button>
               `).join('')}
             </div>
           `;
@@ -999,9 +1048,14 @@ function initTasksPage() {
             card.onclick = () => {
               if (isMultiple) {
                 card.classList.toggle('selected');
+                card.setAttribute('aria-pressed', card.classList.contains('selected') ? 'true' : 'false');
               } else {
-                workbenchMount.querySelectorAll('.quiz-option-card').forEach(c => c.classList.remove('selected'));
+                workbenchMount.querySelectorAll('.quiz-option-card').forEach(c => {
+                  c.classList.remove('selected');
+                  c.setAttribute('aria-pressed', 'false');
+                });
                 card.classList.add('selected');
+                card.setAttribute('aria-pressed', 'true');
               }
             };
           });
@@ -1055,20 +1109,10 @@ function initTasksPage() {
         workbenchMount.innerHTML = `
           <div class="workbench-theory-container">
             <div style="background:#16201b; border:1px solid #23352a; border-radius:14px; padding:24px; margin-bottom:20px;">
-              <h3 style="margin:0 0 12px; font-size:17px; color:#b8f34a;">Контрольный чек-лист усвоения</h3>
+              <h3 style="margin:0 0 12px; font-size:17px; color:#b8f34a;">Теоретический шаг</h3>
               <p style="font-size:13px; color:#a4b8ad; line-height:1.6; margin-bottom:16px;">
-                Внимательно ознакомьтесь с условиями и теоретическими концепциями шага в левой панели.
+                Прочитайте материал в левой панели и, когда будете готовы, отметьте шаг изученным.
               </p>
-              <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                  <input type="checkbox" checked disabled style="accent-color:#b8f34a;">
-                  <span>Основные определения и синтаксис изучены</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                  <input type="checkbox" checked disabled style="accent-color:#b8f34a;">
-                  <span>Граничные условия и алгоритмическая логика понятны</span>
-                </label>
-              </div>
             </div>
             <div style="display:flex; justify-content:flex-end;">
               <button class="button button-lime" id="btn-submit-theory" type="button" style="padding:12px 28px; font-size:13px; font-weight:700;">
@@ -1098,6 +1142,11 @@ function initTasksPage() {
 
         workbenchMount.innerHTML = `
           <div class="workbench-quiz-container">
+            ${task.step_number === '1.3.3' ? `<div class="capstone-game-link">
+              <strong>Игра «Поймай яблоко»</strong>
+              <p>Откройте пример с двумя спрайтами, циклом, условием и переменной «счёт». Измените блоки и соберите свой вариант игры.</p>
+              <a class="button button-lime" href="/simulators/scratch-ru/index.html?demo=apple_catch" target="_blank" rel="noopener">Открыть игру в Scratch</a>
+            </div>` : ''}
             ${meta.criteria ? `
               <div class="criteria-box" style="margin-bottom:16px;">
                 <div class="criteria-title">
@@ -1204,20 +1253,20 @@ function initTasksPage() {
         passportGrid.innerHTML = `
           <div class="passport-card">
             <span class="passport-label">Тип шага</span>
-            <span class="passport-val">${typeLabels[stepType] || stepType}</span>
+            <span class="passport-val">${escapeHtml(typeLabels[stepType] || stepType)}</span>
           </div>
           <div class="passport-card">
             <span class="passport-label">Проверка</span>
-            <span class="passport-val">${checkType}</span>
+            <span class="passport-val">${escapeHtml(checkType)}</span>
           </div>
           <div class="passport-card">
             <span class="passport-label">Что сдаёт ученик</span>
-            <span class="passport-val">${submitType}</span>
+            <span class="passport-val">${escapeHtml(submitType)}</span>
           </div>
-          ${meta.time_limit ? `
+          ${stepType === 'code_test' && meta.time_limit ? `
           <div class="passport-card">
             <span class="passport-label">Ограничения</span>
-            <span class="passport-val">${meta.time_limit}, ${meta.memory_limit || '256 МБ'}</span>
+            <span class="passport-val">${escapeHtml(meta.time_limit)}, ${escapeHtml(meta.memory_limit || '256 МБ')}</span>
           </div>` : ''}
         `;
       }
@@ -1242,10 +1291,10 @@ function initTasksPage() {
       const gradeData = await api.get(`/courses/${courseId}/tasks/${task.id}/grade`).catch(() => null);
       if (gradeBadge) {
         if (gradeData) {
-          if (gradeData.grade >= 50) {
+          if (gradeData.status === 'completed') {
             gradeBadge.innerHTML = `<div class="card" style="background:#eefcee; border:2px solid #b8f34a; padding:14px; border-radius:10px;">
               <strong style="color:#2d6a1d">Шаг успешно пройден. Оценка: ${gradeData.grade} / 100</strong>
-              <p style="margin:6px 0 0; font-size:13px; color:#3b5630">${gradeData.feedback_message || 'Отличная работа.'}</p>
+              <p style="margin:6px 0 0; font-size:13px; color:#3b5630">${escapeHtml(gradeData.feedback_message || 'Отличная работа.')}</p>
             </div>`;
           } else if (gradeData.grade === -1) {
             gradeBadge.innerHTML = `<div class="card" style="background:#fffbe6; border:1px solid #ffd666; padding:12px; border-radius:10px;">
@@ -1255,7 +1304,7 @@ function initTasksPage() {
           } else {
             gradeBadge.innerHTML = `<div class="card" style="background:#fff2f0; border:1px solid #ffccc7; padding:12px; border-radius:10px;">
               <strong style="color:#cf1322">Пока не зачтено (${gradeData.grade} / 100)</strong>
-              <p style="margin:4px 0 0; font-size:12px; color:#a8071a;">${gradeData.feedback_message || 'Попробуйте ещё раз.'}</p>
+              <p style="margin:4px 0 0; font-size:12px; color:#a8071a;">${escapeHtml(gradeData.feedback_message || 'Попробуйте ещё раз.')}</p>
             </div>`;
           }
         } else {
@@ -1267,11 +1316,22 @@ function initTasksPage() {
       const actionArea = document.querySelector('#step-action-area');
       if (actionArea) {
         if (stepType === 'scratch') {
+          const numericAnswer = /число/i.test(submitType);
           actionArea.innerHTML = `
             <div style="margin:16px 0; padding:14px; background:var(--panel); border:1px solid var(--line); border-radius:10px;">
               <p style="font-size:12px; color:var(--muted); margin:0 0 8px;">
-                Среда Scratch 3.0 открыта в правой панели. Соберите блоки алгоритма и нажмите «Проверить и сдать» внутри симулятора.
+                ${numericAnswer ? 'Проверьте ход программы в Scratch справа, затем введите число.' : 'Изучите пример справа, соберите свой проект Scratch и отправьте ссылку куратору.'}
               </p>
+              <a class="button button-soft" href="/simulators/scratch-ru/index.html?task=${encodeURIComponent(task.step_number || '')}" target="_blank" rel="noopener" style="margin:0 0 14px;">Открыть Scratch на весь экран</a>
+              ${numericAnswer ? `<form id="scratch-number-form" class="scratch-number-form">
+                <label for="scratch-number-answer">Ответ числом</label>
+                <input id="scratch-number-answer" class="task-answer" inputmode="numeric" autocomplete="off" required placeholder="Введите число">
+                <button class="button button-lime" type="submit">Проверить ответ</button>
+              </form>` : `<form id="scratch-project-form" class="evidence-form">
+                <label for="scratch-project-link">Ссылка на опубликованный проект Scratch</label>
+                <input id="scratch-project-link" class="task-answer" type="url" required placeholder="https://scratch.mit.edu/projects/...">
+                <button class="button button-lime" type="submit">Отправить куратору</button>
+              </form>`}
               ${meta.criteria ? `
                 <div class="criteria-box" style="margin-top:8px;">
                   <div class="criteria-title">
@@ -1283,12 +1343,53 @@ function initTasksPage() {
               ` : ''}
             </div>
           `;
+          if (numericAnswer) {
+            actionArea.querySelector('#scratch-number-form')?.addEventListener('submit', async event => {
+              event.preventDefault();
+              const answer = actionArea.querySelector('#scratch-number-answer')?.value.trim();
+              if (!answer) return;
+              try {
+                const result = await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: answer });
+                showMessage(result.feedback_message || 'Ответ сохранён.', result.grade !== 100);
+                await renderTask(task);
+                renderStepper();
+              } catch (error) {
+                showMessage(error.message || 'Не удалось проверить ответ.', true);
+              }
+            });
+          } else {
+            actionArea.querySelector('#scratch-project-form')?.addEventListener('submit', async event => {
+              event.preventDefault();
+              const project = actionArea.querySelector('#scratch-project-link')?.value.trim();
+              let url;
+              try { url = new URL(project); } catch { showMessage('Укажите полную ссылку на проект Scratch.', true); return; }
+              if (url.protocol !== 'https:' || url.hostname !== 'scratch.mit.edu' || !url.pathname.startsWith('/projects/')) {
+                showMessage('Нужна опубликованная ссылка вида https://scratch.mit.edu/projects/...', true);
+                return;
+              }
+              try {
+                await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: `Проект Scratch: ${url.href}` });
+                showMessage('Ссылка отправлена куратору на проверку.');
+                await renderTask(task);
+                renderStepper();
+              } catch (error) {
+                showMessage(error.message || 'Не удалось отправить проект.', true);
+              }
+            });
+          }
         } else if (stepType === 'minecraft_edu') {
           actionArea.innerHTML = `
             <div style="margin:16px 0; padding:14px; background:var(--panel); border:1px solid var(--line); border-radius:10px;">
               <p style="font-size:12px; color:var(--muted); margin:0 0 8px;">
-                Воксельный симулятор запущен в правой панели. Запустите робота-агента для сбора алмазов и финиша.
+                Справа открыт тренировочный симулятор. Итоговое задание выполняется в Minecraft Education MakeCode.
               </p>
+              <form id="minecraft-evidence-form" class="evidence-form">
+                <label for="mc-project-link">Ссылка на проект MakeCode</label>
+                <input id="mc-project-link" class="task-answer" type="url" required placeholder="https://...">
+                <label for="mc-screenshot-link">Ссылка на скриншот из мира</label>
+                <input id="mc-screenshot-link" class="task-answer" type="url" required placeholder="https://...">
+                <button class="button button-lime" type="submit">Отправить куратору</button>
+              </form>
               ${meta.criteria ? `
                 <div class="criteria-box" style="margin-top:8px;">
                   <div class="criteria-title">
@@ -1300,12 +1401,25 @@ function initTasksPage() {
               ` : ''}
             </div>
           `;
+          actionArea.querySelector('#minecraft-evidence-form')?.addEventListener('submit', async event => {
+            event.preventDefault();
+            const project = actionArea.querySelector('#mc-project-link')?.value.trim();
+            const screenshot = actionArea.querySelector('#mc-screenshot-link')?.value.trim();
+            if (!project || !screenshot) return;
+            try {
+              await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: `Проект MakeCode: ${project}\nСкриншот: ${screenshot}` });
+              showMessage('Материалы отправлены куратору на проверку.');
+              await renderTask(task);
+              renderStepper();
+            } catch (error) {
+              showMessage(error.message || 'Не удалось отправить материалы.', true);
+            }
+          });
         } else {
           actionArea.innerHTML = '';
         }
       }
 
-      initAudioGuide(task);
       initAiCodeInspector();
 
       // Render the active workbench in the right pane!
@@ -1318,8 +1432,10 @@ function initTasksPage() {
     if (!window._studioMessageListenerAttached) {
       window._studioMessageListenerAttached = true;
       window.addEventListener('message', async (event) => {
+        if (event.origin !== window.location.origin) return;
         const data = event.data;
         if (!data || typeof data !== 'object') return;
+        if (data.type?.startsWith('SCRATCH_') && event.source !== document.getElementById('scratch-workbench-iframe')?.contentWindow) return;
 
         // 1. Scratch Ready -> Init task config
         if (data.type === 'SCRATCH_READY') {
@@ -1330,59 +1446,35 @@ function initTasksPage() {
               config: {
                 taskTitle: currentTask.title,
                 taskText: currentTask.description,
-                requiredBlocks: currentTask.answer_json?.required_blocks || ["motion_movesteps"],
+                submitMode: /число/i.test(currentTask.submit_type || '') ? 'number' : 'review',
                 criteria: currentTask.answer_json?.criteria
               }
-            }, '*');
+            }, window.location.origin);
           }
         }
 
         // 2. Scratch Submission received from iframe
         else if (data.type === 'SCRATCH_SUBMISSION') {
-          const p = data.payload || {};
-          const isCorrect = p.status === 'CORRECT' || (p.score && p.score >= 50);
-          const inputSummary = `[Scratch 3.0] Статус: ${p.status}, Баллы: ${p.score || 0}\nБлоков: ${p.blocksCount || 0}\nПозиция спрайта: X=${p.spriteState?.x ?? '-'}, Y=${p.spriteState?.y ?? '-'}\nДерево алгоритма:\n${JSON.stringify(p.codeTree || [], null, 2)}`;
-          try {
-            await api.post(`/courses/${courseId}/tasks/${currentTask.id}/submissions`, { input: inputSummary });
-            if (isCorrect) {
-              playChime(true);
-              triggerCelebration('Scratch задание выполнено!', 'Алгоритм успешно отработал в Scratch 3.0!', 100);
-            } else {
-              playChime(false);
-              showMessage('Алгоритм выполнен с ошибками. Проверьте условия шага.', true);
-            }
-            await renderTask(currentTask);
-            renderStepper();
-          } catch (e) {
-            showMessage('Ошибка сохранения результата: ' + e.message, true);
-          }
+          if (/число/i.test(currentTask?.submit_type || '')) return;
+          showMessage('Для сдачи опубликуйте проект в Scratch и вставьте ссылку в форму слева.');
+          document.getElementById('scratch-project-link')?.focus();
         }
 
         // 3. Kumir-Craft / Minecraft Submission received from iframe
         else if (data.type === 'KUMIR_SUBMISSION') {
-          const p = data.payload || {};
-          const isSuccess = p.status === 'SUCCESS';
-          const inputSummary = `[Кумир-Крафт 2D] Уровень: ${p.levelId}, Язык: ${p.language || 'Python'}\nШагов: ${p.stepsTaken}/${p.maxSteps || '∞'}, Алмазов: ${p.diamondsCollected || 0}\nЗвёзд: ${p.stars || 0}\nКод программы:\n${p.code || ''}`;
-          try {
-            await api.post(`/courses/${courseId}/tasks/${currentTask.id}/submissions`, { input: inputSummary });
-            if (isSuccess) {
-              playChime(true);
-              triggerCelebration('Миссия Minecraft выполнена!', `Уровень успешно пройден! Алмазы: ${p.diamondsCollected || 0}`, 100);
-            } else {
-              playChime(false);
-              showMessage('Программа не дошла до цели. Попробуйте изменить алгоритм.', true);
-            }
-            await renderTask(currentTask);
-            renderStepper();
-          } catch (e) {
-            showMessage('Ошибка сохранения: ' + e.message, true);
-          }
+          if (event.source !== document.getElementById('kumir-workbench-iframe')?.contentWindow) return;
+          showMessage('Тренировка завершена. Для зачёта отправьте проект MakeCode и скриншот слева.');
         }
       });
     }
 
     renderStepper();
     renderTask(currentTask);
+    if (window.matchMedia('(max-width: 620px)').matches) {
+      history.scrollRestoration = 'manual';
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+      setTimeout(() => window.scrollTo(0, 0), 180);
+    }
   }, 'Задания курса загружены.');
 }
 
@@ -1888,14 +1980,46 @@ function initCuratorParticipants() {
 function initStudentDashboard() {
   if (!window.location.pathname.includes('/student/index.html') && !window.location.pathname.endsWith('/student/')) return;
 
-  renderSkillRadarSvg();
-
-  api.get('/users/me/rating').then(res => {
-    const ratingEl = document.querySelector('[data-load="/users/me/rating"]');
-    if (ratingEl) {
-      ratingEl.textContent = '150 XP';
-    }
-  }).catch(() => {});
+  Promise.all([api.get('/courses'), api.get('/users/me/history')]).then(async ([courses, history]) => {
+    const passed = new Set(history.filter(isPassedSubmission).map(item => item.task_id));
+    const summaries = await Promise.all(courses.map(async course => {
+      const modules = await api.get(`/courses/${course.id}/modules`).catch(() => []);
+      const taskIds = modules.flatMap(module => (module.lessons || []).flatMap(lesson => (lesson.tasks || []).map(task => task.id)));
+      const completed = taskIds.filter(id => passed.has(id)).length;
+      const label = /scratch/i.test(course.title) ? 'Scratch' : /minecraft/i.test(course.title) ? 'Minecraft' : 'Python';
+      return { label, value: taskIds.length ? completed / taskIds.length : 0, completed, total: taskIds.length, courseId: course.id };
+    }));
+    const total = summaries.reduce((sum, item) => sum + item.total, 0);
+    const completed = summaries.reduce((sum, item) => sum + item.completed, 0);
+    const percent = total ? Math.round(completed / total * 100) : 0;
+    const bestGrades = new Map();
+    history.forEach(item => {
+      if (isPassedSubmission(item)) bestGrades.set(item.task_id, Math.max(bestGrades.get(item.task_id) || 0, item.grade));
+    });
+    const xp = [...bestGrades.values()].reduce((sum, grade) => sum + grade, 0);
+    const percentEl = document.querySelector('[data-overall-percent]');
+    if (percentEl) percentEl.textContent = `${percent}%`;
+    const progressEl = document.querySelector('[data-overall-progress]');
+    if (progressEl) progressEl.style.width = `${percent}%`;
+    const completedEl = document.querySelector('[data-completed-count]');
+    if (completedEl) completedEl.textContent = String(completed);
+    const badgeEl = document.querySelector('[data-student-steps-count]');
+    if (badgeEl) badgeEl.textContent = `${completed} шагов`;
+    const xpEl = document.querySelector('[data-load="/users/me/rating"]');
+    if (xpEl) xpEl.textContent = `${xp} XP`;
+    const currentCourse = summaries.find(item => item.completed < item.total) || summaries[0];
+    const openLink = document.querySelector('[data-open-current-course]');
+    if (openLink && currentCourse) openLink.href = `course/tasks.html?course=${currentCourse.courseId}`;
+    const list = document.querySelector('[data-course-progress-list]');
+    if (list) list.innerHTML = summaries.map(item => `<div class="radar-metric-item">
+      <div class="radar-metric-header"><span>${escapeHtml(item.label)}</span><span>${item.completed} / ${item.total}</span></div>
+      <div class="radar-metric-bar"><div class="radar-metric-fill" style="width:${Math.round(item.value * 100)}%"></div></div>
+    </div>`).join('');
+    renderSkillRadarSvg(summaries.map(item => ({ ...item, display: `${Math.round(item.value * 100)}%` })));
+  }).catch(() => {
+    const list = document.querySelector('[data-course-progress-list]');
+    if (list) list.textContent = 'Не удалось загрузить прогресс.';
+  });
 
   const schedPre = document.querySelector('[data-load="/users/me/schedule"]');
   if (schedPre) {
@@ -1907,10 +2031,10 @@ function initStudentDashboard() {
       const html = `<div class="interactive-feed-list">` + items.map(item => `
         <div class="feed-item">
           <div>
-            <div class="feed-title">${item.course_title || item.stream_name}</div>
-            <div class="feed-meta">Куратор: ${item.curator_name || 'Наставник'} · Рейтинг: ${item.rating || 5.0}</div>
+            <div class="feed-title">${escapeHtml(item.course_title || item.stream_name || 'Занятие')}</div>
+            <div class="feed-meta">Куратор: ${escapeHtml(item.curator_name || 'Назначается')}</div>
           </div>
-          <a class="button button-soft" style="min-height:32px; padding:0 10px; font-size:11px;" href="course/index.html?course=${item.course_id || 1}">
+          <a class="button button-soft" style="min-height:32px; padding:0 10px; font-size:11px;" href="${item.course_id ? `course/index.html?course=${Number(item.course_id)}` : 'courses.html'}">
             К курсу
           </a>
         </div>
@@ -1927,20 +2051,19 @@ function initStudentDashboard() {
         return;
       }
       const html = `<div class="interactive-feed-list">` + items.map(sub => {
-        const isGraded = sub.grade > 0;
-        const statusBadge = isGraded 
-          ? `<span class="sub-grade-badge sub-grade-scored">${sub.grade}/100</span>`
-          : `<span class="sub-grade-badge sub-grade-pending">На проверке</span>`;
+        const statusBadge = sub.grade === -1
+          ? `<span class="sub-grade-badge sub-grade-pending">На проверке</span>`
+          : `<span class="sub-grade-badge sub-grade-scored">${Number(sub.grade || 0)}/100</span>`;
 
         return `
           <div class="feed-item">
             <div>
-              <div class="feed-title">Задание #${sub.task_id} · ${sub.task_type || 'Код'}</div>
-              <div class="feed-meta">${sub.feedback_message ? 'Отзыв: ' + sub.feedback_message : 'Решение сохранено в базе'}</div>
+              <div class="feed-title">Задание #${Number(sub.task_id)} · ${escapeHtml(sub.task_type || 'Задание')}</div>
+              <div class="feed-meta">${escapeHtml(sub.feedback_message || 'Решение сохранено')}</div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               ${statusBadge}
-              <a class="button button-soft" style="min-height:30px; padding:0 10px; font-size:11px;" href="course/tasks.html?task=${sub.task_id}">
+              <a class="button button-soft" style="min-height:30px; padding:0 10px; font-size:11px;" href="course/tasks.html?course=${Number(sub.course_id || 0)}&task=${Number(sub.task_id)}">
                 Открыть
               </a>
             </div>
@@ -2071,8 +2194,10 @@ if (moduleList) {
     let courseId = urlParams.get('course');
     if (!courseId) {
       const allCourses = await api.get('/courses').catch(() => []);
-      courseId = (allCourses && allCourses.length > 0) ? String(allCourses[0].id) : '7';
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
     }
+    updateCourseLinks(courseId);
     const course = await api.get(`/courses/${courseId}`).catch(() => null);
     if (course) {
       document.querySelector('[data-course-title]')?.replaceChildren(
@@ -2084,16 +2209,24 @@ if (moduleList) {
     }
     const modules = await api.get(`/courses/${courseId}/modules`);
     if (modules && modules.length > 0) {
+      const allTaskIds = modules.flatMap(mod => (mod.lessons || []).flatMap(les => (les.tasks || []).map(task => task.id)));
+      const grades = await Promise.all(allTaskIds.map(id => api.get(`/courses/${courseId}/tasks/${id}/grade`).catch(() => null)));
+      const passed = new Set(allTaskIds.filter((id, idx) => grades[idx]?.status === 'completed'));
+      const stats = document.querySelector('[data-course-stats]');
+      if (stats) stats.textContent = `${modules.length} модуля · ${allTaskIds.length} шагов · ${passed.size} пройдено`;
+      const progress = document.querySelector('[data-course-progress]');
+      if (progress) progress.style.width = `${allTaskIds.length ? Math.round(passed.size / allTaskIds.length * 100) : 0}%`;
       moduleList.innerHTML = modules.map((mod, idx) => {
         const num = String(idx + 1).padStart(2, '0');
-        const lessonCount = mod.lessons?.length || 0;
+        const taskIds = (mod.lessons || []).flatMap(les => (les.tasks || []).map(task => task.id));
+        const passedCount = taskIds.filter(id => passed.has(id)).length;
         return `<a class="module-row" href="lessons.html?course=${courseId}&module=${mod.id}">
           <span class="module-index">${num}</span>
           <div>
-            <h3>${mod.name}</h3>
-            <p>${mod.description || ''} · ${lessonCount} уроков / шагов</p>
+            <h3>${escapeHtml(mod.name || '')}</h3>
+            <p>${taskIds.length} шага · ${escapeHtml(mod.description || 'Практика и теория')}</p>
           </div>
-          <span class="module-progress">К урокам</span>
+          <span class="module-progress">${passedCount} / ${taskIds.length} пройдено</span>
         </a>`;
       }).join('');
     }
@@ -2111,11 +2244,15 @@ if (lessonsPage) {
     let courseId = urlParams.get('course');
     if (!courseId) {
       const allCourses = await api.get('/courses').catch(() => []);
-      courseId = (allCourses && allCourses.length > 0) ? String(allCourses[0].id) : '7';
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
     }
+    updateCourseLinks(courseId);
     const course = await api.get(`/courses/${courseId}`).catch(() => null);
     const modules = await api.get(`/courses/${courseId}/modules`).catch(() => []);
     const tasks = await api.get(`/courses/${courseId}/tasks`).catch(() => []);
+    const history = await api.get('/users/me/history').catch(() => []);
+    const passedIds = new Set(history.filter(isPassedSubmission).map(item => item.task_id));
 
     if (course) {
       const eyebrow = document.querySelector('[data-module-eyebrow]');
@@ -2217,6 +2354,8 @@ if (lessonsPage) {
     const renderSidebar = () => {
       if (sidebarTitle) sidebarTitle.textContent = activeModule.name;
       if (sidebarDesc) sidebarDesc.textContent = activeModule.description || `${modTasks.length} шагов в модуле`;
+      const progress = document.querySelector('[data-sidebar-progress]');
+      if (progress) progress.style.width = `${modTasks.length ? Math.round(modTasks.filter(task => passedIds.has(task.id)).length / modTasks.length * 100) : 0}%`;
 
       if (lessonNav) {
         lessonNav.innerHTML = modTasks.map((t, idx) => {
@@ -2226,7 +2365,7 @@ if (lessonsPage) {
           return `<a class="lesson-step-item ${isActive ? 'active' : ''}" data-step-id="${t.id}" href="javascript:void(0)">
             <span class="lesson-step-badge">${icon}</span>
             <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              <strong>${stepNum}</strong> · ${t.title || 'Урок'}
+              <strong>${escapeHtml(stepNum)}</strong> · ${escapeHtml(t.title || 'Урок')}
             </div>
           </a>`;
         }).join('');
@@ -2250,7 +2389,7 @@ if (lessonsPage) {
       const checkTypeLabel = activeStep.check_type || 'Автоматическая проверка';
 
       // Parse and format description
-      const descFormatted = (activeStep.description || '')
+      const descFormatted = escapeHtml(activeStep.description || '')
         .replace(/```python([\s\S]*?)```/g, '<pre class="code-block" style="background:#1e2329; color:#b8f34a; padding:16px; border-radius:8px;"><code>$1</code></pre>')
         .replace(/```([\s\S]*?)```/g, '<pre class="code-block" style="background:#1e2329; color:#fff; padding:16px; border-radius:8px;"><code>$1</code></pre>')
         .replace(/\n\n/g, '</p><p style="margin:12px 0; color:var(--ink); line-height:1.7;">')
@@ -2261,25 +2400,26 @@ if (lessonsPage) {
             <div style="font-weight:700; margin-bottom:8px; font-size:13px; color:var(--ink);">Примеры входных и выходных данных:</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               ${activeStep.answer_json.sample_tests.map((st, i) => `
-                <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px;">
+                <div style="background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px;">
                   <div style="font-size:11px; font-weight:700; color:var(--muted); margin-bottom:4px;">Пример #${i + 1}</div>
-                  <div style="font-size:12px; font-family:monospace; margin-bottom:6px;"><strong>Ввод:</strong> ${st.input || '(пусто)'}</div>
-                  <div style="font-size:12px; font-family:monospace; color:#3b82f6;"><strong>Вывод:</strong> ${st.output || st.expected || ''}</div>
+                  <div style="font-size:12px; font-family:monospace; margin-bottom:6px;"><strong>Ввод:</strong> ${escapeHtml(st.input || '(пусто)')}</div>
+                  <div style="font-size:12px; font-family:monospace; color:#3b82f6;"><strong>Вывод:</strong> ${escapeHtml(st.output || st.expected || '')}</div>
                 </div>
               `).join('')}
             </div>
           </div>` : '';
 
-      const criteriaHtml = (activeStep.answer_json?.criteria && activeStep.answer_json.criteria.length > 0)
+      const criteria = activeStep.answer_json?.criteria;
+      const criteriaHtml = criteria && (typeof criteria === 'string' ? criteria.length : Array.isArray(criteria) && criteria.length)
         ? `<div class="criteria-box" style="margin-top:20px;">
             <div class="criteria-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               Критерии оценивания экспертом (куратором):
             </div>
-            ${activeStep.answer_json.criteria.map(crit => `
+            ${typeof criteria === 'string' ? `<div class="criteria-item">${escapeHtml(criteria)}</div>` : criteria.map(crit => `
               <div class="criteria-item">
-                <span style="font-weight:700; color:#2e6018;">[+${crit.points} б]</span>
-                <span><strong>${crit.name}:</strong> ${crit.desc}</span>
+                <span style="font-weight:700; color:#2e6018;">[+${escapeHtml(crit.points)} б]</span>
+                <span><strong>${escapeHtml(crit.name)}:</strong> ${escapeHtml(crit.desc)}</span>
               </div>
             `).join('')}
           </div>` : '';
@@ -2291,10 +2431,10 @@ if (lessonsPage) {
       lessonMain.innerHTML = `
         <div class="step-detail-card">
           <p class="eyebrow" style="color:var(--accent-lime); margin-bottom:4px;">
-            Шаг ${stepNum} · ${stepTypeName} · ${checkTypeLabel}
+            Шаг ${escapeHtml(stepNum)} · ${escapeHtml(stepTypeName)} · ${escapeHtml(checkTypeLabel)}
           </p>
           <h2 style="margin:0 0 16px; font:700 28px var(--display); color:var(--ink);">
-            ${activeStep.title}
+            ${escapeHtml(activeStep.title || 'Урок')}
           </h2>
           
           <div style="margin: 18px 0; font-size:15px; color:var(--ink); line-height:1.7;">
@@ -2352,13 +2492,15 @@ if (lessonsPage) {
 }
 
 // Preserve course parameter across intra-course navigation
-const currentCourseParam = new URLSearchParams(window.location.search).get('course') || localStorage.getItem('pixelstart_active_course') || '7';
-document.querySelectorAll('a[href^="lessons.html"], a[href^="tasks.html"], a[href^="index.html"]').forEach(link => {
-  const rawHref = link.getAttribute('href');
-  if (rawHref && !rawHref.includes('?')) {
-    link.setAttribute('href', `${rawHref}?course=${currentCourseParam}`);
-  }
-});
+function updateCourseLinks(courseId) {
+  if (!courseId) return;
+  document.querySelectorAll('a[href^="lessons.html"], a[href^="tasks.html"], a[href^="index.html"]').forEach(link => {
+    const url = new URL(link.getAttribute('href'), window.location.href);
+    url.searchParams.set('course', courseId);
+    link.setAttribute('href', url.pathname + url.search);
+  });
+}
+updateCourseLinks(new URLSearchParams(window.location.search).get('course') || localStorage.getItem('pixelstart_active_course'));
 
 document.querySelectorAll('[data-course-filter]').forEach(button => {
   button.addEventListener('click', () => {
@@ -2385,23 +2527,15 @@ updateThemeToggleButtons(getActiveTheme() === 'dark');
    ========================================================================== */
 
 /* --- 1. Dynamic Skill Radar SVG --- */
-function renderSkillRadarSvg() {
+function renderSkillRadarSvg(metrics) {
   const container = document.getElementById('radar-svg-container');
-  if (!container) return;
+  if (!container || !metrics?.length) return;
 
   const width = 280;
   const height = 250;
   const cx = width / 2;
   const cy = height / 2 + 5;
   const radius = 78;
-
-  const metrics = [
-    { label: 'Алгоритмы', value: 0.92, display: '92%' },
-    { label: '3D/Воксели', value: 0.95, display: '95%' },
-    { label: 'Синтаксис', value: 0.84, display: '84%' },
-    { label: 'Циклы', value: 0.88, display: '88%' },
-    { label: 'Декомпозиция', value: 0.90, display: '90%' }
-  ];
 
   const total = metrics.length;
   const getCoordinates = (r, i) => {
@@ -2464,76 +2598,6 @@ function renderSkillRadarSvg() {
       ${labelsHtml}
     </svg>
   `;
-}
-
-/* --- 2. Mission Audio Voice Guide (Web Speech API) --- */
-let activeUtterance = null;
-function initAudioGuide(taskInfo = null) {
-  const bar = document.getElementById('mission-audio-bar');
-  const btn = document.getElementById('btn-toggle-audio');
-  const statusEl = document.getElementById('audio-guide-status');
-  const waveAnim = document.getElementById('audio-wave-anim');
-
-  if (!bar || !btn) return;
-
-  if (!('speechSynthesis' in window)) {
-    if (statusEl) statusEl.textContent = 'Голосовой движок не поддерживается данным браузером';
-    btn.disabled = true;
-    return;
-  }
-
-  const stopVoice = () => {
-    window.speechSynthesis.cancel();
-    btn.textContent = 'Слушать бриф';
-    btn.classList.remove('button-danger');
-    btn.classList.add('button-lime');
-    if (waveAnim) waveAnim.classList.remove('active');
-    if (statusEl) statusEl.textContent = 'Озвучка завершена или остановлена';
-    activeUtterance = null;
-  };
-
-  const startVoice = () => {
-    window.speechSynthesis.cancel();
-
-    const title = document.querySelector('.task-page h2')?.textContent?.trim() || 'Алгоритмическая миссия';
-    const desc = document.querySelector('.task-prompt')?.textContent?.trim() || 
-                 document.querySelector('.task-page p')?.textContent?.trim() || 
-                 'Выполните задание алгоритмически точно.';
-
-    const speechText = `Бриф миссии. ${title}. Цель: ${desc}. Составьте алгоритм или запустите симулятор для автоматической сдачи.`;
-
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.lang = 'ru-RU';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    const voices = window.speechSynthesis.getVoices();
-    const ruVoice = voices.find(v => v.lang && (v.lang === 'ru-RU' || v.lang.startsWith('ru')));
-    if (ruVoice) utterance.voice = ruVoice;
-
-    utterance.onstart = () => {
-      btn.textContent = 'Остановить';
-      btn.classList.remove('button-lime');
-      btn.classList.add('button-danger');
-      if (waveAnim) waveAnim.classList.add('active');
-      if (statusEl) statusEl.textContent = 'Голосовой ассистент зачитывает условия миссии...';
-    };
-
-    utterance.onend = stopVoice;
-    utterance.onerror = stopVoice;
-
-    activeUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  btn.onclick = (e) => {
-    e.preventDefault();
-    if (window.speechSynthesis.speaking) {
-      stopVoice();
-    } else {
-      startVoice();
-    }
-  };
 }
 
 /* --- 3. AI Code Inspector Panel --- */
@@ -2649,23 +2713,20 @@ function initLiveTicker() {
   ticker.innerHTML = `
     <div class="ticker-content">
       <span class="ticker-ping"></span>
-      <span id="ticker-msg-text">[СИСТЕМА] Сеть кластеров активна • Студент Максим сдал задание "Ветвления Робота" (100/100) • Пинг: 14мс</span>
+      <span id="ticker-msg-text">3 курса · 9 модулей · 30 шагов</span>
     </div>
     <div style="opacity:0.6; font-size:10px; font-family:monospace; display:flex; gap:12px;">
-      <span>NODE: MSK-PROD-01</span>
-      <span>ON-AIR</span>
+      <span>PIXELSTART</span>
+      <span>УЧЕБНЫЙ МАРШРУТ</span>
     </div>
   `;
 
-  const shell = document.querySelector('.app-shell') || document.body;
-  shell.prepend(ticker);
+  document.body.prepend(ticker);
 
   const messages = [
-    '[СИСТЕМА] Сеть кластеров активна • Студент Максим сдал задание "Ветвления Робота" (100/100) • Пинг: 14мс',
-    '[ТЕЛЕМЕТРИЯ] Новая звезда получена в симуляторе Kumir-Craft • Точность выполнения: 98% • Студентов онлайн: 48',
-    '[КУРАТОР] Поток #1 Minecraft: 94% retention rate • Успеваемость выше плановой на 14%',
-    '[ИИ-ИНСПЕКТОР] 142 алгоритма проверено в реальном времени • Синтаксических ошибок: 0 • O(N) оптимально',
-    '[ОБНОВЛЕНИЕ] Голосовой ассистент миссий активирован • Доступна офлайн-озвучка условий'
+    '3 курса · 9 модулей · 30 шагов',
+    'Scratch 3 · Minecraft Education · Python 3',
+    'Теория · контрольные вопросы · проекты · задачи с тестами'
   ];
 
   let idx = 0;
@@ -2886,8 +2947,8 @@ function initStudentSchedulePage() {
     if (!items || items.length === 0) {
       mount.innerHTML = `
         <div class="card" style="padding:48px; text-align:center; color:var(--muted);">
-          <p style="font-size:16px; font-weight:700; margin-bottom:8px;">Расписание занятий пока формируется</p>
-          <p style="font-size:13px;">Вы будете зачислены в ближайший календарный поток куратором.</p>
+          <p style="font-size:16px; font-weight:700; margin-bottom:8px;">Учебный план пока пуст</p>
+          <p style="font-size:13px;">После зачисления в курс здесь появятся его уроки.</p>
         </div>
       `;
       return;
@@ -2952,28 +3013,27 @@ function initStudentSchedulePage() {
           badgeHtml = `<span class="status-pill status-info">Предстоит</span>`;
         }
 
-        const deadlineDate = item.deadline ? new Date(item.deadline) : new Date();
-        const deadlineStr = item.deadline_str || deadlineDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        const taskLink = item.action_url || `course/tasks.html?course=${item.course_id || 7}&task=${item.first_task_id || 1}`;
+        const deadlineStr = item.deadline ? new Date(item.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : `Урок ${Number(item.lesson_number || 1)}`;
+        const taskLink = item.action_url || `course/lessons.html?course=${Number(item.course_id || 0)}`;
 
         return `
           <div class="card schedule-card-row ${cat}">
             <div class="schedule-time-col">
               <span class="schedule-date-badge">${escapeHtml(deadlineStr)}</span>
-              <span class="schedule-time-label">${escapeHtml(item.time_slot || '18:00 МСК')}</span>
+              <span class="schedule-time-label">${escapeHtml(item.time_slot || 'Дата не назначена')}</span>
             </div>
             <div class="schedule-info-col">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                <span class="schedule-stream-pill">${escapeHtml(item.stream_name || 'IT TOP')}</span>
+                <span class="schedule-stream-pill">${escapeHtml(item.stream_name || 'Поток')}</span>
                 <span style="font-size:11px; color:var(--muted);">${escapeHtml(item.module_name || 'Модуль 1')}</span>
               </div>
               <div class="schedule-lesson-title">${escapeHtml(item.lesson_title || item.title || 'Урок')}</div>
               <div class="schedule-progress-bar-wrap">
                 <div class="schedule-progress-bar-fill" style="width:${cat === 'completed' ? 100 : progressPct}%;"></div>
               </div>
-              <div style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between; margin-top:4px;">
+              <div class="schedule-card-meta" style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between; margin-top:4px;">
                 <span>Выполнено: ${tasksDone} из ${tasksTotal} шагов</span>
-                <span>Куратор: ${escapeHtml(item.curator_name || 'Anna')}</span>
+                <span>Куратор: ${escapeHtml(item.curator_name || 'Не назначен')}</span>
               </div>
             </div>
             <div class="schedule-action-col">
@@ -3015,13 +3075,13 @@ function initStudentLeaderboardPage() {
   const podiumMount = document.getElementById('leaderboard-podium');
   if (!tbody && !podiumMount) return;
 
-  api.get('/users/leaderboard').then(data => {
+  Promise.all([api.get('/users/leaderboard'), api.get('/users/me').catch(() => null)]).then(([data, currentUser]) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">Рейтинговая таблица пока формируется.</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:32px; color:var(--muted);">Рейтинговая таблица пока формируется.</td></tr>`;
       return;
     }
 
-    const currentUserName = (localStorage.getItem('pixelstart_user') ? JSON.parse(localStorage.getItem('pixelstart_user')).login : null) || 'student';
+    const currentUserName = currentUser?.username || '';
 
     // 1. Render Top 3 Podium
     if (podiumMount) {
@@ -3047,11 +3107,11 @@ function initStudentLeaderboardPage() {
               </div>
             </div>
             <div class="podium-user-name">${escapeHtml(p.full_name || p.username)}</div>
-            <div class="podium-league-tag">${escapeHtml(p.league_name || p.league_title || 'Алмазная лига')}</div>
-            <div class="podium-xp-score">${p.total_xp || p.xp} XP</div>
+            <div class="podium-league-tag">${escapeHtml(p.league_name || p.league_title || 'Серебряная лига')}</div>
+            <div class="podium-xp-score">${Number(p.total_xp ?? p.xp ?? 0)} XP</div>
             <div class="podium-stand-box">
               <span class="podium-stand-rank">${label}</span>
-              <span class="podium-stand-streak">${p.streak_days || 5} дн. серии</span>
+              <span class="podium-stand-streak">${Number(p.tasks_completed || 0)} задач зачтено</span>
             </div>
           </div>
         `;
@@ -3071,13 +3131,13 @@ function initStudentLeaderboardPage() {
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">В этой лиге пока нет участников.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:32px; color:var(--muted);">В этой лиге пока нет участников.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(u => {
-        const isCurrent = (u.username === currentUserName) || (u.id === 1);
-        const leagueClass = (u.league || 'diamond').toLowerCase();
+        const isCurrent = u.username === currentUserName;
+        const leagueClass = (u.league || 'silver').toLowerCase();
 
         return `
           <tr class="leaderboard-row ${isCurrent ? 'current-user-highlight' : ''}">
@@ -3096,19 +3156,13 @@ function initStudentLeaderboardPage() {
               </div>
             </td>
             <td>
-              <span class="league-pill league-${leagueClass}">${escapeHtml(u.league_name || u.league_title || 'Алмазная лига')}</span>
-            </td>
-            <td style="text-align:center;">
-              <span class="streak-pill">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#ff9800; margin-right:4px;"><path d="M12 2c.5 2.5-1 4.5-2 6.5-1.5 3-1 5.5.5 7.5.5.7 1.2 1.3 2 1.8 1.5-1.2 2.5-3 2.5-5.3 0-1.5-.5-3-1-4.5 2 1 4 3.5 4 6.5 0 4.4-3.6 8-8 8s-8-3.6-8-8c0-3.5 2-6.5 4.5-8.5.5 1.5 1.5 3 3 4 .5-3 1.5-5.5 2.5-8z"/></svg>
-                ${u.streak_days || 1} дн.
-              </span>
+              <span class="league-pill league-${leagueClass}">${escapeHtml(u.league_name || u.league_title || 'Серебряная лига')}</span>
             </td>
             <td style="text-align:center; font-weight:700; color:var(--text);">
               ${u.tasks_completed || 0}
             </td>
             <td style="text-align:right; padding-right:24px; font-weight:800; font-size:15px; color:var(--lime-dark);">
-              ${u.total_xp || u.xp} XP
+              ${Number(u.total_xp ?? u.xp ?? 0)} XP
             </td>
           </tr>
         `;
@@ -3130,29 +3184,25 @@ function initStudentLeaderboardPage() {
       });
     }
 
-    // 4. Sticky Rank Bar
+    // 4. Current student's position from the same leaderboard data.
     const stickyBar = document.getElementById('student-sticky-rank');
-    if (stickyBar) {
-      const myData = data.find(u => u.username === currentUserName) || data[0];
-      if (myData) {
-        stickyBar.innerHTML = `
-          <div class="rank-stat">
-            <span class="rank-num">#${myData.rank}</span>
-            <div>
-              <div style="font-weight:700; color:var(--text);">Ваша позиция в рейтинге IT TOP</div>
-              <div style="font-size:11px; color:var(--muted);">${escapeHtml(myData.league_name || myData.league_title || 'Алмазная лига')} · ${myData.tasks_completed || 0} сданных работ</div>
-            </div>
+    const myData = data.find(u => u.username === currentUserName);
+    if (stickyBar && myData) {
+      const completedBadge = document.querySelector('[data-leaderboard-completed]');
+      if (completedBadge) completedBadge.textContent = `${Number(myData.tasks_completed || 0)} задач`;
+      stickyBar.innerHTML = `
+        <div class="rank-stat">
+          <span class="rank-num">#${Number(myData.rank)}</span>
+          <div>
+            <strong>Ваша позиция</strong>
+            <span style="display:block; font-size:11px; color:var(--muted);">${escapeHtml(myData.league_title || 'Серебряная лига')} · ${Number(myData.tasks_completed || 0)} зачтённых заданий</span>
           </div>
-          <div style="display:flex; align-items:center; gap:16px;">
-            <div class="streak-pill" style="padding:6px 12px; font-size:12px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#ff9800; margin-right:4px;"><path d="M12 2c.5 2.5-1 4.5-2 6.5-1.5 3-1 5.5.5 7.5.5.7 1.2 1.3 2 1.8 1.5-1.2 2.5-3 2.5-5.3 0-1.5-.5-3-1-4.5 2 1 4 3.5 4 6.5 0 4.4-3.6 8-8 8s-8-3.6-8-8c0-3.5 2-6.5 4.5-8.5.5 1.5 1.5 3 3 4 .5-3 1.5-5.5 2.5-8z"/></svg>
-              Серия: ${myData.streak_days || 5} дн.
-            </div>
-            <strong style="font-size:18px; color:var(--lime-dark);">${myData.total_xp || myData.xp} XP</strong>
-          </div>
-        `;
-        stickyBar.style.display = 'flex';
-      }
+        </div>
+        <strong style="font-size:18px; color:var(--lime-dark);">${Number(myData.total_xp ?? myData.xp ?? 0)} XP</strong>
+      `;
+      stickyBar.style.display = 'flex';
+    } else if (stickyBar) {
+      stickyBar.style.display = 'none';
     }
   }).catch(() => {});
 }
@@ -3166,10 +3216,8 @@ function initCuratorAlertsRadar() {
   api.get('/panel/stats/curator-alerts').then(res => {
     if (!res) return;
 
-    const activeCount = res.active_students || res.active_students_count || 6;
+    const activeCount = res.active_students ?? res.active_students_count ?? 0;
     const pendingCount = res.pending_count !== undefined ? res.pending_count : (res.pending_submissions ? res.pending_submissions.length : 0);
-    const healthScore = res.stream_health_score || res.retention_rate_pct || 94;
-    const urgentCount = res.urgent_alerts_count || res.overdue_submissions || 1;
 
     const statStudents = document.getElementById('curator-stat-students');
     if (statStudents) {
@@ -3181,11 +3229,6 @@ function initCuratorAlertsRadar() {
       statSubmissions.textContent = `${pendingCount} на проверке`;
     }
 
-    const retentionBanner = document.querySelector('.retention-radar .simulator-badge');
-    if (retentionBanner) {
-      retentionBanner.textContent = `Когорта: Осенний поток 2026 · ${healthScore}% Retention`;
-    }
-
     const radarEl = document.getElementById('curator-alerts-radar');
     if (radarEl) {
       radarEl.innerHTML = `
@@ -3194,7 +3237,7 @@ function initCuratorAlertsRadar() {
             <div>
               <span class="status-pill status-warning">Радар куратора</span>
               <h3 style="margin:6px 0 2px; font-size:16px;">В очереди ${pendingCount} работ, требующих рецензии</h3>
-              <p style="font-size:12px; color:var(--muted); margin:0;">Среднее время ожидания ответа: 42 мин. Срочных алертов (>24ч без проверки): ${urgentCount}.</p>
+              <p style="font-size:12px; color:var(--muted); margin:0;">Откройте очередь, оцените проект и оставьте ученику конкретный отзыв.</p>
             </div>
             <a class="button button-lime" style="min-height:36px; padding:0 16px; font-weight:700;" href="review.html">
               Перейти к проверке
@@ -3204,6 +3247,10 @@ function initCuratorAlertsRadar() {
         </div>
       `;
     }
+  }).catch(() => {});
+  api.get('/streams').then(streams => {
+    const count = document.getElementById('curator-stat-streams');
+    if (count) count.textContent = String(streams.length);
   }).catch(() => {});
 }
 
@@ -3222,19 +3269,3 @@ document.addEventListener('DOMContentLoaded', () => {
   initStudentLeaderboardPage();
   updateThemeToggleButtons(getActiveTheme() === 'dark');
 });
-
-// Also run immediately
-initTopbarThemeToggle();
-initLiveTicker();
-initDemoSwitcher();
-initTopbarBroadcasts();
-initTasksPage();
-initCuratorReview();
-initCuratorParticipants();
-initCuratorAlertsRadar();
-initStudentDashboard();
-initStudentSchedulePage();
-initStudentLeaderboardPage();
-updateThemeToggleButtons(getActiveTheme() === 'dark');
-
-

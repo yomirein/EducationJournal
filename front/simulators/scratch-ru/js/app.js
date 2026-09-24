@@ -559,6 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
     e.target.value = "";
   });
 
-  // Загружаем первый демо-проект «Прогулка котика» по умолчанию
-  loadDemoProject("cat_walk");
+  // Open the example that belongs to the current course step when available.
+  const params = new URLSearchParams(window.location.search);
+  const requestedDemo = params.get("demo") || ({ "1.1.3": "ball_to_center", "1.2.3": "triangle_from_square", "1.2.4": "cat_circle", "1.3.3": "apple_catch" })[params.get("task")];
+  loadDemoProject(requestedDemo && window.SCRATCH_DEMOS[requestedDemo] ? requestedDemo : "cat_walk");
 });

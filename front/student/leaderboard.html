@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Зал славы и рейтинг — PixelStart IT TOP</title>
-    <link rel="stylesheet" href="../assets/styles.css">
-    <script src="../assets/api.js" defer></script>
-    <script src="../assets/app.js" defer></script>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260924e">
+    <script src="../assets/api.js?v=20260924" defer></script>
+    <script src="../assets/app.js?v=20260924d" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -70,9 +70,9 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               <span class="broadcast-badge-count" id="header-broadcast-badge" style="display:none;">0</span>
             </button>
-            <div class="user-streak-badge" title="Серия ударных дней обучения">
+            <div class="user-streak-badge" title="Зачтённые задания">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#ff9800;"><path d="M12 2c.5 2.5-1 4.5-2 6.5-1.5 3-1 5.5.5 7.5.5.7 1.2 1.3 2 1.8 1.5-1.2 2.5-3 2.5-5.3 0-1.5-.5-3-1-4.5 2 1 4 3.5 4 6.5 0 4.4-3.6 8-8 8s-8-3.6-8-8c0-3.5 2-6.5 4.5-8.5.5 1.5 1.5 3 3 4 .5-3 1.5-5.5 2.5-8z"/></svg>
-              <span>8 дн.</span>
+              <span data-leaderboard-completed>0 задач</span>
             </div>
             <button class="button button-soft" type="button" data-logout>Выйти</button>
           </div>
@@ -85,7 +85,7 @@
               <h1>Рейтинг учеников и <em>лиги мастерства</em></h1>
             </div>
             <p class="page-lede">
-              Зарабатывай очки опыта (XP) за решение алгоритмических задач, удерживай серию дней и пробивайся в Алмазную лигу!
+              Зарабатывай очки опыта за зачтённые задания и двигайся по учебной программе.
             </p>
           </div>
 
@@ -119,14 +119,13 @@
                     <th style="width:70px; text-align:center;">Ранг</th>
                     <th>Ученик</th>
                     <th>Лига</th>
-                    <th style="text-align:center;">Серия</th>
                     <th style="text-align:center;">Решено задач</th>
                     <th style="text-align:right; padding-right:24px;">Опыт (XP)</th>
                   </tr>
                 </thead>
                 <tbody id="leaderboard-tbody">
                   <tr>
-                    <td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">Загрузка рейтинга...</td>
+                    <td colspan="5" style="text-align:center; padding:32px; color:var(--muted);">Загрузка рейтинга...</td>
                   </tr>
                 </tbody>
               </table>
@@ -136,18 +135,17 @@
           <!-- Sticky Student Position Bar -->
           <div class="student-sticky-rank-bar" id="student-sticky-rank">
             <div class="rank-stat">
-              <span class="rank-num">#1</span>
+              <span class="rank-num">—</span>
               <div>
-                <strong>Иван Учеников</strong>
-                <span style="display:block; font-size:11px; color:var(--muted);">Лидер общего рейтинга IT TOP</span>
+                <strong>Загрузка позиции</strong>
+                <span style="display:block; font-size:11px; color:var(--muted);">Данные из журнала</span>
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:20px;">
               <div style="text-align:right;">
-                <strong style="color:var(--accent); font-size:16px;">400 XP</strong>
-                <span style="display:block; font-size:10px; color:var(--muted);">Алмазная лига</span>
+                <strong style="color:var(--accent); font-size:16px;">— XP</strong>
               </div>
-              <a class="button button-lime" href="course/tasks.html?course=7" style="min-height:34px; padding:0 16px; font-size:12px; font-weight:700;">
+              <a class="button button-lime" href="courses.html" style="min-height:34px; padding:0 16px; font-size:12px; font-weight:700;">
                 В Студию
               </a>
             </div>

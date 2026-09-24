@@ -244,6 +244,7 @@ window.BLOCK_DEFS = {
         options: [
           { value: "touching_edge", label: "касается края?" },
           { value: "touching_mouse", label: "касается мыши?" },
+          { value: "touching_sprite:basket", label: "касается корзины?" },
           { value: "mouse_down", label: "мышь нажата?" },
           { value: "key_space", label: "клавиша пробел нажата?" }
         ],

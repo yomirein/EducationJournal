@@ -285,12 +285,4 @@ async def curator_alerts(
         "pending_count": len(pending_items),
         "pending_submissions": pending_items,
         "active_students": active_students_count,
-        "urgent_alerts_count": len(
-            [
-                p
-                for p in pending_items
-                if "scratch" in p["task_type"] or "project" in p["task_type"]
-            ]
-        ),
-        "stream_health_score": 94,
     }

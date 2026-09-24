@@ -6,10 +6,10 @@
     <title>
       Панель куратора — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css">
-    <script src="../assets/api.js" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260924e">
+    <script src="../assets/api.js?v=20260924" defer>
     </script>
-    <script src="../assets/app.js" defer>
+    <script src="../assets/app.js?v=20260924d" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -119,13 +119,13 @@
           <div class="grid grid-3">
             <div class="card stat-card accent-card">
               <span class="eyebrow">
-                Активный поток
+                Учебные потоки
               </span>
-              <strong class="stat-value">
-                #1 Minecraft
+              <strong class="stat-value" id="curator-stat-streams">
+                —
               </strong>
               <span class="stat-label">
-                Осенний поток 2026
+                Создано на платформе
               </span>
             </div>
             <div class="card stat-card soft-blue">
@@ -133,7 +133,7 @@
                 Ученики
               </span>
               <strong class="stat-value" id="curator-stat-students">
-                1 ученик
+                —
               </strong>
               <span class="stat-label">
                 В активном потоке
@@ -157,7 +157,7 @@
                 Заявки и ученики
               </h2>
               <p>
-                Принять или отклонить заявку через `/participants/{user_id}/{decision}`.
+                Управляйте доступом учеников к учебным потокам.
               </p>
               <span class="button button-soft">
                 Открыть
@@ -169,7 +169,7 @@
                 Проверка работ
               </h2>
               <p>
-                Выставить оценку, написать feedback или удалить файл с причиной.
+                Читайте решения, выставляйте оценки и пишите обратную связь.
               </p>
               <span class="button button-soft">
                 Открыть
@@ -178,41 +178,35 @@
             </a>
           </div>
           <section class="retention-radar">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-              <div>
-                <p class="eyebrow" style="color:var(--lime-dark); margin-bottom:4px;">ИИ-Телеметрия вовлеченности</p>
-                <h2 style="margin:0; font-size:22px;">Радар раннего выявления отставания</h2>
-              </div>
-              <span class="simulator-badge" style="background:#eefcee; color:#236823; border-color:#b8f34a;">Когорта: Поток #1 · 94% Retention</span>
+            <div>
+              <p class="eyebrow" style="color:var(--lime-dark); margin-bottom:4px;">Рабочий маршрут куратора</p>
+              <h2 style="margin:0; font-size:22px;">Помогайте ученикам двигаться дальше</h2>
             </div>
-            <p style="font-size:13px; color:var(--muted); margin:8px 0 0;">
-              Предиктивная модель анализирует задержки сдач, попытки решения в тренажере и паузы между шагами, предотвращая отток учеников до наступления критической точки.
+            <p style="font-size:13px; color:var(--muted); margin:8px 0 18px;">
+              Заявки, проекты Scratch и Minecraft Education, оценки и объявления собраны в одном месте.
             </p>
             <div class="retention-grid">
-              <div class="cohort-card cohort-green">
+              <a class="cohort-card cohort-green" href="participants.html">
                 <div>
-                  <span class="eyebrow" style="color:#236823;">Активная траектория</span>
-                  <div class="cohort-count" style="color:#1b501b; margin-top:6px;">85% (11 чел)</div>
-                  <p style="font-size:12px; color:#3b5630; margin:6px 0 0;">Темп выше планового. Сдают задания за 24–48 мин.</p>
+                  <span class="eyebrow" style="color:#236823;">01 / Доступ</span>
+                  <div class="cohort-count" style="color:#1b501b; margin-top:6px;">Заявки учеников</div>
+                  <p style="font-size:12px; color:#3b5630; margin:6px 0 0;">Примите ученика в учебный поток.</p>
                 </div>
-                <button class="button button-lime" style="min-height:32px; font-size:11px;" type="button" data-toast="Пакетные награды начислены активной когорте">Выдать бонус XP</button>
-              </div>
-              <div class="cohort-card cohort-yellow">
+              </a>
+              <a class="cohort-card cohort-yellow" href="review.html">
                 <div>
-                  <span class="eyebrow" style="color:#8c6a00;">Зона внимания</span>
-                  <div class="cohort-count" style="color:#6b5200; margin-top:6px;">12% (1 чел)</div>
-                  <p style="font-size:12px; color:#785c00; margin:6px 0 0;">Заминка на цикле while. Более 3 неудачных запусков.</p>
+                  <span class="eyebrow" style="color:#8c6a00;">02 / Проверка</span>
+                  <div class="cohort-count" style="color:#6b5200; margin-top:6px;">Работы на оценку</div>
+                  <p style="font-size:12px; color:#785c00; margin:6px 0 0;">Проверьте проекты и дайте конкретный отзыв.</p>
                 </div>
-                <button class="button button-soft" style="min-height:32px; font-size:11px;" type="button" data-toast="ИИ-подсказка отправлена ученику">Отправить ИИ-подсказку</button>
-              </div>
-              <div class="cohort-card cohort-red">
+              </a>
+              <a class="cohort-card cohort-red" href="broadcast.html">
                 <div>
-                  <span class="eyebrow" style="color:#a94f38;">Риск оттока</span>
-                  <div class="cohort-count" style="color:#7f311e; margin-top:6px;">3% (0 чел)</div>
-                  <p style="font-size:12px; color:#682e22; margin:6px 0 0;">Не открывали платформу более 72 часов.</p>
+                  <span class="eyebrow" style="color:#a94f38;">03 / Связь</span>
+                  <div class="cohort-count" style="color:#7f311e; margin-top:6px;">Объявления</div>
+                  <p style="font-size:12px; color:#682e22; margin:6px 0 0;">Сообщите группе о следующем занятии.</p>
                 </div>
-                <button class="button button-danger" style="min-height:32px; font-size:11px;" type="button" data-toast="Уведомление запланировано в Telegram">Назначить разбор</button>
-              </div>
+              </a>
             </div>
           </section>
         </div>

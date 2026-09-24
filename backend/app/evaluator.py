@@ -11,6 +11,60 @@ import subprocess
 import time
 import json
 import re
+import ast
+import os
+import signal
+import sys
+import tempfile
+import resource
+
+
+ALLOWED_CALLS = {"input", "print", "int", "float", "str", "range", "map", "len", "abs", "min", "max", "sum"}
+ALLOWED_STRING_METHODS = {"split", "strip"}
+
+
+def validate_student_code(code: str) -> str | None:
+    """Allow the beginner Python subset used by the curriculum."""
+    if not code.strip() or len(code) > 12_000:
+        return "Код должен содержать от 1 до 12000 символов."
+    try:
+        tree = ast.parse(code)
+    except SyntaxError as exc:
+        return f"Ошибка синтаксиса: строка {exc.lineno}."
+    blocked = (ast.Import, ast.ImportFrom, ast.ClassDef, ast.With, ast.AsyncWith,
+               ast.Try, ast.Raise, ast.Global, ast.Nonlocal, ast.Lambda,
+               ast.AsyncFunctionDef, ast.Await, ast.Yield, ast.YieldFrom,
+               ast.Delete, ast.NamedExpr)
+    functions = {node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
+    for node in ast.walk(tree):
+        if isinstance(node, blocked):
+            return "Используйте базовые конструкции Python без импортов и доступа к системе."
+        if isinstance(node, ast.Name) and node.id.startswith("_"):
+            return "Служебные имена Python недоступны."
+        if isinstance(node, ast.FunctionDef) and node.name.startswith("_"):
+            return "Служебные имена Python недоступны."
+        if isinstance(node, ast.Attribute):
+            if not (isinstance(node.ctx, ast.Load) and node.attr in ALLOWED_STRING_METHODS
+                    and isinstance(getattr(node, "_parent", None), ast.Call)):
+                return "Доступны только строковые методы split() и strip()."
+        if isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name):
+                if func.id not in ALLOWED_CALLS | functions:
+                    return f"Функция {func.id} недоступна в учебной песочнице."
+            elif not (isinstance(func, ast.Attribute) and func.attr in ALLOWED_STRING_METHODS):
+                return "Этот вызов недоступен в учебной песочнице."
+        for child in ast.iter_child_nodes(node):
+            child._parent = node
+    return None
+
+
+def _limit_child_resources():
+    resource.setrlimit(resource.RLIMIT_CPU, (2, 2))
+    resource.setrlimit(resource.RLIMIT_FSIZE, (1_000_000, 1_000_000))
+    resource.setrlimit(resource.RLIMIT_NOFILE, (16, 16))
+    if sys.platform != "darwin":
+        resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))
 
 
 def normalize_val(val):
@@ -27,25 +81,41 @@ def normalize_val(val):
 
 
 def run_python_test(code: str, test_input: str, time_limit_sec: float = 1.0):
+    validation_error = validate_student_code(code)
+    if validation_error:
+        return {"status": "RE", "error": validation_error, "duration": 0, "output": ""}
+    if len(test_input) > 100_000:
+        return {"status": "ERR", "error": "Слишком большой тестовый ввод.", "duration": 0, "output": ""}
     try:
-        proc = subprocess.Popen(
-            ["python3", "-c", code],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        t0 = time.time()
-        stdout, stderr = proc.communicate(input=test_input, timeout=time_limit_sec)
-        duration = time.time() - t0
+        with tempfile.TemporaryDirectory(prefix="pixelstart-code-") as temp_dir:
+            with open(os.path.join(temp_dir, "stdout"), "w+") as out_file, open(os.path.join(temp_dir, "stderr"), "w+") as err_file:
+                proc = subprocess.Popen(
+                    [sys.executable, "-I", "-S", "-c", code],
+                    cwd=temp_dir,
+                    env={"PYTHONIOENCODING": "utf-8"},
+                    stdin=subprocess.PIPE,
+                    stdout=out_file,
+                    stderr=err_file,
+                    text=True,
+                    start_new_session=True,
+                    preexec_fn=_limit_child_resources,
+                )
+                t0 = time.monotonic()
+                try:
+                    proc.communicate(input=test_input, timeout=time_limit_sec)
+                except subprocess.TimeoutExpired:
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    proc.communicate()
+                    return {"status": "TL", "error": f"Превышен лимит времени ({time_limit_sec} с)", "duration": time_limit_sec, "output": ""}
+                duration = time.monotonic() - t0
+                out_file.seek(0)
+                err_file.seek(0)
+                stdout, stderr = out_file.read(100_000), err_file.read(20_000)
         
         if proc.returncode != 0:
             return {"status": "RE", "error": stderr.strip(), "duration": duration, "output": ""}
         
         return {"status": "OK", "output": stdout.strip(), "duration": duration, "error": ""}
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        return {"status": "TL", "error": f"Превышен лимит времени ({time_limit_sec} с)", "duration": time_limit_sec, "output": ""}
     except Exception as e:
         return {"status": "ERR", "error": str(e), "duration": 0, "output": ""}
 
@@ -75,9 +145,9 @@ def evaluate_submission(task_type: str, answer_json: dict | None, user_input: st
 
         if not correct_answers:
             return {
-                "grade": 100,
-                "feedback_message": "Ответ принят.",
-                "status": "completed"
+                "grade": -1,
+                "feedback_message": "Для этого вопроса не задан ключ проверки. Работа отправлена куратору.",
+                "status": "pending_review"
             }
 
         # Check for multiple choice JSON list or comma separated
@@ -126,24 +196,11 @@ def evaluate_submission(task_type: str, answer_json: dict | None, user_input: st
 
     # 3. Scratch
     if stype == "scratch":
-        # Check if submission is from embedded Scratch simulator
-        if "[scratch 3.0]" in user_str.lower():
-            if "статус: correct" in user_str.lower() or "score: 100" in user_str.lower() or "баллы: 100" in user_str.lower():
-                return {
-                    "grade": 100,
-                    "feedback_message": "Проект успешно протестирован и выполнен в среде Scratch 3.0!",
-                    "status": "completed"
-                }
-            else:
-                return {
-                    "grade": 40,
-                    "feedback_message": "В проекте Scratch обнаружены ошибки или не все условия выполнены.",
-                    "status": "partial"
-                }
-
         num_ans = ans_meta.get("number_answer")
         correct_answers = ans_meta.get("correct_answers", [])
         if num_ans is not None or correct_answers:
+            if user_str.startswith("[Scratch 3.0]"):
+                return {"grade": 0, "feedback_message": "Введите числовой ответ в поле задания.", "status": "failed"}
             target = str(num_ans) if num_ans is not None else correct_answers[0]
             if normalize_val(user_str) == normalize_val(target):
                 return {
@@ -162,7 +219,7 @@ def evaluate_submission(task_type: str, answer_json: dict | None, user_input: st
         else:
             return {
                 "grade": -1,
-                "feedback_message": "Ссылка на проект Scratch отправлена на проверку куратору.",
+                "feedback_message": "Проект Scratch отправлен на проверку куратору.",
                 "status": "pending_review"
             }
 
@@ -174,9 +231,9 @@ def evaluate_submission(task_type: str, answer_json: dict | None, user_input: st
 
         if not all_tests:
             return {
-                "grade": 100,
-                "feedback_message": "Решение сохранено.",
-                "status": "completed"
+                "grade": -1,
+                "feedback_message": "Для задачи не заданы тесты. Решение отправлено куратору.",
+                "status": "pending_review"
             }
 
         passed = 0

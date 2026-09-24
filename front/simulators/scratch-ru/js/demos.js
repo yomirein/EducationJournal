@@ -1,6 +1,106 @@
 // js/demos.js - Готовые демо-проекты на русском языке
 
 window.SCRATCH_DEMOS = {
+  ball_to_center: {
+    title: "Мяч летит к центру",
+    description: "Шаг 1.1.3: мяч стартует в x = −200 и десять раз проходит по 20 шагов. Запустите и посмотрите координату X.",
+    backdrop: "grid",
+    variables: [],
+    sprites: [{
+      id: "sprite_ball", name: "Мяч", type: "ball", x: -200, y: 0,
+      direction: 90, size: 70, visible: true, rotationStyle: "all", costumeIndex: 0,
+      costumes: window.SCRATCH_ASSETS.sprites.ball.costumes,
+      scripts: [{ blockId: "event_whenflagclicked", type: "hat", x: 40, y: 30,
+        next: { blockId: "motion_gotoxy", type: "command", args: { X: -200, Y: 0 },
+          next: { blockId: "control_repeat", type: "c_block", args: { TIMES: 10 },
+            substack: [{ blockId: "motion_movesteps", type: "command", args: { STEPS: 20 } }]
+          }
+        }
+      }]
+    }]
+  },
+  triangle_from_square: {
+    title: "Из квадрата в треугольник",
+    description: "Шаг 1.2.3: программа рисует квадрат. Поменяйте число повторов и угол поворота так, чтобы получился равносторонний треугольник.",
+    backdrop: "grid", variables: [],
+    sprites: [{
+      id: "sprite_triangle_cat", name: "Кот-художник", type: "cat", x: 0, y: 0,
+      direction: 90, size: 60, visible: true, rotationStyle: "all", costumeIndex: 0,
+      costumes: window.SCRATCH_ASSETS.sprites.cat.costumes,
+      scripts: [{ blockId: "event_whenflagclicked", type: "hat", x: 40, y: 30,
+        next: { blockId: "pen_clear", type: "command",
+          next: { blockId: "pen_pendown", type: "command",
+            next: { blockId: "control_repeat", type: "c_block", args: { TIMES: 4 },
+              substack: [{ blockId: "motion_movesteps", type: "command", args: { STEPS: 100 },
+                next: { blockId: "motion_turnright", type: "command", args: { DEGREES: 90 } }
+              }], next: { blockId: "pen_penup", type: "command" }
+            }
+          }
+        }
+      }]
+    }]
+  },
+  cat_circle: {
+    title: "Кот по кругу",
+    description: "Шаг 1.2.4: кот идёт и поворачивает на 3°. Замените бесконечный цикл конечным и добавьте фразу «Круг!». Сколько повторов нужно?",
+    backdrop: "grid", variables: [],
+    sprites: [{
+      id: "sprite_circle_cat", name: "Кот", type: "cat", x: 0, y: 0,
+      direction: 90, size: 65, visible: true, rotationStyle: "all", costumeIndex: 0,
+      costumes: window.SCRATCH_ASSETS.sprites.cat.costumes,
+      scripts: [{ blockId: "event_whenflagclicked", type: "hat", x: 40, y: 30,
+        next: { blockId: "control_forever", type: "c_block", args: {},
+          substack: [{ blockId: "motion_movesteps", type: "command", args: { STEPS: 5 },
+            next: { blockId: "motion_turnright", type: "command", args: { DEGREES: 3 } }
+          }]
+        }
+      }]
+    }]
+  },
+  apple_catch: {
+    title: "Игра: Поймай яблоко",
+    description: "Итоговый проект курса: управляйте корзиной стрелками, ловите падающее яблоко и набирайте очки. Изучите и измените блоки игры.",
+    backdrop: "nature",
+    variables: ["счёт"],
+    sprites: [
+      {
+        id: "sprite_apple", name: "Яблоко", type: "apple", x: 0, y: 145,
+        direction: 90, size: 60, visible: true, rotationStyle: "none", costumeIndex: 0,
+        costumes: window.SCRATCH_ASSETS.sprites.apple.costumes,
+        scripts: [{ blockId: "event_whenflagclicked", type: "hat", x: 30, y: 20,
+          next: { blockId: "data_setvariableto", type: "command", args: { VAR: "счёт", VALUE: 0 },
+            next: { blockId: "control_forever", type: "c_block", args: {},
+              substack: [
+                { blockId: "motion_gotoxy", type: "command", args: { X: 0, Y: 145 } },
+                { blockId: "control_repeat", type: "c_block", args: { TIMES: 15 }, substack: [
+                  { blockId: "motion_changeyby", type: "command", args: { DY: -20 } },
+                  { blockId: "control_wait", type: "command", args: { DURATION: 0.12 } },
+                  { blockId: "control_if", type: "c_block", args: { CONDITION: "touching_sprite:basket" }, substack: [
+                    { blockId: "data_changevariableby", type: "command", args: { VAR: "счёт", VALUE: 1 } },
+                    { blockId: "sound_playmeow", type: "command", args: { SOUND: "coin" } },
+                    { blockId: "motion_gotoxy", type: "command", args: { X: 0, Y: 145 } }
+                  ] }
+                ] }
+              ]
+            }
+          }
+        }]
+      },
+      {
+        id: "sprite_basket", name: "Корзина", type: "basket", x: 0, y: -135,
+        direction: 90, size: 95, visible: true, rotationStyle: "none", costumeIndex: 0,
+        costumes: window.SCRATCH_ASSETS.sprites.basket.costumes,
+        scripts: [
+          { blockId: "event_whenflagclicked", type: "hat", x: 30, y: 20,
+            next: { blockId: "motion_gotoxy", type: "command", args: { X: 0, Y: -135 } } },
+          { blockId: "event_whenkeypressed", type: "hat", args: { KEY: "ArrowLeft" }, x: 30, y: 120,
+            next: { blockId: "motion_changexby", type: "command", args: { DX: -25 } } },
+          { blockId: "event_whenkeypressed", type: "hat", args: { KEY: "ArrowRight" }, x: 30, y: 220,
+            next: { blockId: "motion_changexby", type: "command", args: { DX: 25 } } }
+        ]
+      }
+    ]
+  },
   cat_walk: {
     title: "Прогулка котика",
     description: "Котик ходит по сцене, перебирает лапками, мяукает и отскакивает от стенок.",

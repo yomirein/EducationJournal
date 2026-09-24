@@ -136,6 +136,29 @@ window.SCRATCH_ASSETS = {
         }
       ]
     },
+    apple: {
+      name: "Яблоко",
+      costumes: [{
+        name: "красное яблоко",
+        svg: `<svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 27 C32 16 16 30 18 55 C20 77 33 91 49 85 C65 91 80 77 82 55 C84 30 68 16 50 27Z" fill="#e44d4d" stroke="#9c2828" stroke-width="3"/>
+          <path d="M49 28 Q48 13 55 9" fill="none" stroke="#765025" stroke-width="5" stroke-linecap="round"/>
+          <path d="M52 20 Q68 8 75 18 Q67 29 52 20Z" fill="#59a754" stroke="#397238" stroke-width="2"/>
+          <ellipse cx="34" cy="44" rx="6" ry="11" fill="#fff" opacity=".22"/>
+        </svg>`
+      }]
+    },
+    basket: {
+      name: "Корзина",
+      costumes: [{
+        name: "корзина",
+        svg: `<svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 38 H90 L80 83 Q50 94 20 83Z" fill="#bd8647" stroke="#6f4825" stroke-width="4"/>
+          <path d="M17 54 H83 M22 71 H78 M31 42 L36 83 M50 42 V87 M69 42 L64 83" stroke="#e0b173" stroke-width="4" fill="none"/>
+          <path d="M10 38 H90" stroke="#6f4825" stroke-width="8" stroke-linecap="round"/>
+        </svg>`
+      }]
+    },
     ball: {
       name: "Мячик",
       costumes: [

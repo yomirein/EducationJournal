@@ -492,6 +492,13 @@ class ScratchEngine {
 
   // Проверка условий
   checkCondition(condName, sprite) {
+    if (condName && condName.startsWith("touching_sprite:")) {
+      const targetName = condName.slice("touching_sprite:".length);
+      const target = this.stage.sprites.find(item => item.type === targetName || item.name.toLowerCase() === targetName);
+      if (!target || target.id === sprite.id || !target.visible) return false;
+      const radius = (sprite.size + target.size) * 0.28;
+      return Math.hypot(sprite.x - target.x, sprite.y - target.y) < radius;
+    }
     switch (condName) {
       case "touching_edge":
         return Math.abs(sprite.x) >= 200 || Math.abs(sprite.y) >= 140;

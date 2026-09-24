@@ -6,10 +6,10 @@
     <title>
       Задания — PixelStart
     </title>
-    <link rel="stylesheet" href="../../assets/styles.css">
-    <script src="../../assets/api.js" defer>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260924e">
+    <script src="../../assets/api.js?v=20260924" defer>
     </script>
-    <script src="../../assets/app.js" defer>
+    <script src="../../assets/app.js?v=20260924d" defer>
     </script>
   </head>
   <body>
@@ -66,7 +66,7 @@
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Курс / Урок 02 /
+            Курс /
             <strong>
               Задания
             </strong>
@@ -90,7 +90,7 @@
               </h1>
             </div>
             <p class="page-lede">
-              Решай алгоритмические задачи в интерактивном симуляторе или пиши код — результат мгновенно синхронизируется с сервером!
+              Изучайте условие, попробуйте решение и отправьте результат на проверку.
             </p>
           </div>
           <div class="tablet studio-tablet" id="studio-tablet-root">
@@ -136,77 +136,17 @@
               <section class="studio-pane studio-pane-info">
                 <article class="task-page">
                   <p class="eyebrow">
-                    Задание · algorithm
+                    Загрузка шага…
                   </p>
                   <h2>
-                    Объясни условие
+                    Подготавливаем задание
                   </h2>
-                  <p>
-                    Что произойдёт, когда герой коснётся монетки?
-                  </p>
-                  <div class="audio-guide-bar" id="mission-audio-bar">
-                    <div class="audio-guide-info">
-                      <div class="audio-wave" id="audio-wave-anim">
-                        <span class="wave-bar"></span>
-                        <span class="wave-bar"></span>
-                        <span class="wave-bar"></span>
-                        <span class="wave-bar"></span>
-                        <span class="wave-bar"></span>
-                      </div>
-                      <div>
-                        <strong style="color:#b8f34a;">Голосовой ассистент миссии:</strong>
-                        <span id="audio-guide-status">Бриф готов к озвучке</span>
-                      </div>
-                    </div>
-                    <button class="button button-lime" id="btn-toggle-audio" style="min-height:30px; padding:0 12px; font-size:11px;" type="button">
-                      Слушать бриф
-                    </button>
-                  </div>
                   <div class="task-prompt">
-                    <strong>
-                      если
-                    </strong>
-                    герой касается монетки
-                    <br>
-                    <strong>
-                      то
-                    </strong>
-                    увеличить счёт на 1
+                    Загружаем условие…
                   </div>
                   <div id="step-action-area">
                     <!-- Action form / details injected by JavaScript -->
                   </div>
-                  <section class="ai-inspector-card" id="ai-code-inspector">
-                    <div class="ai-inspector-header">
-                      <div>
-                        <p class="eyebrow" style="color:#b8f34a; margin-bottom:2px;">ИИ-Инспектор кода и алгоритмов</p>
-                        <strong style="font-size:15px;">Анализ качества решения</strong>
-                      </div>
-                      <span class="ai-score-pill" id="ai-score-value">Оценка: 96 / 100</span>
-                    </div>
-                    <div class="ai-grid-stats">
-                      <div class="ai-stat-box">
-                        <div class="ai-stat-label">Временная сложность</div>
-                        <div class="ai-stat-val" id="ai-complexity-val">O(N) линейная</div>
-                      </div>
-                      <div class="ai-stat-box">
-                        <div class="ai-stat-label">Чистота синтаксиса</div>
-                        <div class="ai-stat-val" id="ai-clean-val">98% чисто</div>
-                      </div>
-                      <div class="ai-stat-box">
-                        <div class="ai-stat-label">Инструкций в цикле</div>
-                        <div class="ai-stat-val" id="ai-steps-val">4 шага</div>
-                      </div>
-                    </div>
-                    <div class="ai-advice-text" id="ai-advice-box">
-                      ИИ-инспектор: Алгоритм построен оптимально, ветвление корректно обрабатывает граничные условия. Рекомендуется протестировать случай, когда монетка уже собрана.
-                    </div>
-                    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
-                      <button class="button button-soft" id="btn-run-ai-check" type="button" style="min-height:30px; font-size:11px; padding:0 12px;">
-                        Перепроверить алгоритм
-                      </button>
-                    </div>
-                  </section>
                 </article>
               </section>
 
@@ -219,6 +159,7 @@
                     <span class="workbench-badge" id="workbench-badge">Онлайн</span>
                   </div>
                   <div class="workbench-actions">
+                    <button class="workbench-action-btn" id="scratch-expand-btn" type="button" aria-expanded="false" hidden>Развернуть Scratch</button>
                     <button class="workbench-action-btn" id="workbench-reload-btn" type="button" title="Перезагрузить среду">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                       <span>Сброс</span>
@@ -235,7 +176,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Назад
               </a>
               <span>
-                После отправки grade = 0
+                Результат появится после отправки решения
               </span>
             </div>
           </div>

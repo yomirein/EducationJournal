@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from backend.app.api.endpoints import auth, users, courses, streams, panel, files, schedule
@@ -7,14 +6,12 @@ from backend.app.core.config import settings
 
 app = FastAPI(title="Learning Platform API", version="1.0.0")
 
-# CORS middleware for seamless frontend interaction
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.middleware("http")
+async def browser_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # API routers
 for router in (

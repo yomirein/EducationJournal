@@ -553,7 +553,6 @@ function initTasksPage() {
   const studioRoot = document.getElementById('studio-tablet-root');
   if (!taskPage && !studioRoot) return;
 
-  initAudioGuide();
   initAiCodeInspector();
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -1305,7 +1304,6 @@ function initTasksPage() {
         }
       }
 
-      initAudioGuide(task);
       initAiCodeInspector();
 
       // Render the active workbench in the right pane!
@@ -2466,76 +2464,6 @@ function renderSkillRadarSvg() {
   `;
 }
 
-/* --- 2. Mission Audio Voice Guide (Web Speech API) --- */
-let activeUtterance = null;
-function initAudioGuide(taskInfo = null) {
-  const bar = document.getElementById('mission-audio-bar');
-  const btn = document.getElementById('btn-toggle-audio');
-  const statusEl = document.getElementById('audio-guide-status');
-  const waveAnim = document.getElementById('audio-wave-anim');
-
-  if (!bar || !btn) return;
-
-  if (!('speechSynthesis' in window)) {
-    if (statusEl) statusEl.textContent = 'Голосовой движок не поддерживается данным браузером';
-    btn.disabled = true;
-    return;
-  }
-
-  const stopVoice = () => {
-    window.speechSynthesis.cancel();
-    btn.textContent = 'Слушать бриф';
-    btn.classList.remove('button-danger');
-    btn.classList.add('button-lime');
-    if (waveAnim) waveAnim.classList.remove('active');
-    if (statusEl) statusEl.textContent = 'Озвучка завершена или остановлена';
-    activeUtterance = null;
-  };
-
-  const startVoice = () => {
-    window.speechSynthesis.cancel();
-
-    const title = document.querySelector('.task-page h2')?.textContent?.trim() || 'Алгоритмическая миссия';
-    const desc = document.querySelector('.task-prompt')?.textContent?.trim() || 
-                 document.querySelector('.task-page p')?.textContent?.trim() || 
-                 'Выполните задание алгоритмически точно.';
-
-    const speechText = `Бриф миссии. ${title}. Цель: ${desc}. Составьте алгоритм или запустите симулятор для автоматической сдачи.`;
-
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.lang = 'ru-RU';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    const voices = window.speechSynthesis.getVoices();
-    const ruVoice = voices.find(v => v.lang && (v.lang === 'ru-RU' || v.lang.startsWith('ru')));
-    if (ruVoice) utterance.voice = ruVoice;
-
-    utterance.onstart = () => {
-      btn.textContent = 'Остановить';
-      btn.classList.remove('button-lime');
-      btn.classList.add('button-danger');
-      if (waveAnim) waveAnim.classList.add('active');
-      if (statusEl) statusEl.textContent = 'Голосовой ассистент зачитывает условия миссии...';
-    };
-
-    utterance.onend = stopVoice;
-    utterance.onerror = stopVoice;
-
-    activeUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  btn.onclick = (e) => {
-    e.preventDefault();
-    if (window.speechSynthesis.speaking) {
-      stopVoice();
-    } else {
-      startVoice();
-    }
-  };
-}
-
 /* --- 3. AI Code Inspector Panel --- */
 function initAiCodeInspector() {
   const inspector = document.getElementById('ai-code-inspector');
@@ -2652,20 +2580,17 @@ function initLiveTicker() {
       <span id="ticker-msg-text">[СИСТЕМА] Сеть кластеров активна • Студент Максим сдал задание "Ветвления Робота" (100/100) • Пинг: 14мс</span>
     </div>
     <div style="opacity:0.6; font-size:10px; font-family:monospace; display:flex; gap:12px;">
-      <span>NODE: MSK-PROD-01</span>
-      <span>ON-AIR</span>
+      <span>PIXELSTART</span>
+      <span>УЧЕБНЫЙ МАРШРУТ</span>
     </div>
   `;
 
-  const shell = document.querySelector('.app-shell') || document.body;
-  shell.prepend(ticker);
+  document.body.prepend(ticker);
 
   const messages = [
-    '[СИСТЕМА] Сеть кластеров активна • Студент Максим сдал задание "Ветвления Робота" (100/100) • Пинг: 14мс',
-    '[ТЕЛЕМЕТРИЯ] Новая звезда получена в симуляторе Kumir-Craft • Точность выполнения: 98% • Студентов онлайн: 48',
-    '[КУРАТОР] Поток #1 Minecraft: 94% retention rate • Успеваемость выше плановой на 14%',
-    '[ИИ-ИНСПЕКТОР] 142 алгоритма проверено в реальном времени • Синтаксических ошибок: 0 • O(N) оптимально',
-    '[ОБНОВЛЕНИЕ] Голосовой ассистент миссий активирован • Доступна офлайн-озвучка условий'
+    '3 курса · 9 модулей · 30 шагов',
+    'Scratch 3 · Minecraft Education · Python 3',
+    'Теория · контрольные вопросы · проекты · задачи с тестами'
   ];
 
   let idx = 0;
@@ -3236,5 +3161,3 @@ initStudentDashboard();
 initStudentSchedulePage();
 initStudentLeaderboardPage();
 updateThemeToggleButtons(getActiveTheme() === 'dark');
-
-

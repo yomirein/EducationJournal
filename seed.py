@@ -293,17 +293,17 @@ async def seed():
         # 5. Seed Stream Broadcasts from Curator
         b1 = Broadcast(
             curator_id=curator.id,
-            text="Опубликованы олимпиадные тесты по теме «Ветвления и делители» на Python. Проверьте свои программы в песочнице Студии.",
+            text="В курсе Python доступны задачи с открытыми примерами и скрытыми тестами. Проверяйте решение на примерах перед сдачей.",
             timestamp=datetime.now(timezone.utc) - timedelta(hours=2)
         )
         b2 = Broadcast(
             curator_id=curator.id,
-            text="Внимание: дедлайн по постройке стены роботом-агентом в Minecraft Education установлен на воскресенье, 20:00 МСК.",
+            text="Задания Minecraft Education выполняются в MakeCode. Для проверки отправьте ссылку на проект и скриншот мира.",
             timestamp=datetime.now(timezone.utc) - timedelta(hours=14)
         )
         b3 = Broadcast(
             curator_id=curator.id,
-            text="Завтра в 17:00 МСК состоится онлайн-вебинар по физике спрайтов в Scratch. Разберём коллизии и плавную гравитацию прыжков.",
+            text="В курсе Scratch откройте готовый пример, измените блоки и поделитесь ссылкой на собственный проект.",
             timestamp=datetime.now(timezone.utc) - timedelta(days=1, hours=3)
         )
         db.add_all([b1, b2, b3])
@@ -322,4 +322,6 @@ async def seed():
 
 
 if __name__ == "__main__":
+    if os.getenv("PIXELSTART_ALLOW_DEMO_SEED") != "1":
+        raise SystemExit("Демо-засев удаляет существующие учебные данные. Для пустой тестовой БД задайте PIXELSTART_ALLOW_DEMO_SEED=1.")
     asyncio.run(seed())

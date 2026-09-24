@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
   <style>
     /* Компактный режим виджета для iframe */
     body {
@@ -72,19 +72,39 @@
       background: #059669;
       box-shadow: 0 0 12px #34D399;
     }
+    .btn-submit-task[hidden] { display: none !important; }
+    @media (max-width: 1050px) {
+      .scratch-app { display: block; overflow-y: auto; }
+      .main-work-area { height: 440px; min-height: 440px; }
+      .stage-and-sprites-area { width: 100%; min-height: 530px; overflow: visible; }
+      .blocks-palette { width: 185px; flex: 0 0 185px; }
+      .category-sidebar { width: 54px; flex: 0 0 54px; }
+      .workspace-container { min-width: 170px; }
+      .task-banner { max-width: 46%; }
+    }
+    @media (max-width: 600px) {
+      .embed-header { height: auto; min-height: 44px; gap: 6px; flex-wrap: wrap; padding: 6px 10px; }
+      .task-banner { max-width: 100%; white-space: normal; font-size: 11px; }
+      .embed-controls { margin-left: auto; }
+      .scratch-app { height: calc(100vh - 72px) !important; }
+      .main-work-area { height: 560px; min-height: 560px; }
+      .category-sidebar { width: 100%; flex: 0 0 58px; }
+      .blocks-palette { width: 100%; flex: 0 0 154px; }
+      .workspace-container { min-width: 0; }
+    }
     /* Скрываем лишние кнопки меню в режиме iframe */
     .scratch-header, #btn-open-demos, #btn-save-project, #btn-load-project {
       display: none !important;
     }
   </style>
 </head>
-<body>
+<body class="scratch-embed">
 
   <!-- Верхняя строка виджета с заданием и кнопкой сдачи -->
   <div class="embed-header">
     <div class="task-banner">
       <span class="task-badge">Задание</span>
-      <span id="embed-task-text">Составьте программу: заставьте котика сделать 12 шагов и мяукнуть!</span>
+      <span id="embed-task-text">Откройте задание и запустите программу зелёным флагом.</span>
     </div>
     <div class="embed-controls">
       <button class="btn-flag" id="btn-green-flag" title="Запустить скрипты (Зелёный флаг)">
@@ -95,7 +115,7 @@
       </button>
       <button class="btn-submit-task" id="btn-submit-task">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Проверить и сдать</span>
+        <span>Подготовить сдачу</span>
       </button>
     </div>
   </div>
@@ -254,26 +274,26 @@
 
   <!-- Базовые скрипты -->
   <script src="js/audio.js"></script>
-  <script src="js/sprites.js"></script>
-  <script src="js/blocks.js"></script>
+  <script src="js/sprites.js?v=2"></script>
+  <script src="js/blocks.js?v=2"></script>
   <script src="js/workspace.js"></script>
   <script src="js/stage.js"></script>
-  <script src="js/engine.js"></script>
-  <script src="js/demos.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/engine.js?v=2"></script>
+  <script src="js/demos.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 
   <!-- iframe Bridge API для обмена данными с родительской страницей -->
   <script>
     (function initIframeBridge() {
       // Конфигурация текущей задачи
       let currentTaskConfig = {
-        taskText: "Составьте программу: заставьте котика сделать 12 шагов и мяукнуть!",
-        requiredBlocks: ["motion_movesteps", "sound_playmeow"],
-        goalCriteria: { minSteps: 10 }
+        taskText: "Откройте задание и запустите программу зелёным флагом.",
+        submitMode: "review"
       };
 
       // 1. Слушаем входные сообщения от родителя (top-uchebnik)
       window.addEventListener("message", (event) => {
+        if (event.origin !== window.location.origin || event.source !== window.parent) return;
         if (!event.data || typeof event.data !== "object") return;
         
         if (event.data.type === "SCRATCH_INIT" || event.data.action === "LOAD_TASK") {
@@ -284,6 +304,7 @@
           if (config.taskTitle || config.taskText) {
             document.getElementById("embed-task-text").textContent = config.taskTitle || config.taskText;
           }
+          document.getElementById("btn-submit-task").hidden = config.submitMode === "number";
 
           // Предзагрузка начальных блоков, если переданы
           if (config.initialBlocks && window.scratchWorkspace) {
@@ -299,7 +320,7 @@
         }
       });
 
-      // 2. Отправка результата родителю при нажатии на кнопку «Проверить и сдать»
+      // 2. Просим родительскую страницу открыть форму сдачи проекта.
       const submitBtn = document.getElementById("btn-submit-task");
       submitBtn?.addEventListener("click", () => {
         sendSubmission();
@@ -308,7 +329,6 @@
       function sendSubmission() {
         const codeTree = window.scratchWorkspace ? window.scratchWorkspace.serialize() : [];
         
-        // Валидация решения по критериям задачи
         const allBlockIds = [];
         function collectBlockIds(block) {
           if (!block) return;
@@ -318,20 +338,16 @@
         }
         codeTree.forEach(collectBlockIds);
 
-        // Проверяем наличие требуемых блоков
-        const reqs = currentTaskConfig.requiredBlocks || [];
-        const hasAllRequired = reqs.every(reqId => allBlockIds.includes(reqId));
-
         const cat = window.scratchStage?.sprites[0];
-        const hasMoved = cat && (cat.x !== -120 || cat.y !== -30);
-
-        const isSuccess = hasAllRequired || (allBlockIds.length >= 3 && hasMoved);
+        if (!allBlockIds.length) {
+          submitBtn.querySelector("span").textContent = "Сначала добавьте блоки";
+          setTimeout(() => { submitBtn.querySelector("span").textContent = "Подготовить сдачу"; }, 2500);
+          return;
+        }
 
         const resultPayload = {
           type: "SCRATCH_SUBMISSION",
           payload: {
-            status: isSuccess ? "CORRECT" : "WRONG",
-            score: isSuccess ? 100 : 40,
             blocksCount: allBlockIds.length,
             usedBlocks: allBlockIds,
             codeTree: codeTree,
@@ -345,26 +361,22 @@
           }
         };
 
-        // Визуальный фидбек на кнопке
-        submitBtn.classList.add(isSuccess ? "success" : "wrong");
-        submitBtn.innerHTML = isSuccess 
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Сдано успешно!</span>' 
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Есть ошибки!</span>';
+        submitBtn.classList.add("success");
+        submitBtn.querySelector("span").textContent = "Откройте форму слева";
         setTimeout(() => {
-          submitBtn.classList.remove("success", "wrong");
-          submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Проверить и сдать</span>';
+          submitBtn.classList.remove("success");
+          submitBtn.querySelector("span").textContent = "Подготовить сдачу";
         }, 2500);
 
         // Отправляем JSON родителю
         if (window.parent && window.parent !== window) {
-          window.parent.postMessage(resultPayload, "*");
+          window.parent.postMessage(resultPayload, window.location.origin);
         }
-        console.log("[Scratch-Embed] Отправлен результат родителю:", resultPayload);
       }
 
       // Сообщаем родителю, что виджет готов принимать конфигурацию
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: "SCRATCH_READY" }, "*");
+        window.parent.postMessage({ type: "SCRATCH_READY" }, window.location.origin);
       }
     })();
   </script>

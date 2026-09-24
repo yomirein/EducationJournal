@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 from backend.app.api.deps import get_current_user
 from backend.app.db import get_session
 from backend.app.models import (
@@ -109,6 +110,8 @@ def sanitize_task_meta(meta: dict | None, role: UserRole) -> dict:
     safe.pop("number_answer", None)
     safe.pop("hidden_tests", None)
     safe.pop("reference_solution", None)
+    safe.pop("criteria", None)
+    safe.pop("hint", None)
     return safe
 
 
@@ -178,6 +181,9 @@ async def submit(
         course_id, user, db
     ):
         raise HTTPException(403, "Course access requires payment or enrollment")
+    answer = data.get("input", "")
+    if not isinstance(answer, str) or len(answer) > 12_000:
+        raise HTTPException(422, "Answer must be text up to 12000 characters")
 
     item = await db.scalar(
         select(Submission).where(
@@ -188,11 +194,8 @@ async def submit(
         item = Submission(task_id=task_id, user_id=user.id)
         db.add(item)
 
-    eval_result = evaluate_submission(
-        task_type=task.type,
-        answer_json=task.answer_json,
-        user_input=data.get("input"),
-        file_id=data.get("file_id")
+    eval_result = await run_in_threadpool(
+        evaluate_submission, task.type, task.answer_json, data.get("input"), data.get("file_id")
     )
 
     item.input = data.get("input")
@@ -231,13 +234,15 @@ async def run_task_tests(
     )
     if not task:
         raise HTTPException(404, "Task not found")
-    
-    eval_result = evaluate_submission(
-        task_type=task.type,
-        answer_json=task.answer_json,
-        user_input=data.get("input"),
-        file_id=data.get("file_id")
-    )
+    if task.type != "code_test":
+        raise HTTPException(400, "Only Python tasks support sample runs")
+    if user.role == UserRole.student and not await has_course_access(course_id, user, db):
+        raise HTTPException(403, "Course access requires payment or enrollment")
+    code = data.get("input")
+    if not isinstance(code, str) or len(code) > 12_000:
+        raise HTTPException(422, "Code must be text up to 12000 characters")
+    sample_only = {**(task.answer_json or {}), "hidden_tests": []}
+    eval_result = await run_in_threadpool(evaluate_submission, task.type, sample_only, code, None)
     return {
         "task_id": task.id,
         "grade": eval_result["grade"],
@@ -254,14 +259,25 @@ async def grade(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
+    task = await db.scalar(
+        select(Task)
+        .join(Lesson, Lesson.id == Task.lesson_id)
+        .join(course_modules, course_modules.c.module_id == Lesson.module_id)
+        .where(Task.id == task_id, course_modules.c.course_id == course_id)
+    )
+    if not task:
+        raise HTTPException(404, "Task not found in course")
+    if user.role == UserRole.student and not await has_course_access(course_id, user, db):
+        raise HTTPException(403, "Course access requires payment or enrollment")
     item = await db.scalar(
         select(Submission).where(
             Submission.task_id == task_id, Submission.user_id == user.id
-        )
+        ).order_by(Submission.grade.desc(), Submission.id.desc())
     )
     if not item:
         raise HTTPException(404, "Submission not found")
-    status = "completed" if item.grade >= 50 else ("pending_review" if item.grade == -1 else "failed")
+    passed = item.grade >= 50 and (task.type != "code_test" or item.grade == 100)
+    status = "completed" if passed else ("pending_review" if item.grade == -1 else "failed")
     return {
         "grade": item.grade,
         "feedback_message": item.feedback_message,

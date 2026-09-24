@@ -34,7 +34,7 @@ async def delete_me(
 
 @router.get("/users/leaderboard")
 async def leaderboard(db: AsyncSession = Depends(get_session)):
-    from backend.app.models import User, UserRole, Submission, StreamParticipant, Stream
+    from backend.app.models import User, UserRole, Submission, StreamParticipant, Stream, Task
     from sqlalchemy import func
 
     students = (
@@ -45,7 +45,9 @@ async def leaderboard(db: AsyncSession = Depends(get_session)):
     for s in students:
         sub_stmt = (
             select(Submission.task_id, func.max(Submission.grade))
-            .where(Submission.user_id == s.id, Submission.grade > 0)
+            .join(Task, Task.id == Submission.task_id)
+            .where(Submission.user_id == s.id, Submission.grade >= 50,
+                   (Task.type != "code_test") | (Submission.grade == 100))
             .group_by(Submission.task_id)
         )
         sub_rows = (await db.execute(sub_stmt)).all()
@@ -88,7 +90,7 @@ async def leaderboard(db: AsyncSession = Depends(get_session)):
                 "xp": xp,
                 "total_xp": xp,
                 "tasks_completed": completed_count,
-                "streak_days": min(14, max(1, completed_count * 2)),
+                "streak_days": None,
                 "league": league,
                 "league_title": league_title,
                 "league_name": league_title,
@@ -279,10 +281,18 @@ async def rating(
 async def history(
     user=Depends(get_current_user), db: AsyncSession = Depends(get_session)
 ):
-    from backend.app.models import Submission, Task
+    from backend.app.models import Submission, Task, Lesson, course_modules
 
+    course_id_query = (
+        select(course_modules.c.course_id)
+        .join(Lesson, Lesson.module_id == course_modules.c.module_id)
+        .where(Lesson.id == Task.lesson_id)
+        .limit(1)
+        .correlate(Task)
+        .scalar_subquery()
+    )
     stmt = (
-        select(Submission, Task)
+        select(Submission, Task, course_id_query)
         .join(Task, Task.id == Submission.task_id)
         .where(Submission.user_id == user.id)
         .order_by(Submission.id.desc())
@@ -292,6 +302,7 @@ async def history(
         {
             "id": sub.id,
             "task_id": sub.task_id,
+            "course_id": course_id,
             "task_type": str(tsk.type.value if hasattr(tsk.type, "value") else tsk.type),
             "task_description": tsk.description,
             "input": sub.input,
@@ -299,5 +310,5 @@ async def history(
             "grade": sub.grade,
             "feedback_message": sub.feedback_message,
         }
-        for sub, tsk in rows.all()
+        for sub, tsk, course_id in rows.all()
     ]

@@ -13,7 +13,6 @@ async def schedule(
     user=Depends(get_current_user), db: AsyncSession = Depends(get_session)
 ):
     from backend.app.models import Course, User, Module, Lesson, Task, Submission, course_modules
-    from datetime import datetime, timedelta, timezone
 
     rows = await db.execute(
         select(Stream, StreamParticipant, Course, User)
@@ -25,7 +24,6 @@ async def schedule(
         )
     )
 
-    base_date = datetime.now(timezone.utc)
     stream_results = []
 
     for s, p, c, u in rows.all():
@@ -35,7 +33,7 @@ async def schedule(
             .join(Module, Module.id == Lesson.module_id)
             .join(course_modules, course_modules.c.module_id == Module.id)
             .where(course_modules.c.course_id == c.id)
-            .order_by(Lesson.id)
+            .order_by(course_modules.c.position, Lesson.id)
         )).all()
 
         lessons_list = []
@@ -49,19 +47,17 @@ async def schedule(
             if task_ids:
                 completed_tasks_count = (await db.scalar(
                     select(func.count(func.distinct(Submission.task_id)))
+                    .join(Task, Task.id == Submission.task_id)
                     .where(
                         Submission.user_id == user.id,
                         Submission.task_id.in_(task_ids),
                         Submission.grade >= 50,
+                        (Task.type != "code_test") | (Submission.grade == 100),
                     )
                 )) or 0
 
-            # Schedule dates: lesson idx 0 (yesterday/today), idx 1 (in 2 days), idx 2 (in 5 days)
-            lesson_date = (s.start_date or base_date) + timedelta(days=idx * 3)
-            deadline_date = lesson_date + timedelta(days=5)
-
             is_completed = len(tasks) > 0 and completed_tasks_count >= len(tasks)
-            status = "COMPLETED" if is_completed else ("ACTIVE" if idx == 0 or completed_tasks_count > 0 else "UPCOMING")
+            status = "COMPLETED" if is_completed else "UPCOMING"
 
             first_task = tasks[0] if tasks else None
             action_url = f"course/tasks.html?course={c.id}&task={first_task.id}" if first_task else f"course/lessons.html?course={c.id}"
@@ -72,16 +68,20 @@ async def schedule(
                 "lesson_title": f"Урок {idx + 1}: {tasks[0].title if tasks else module.name}",
                 "module_id": module.id,
                 "module_name": module.name,
-                "duration_minutes": lesson.duration or 40,
-                "date": lesson_date.isoformat(),
-                "deadline": deadline_date.isoformat(),
-                "time_slot": "16:00 – 17:30",
+                "duration_minutes": lesson.duration or None,
+                "date": None,
+                "deadline": None,
+                "time_slot": None,
                 "tasks_count": len(tasks),
                 "tasks_completed": completed_tasks_count,
                 "status": status,
                 "action_url": action_url,
                 "first_task_id": first_task.id if first_task else None,
             })
+
+        next_lesson = next((item for item in lessons_list if item["status"] != "COMPLETED"), None)
+        if next_lesson:
+            next_lesson["status"] = "ACTIVE"
 
         stream_results.append({
             "stream_id": s.id,
@@ -116,5 +116,5 @@ async def schedule_calendar(
                 "course_title": s["course_title"],
                 "curator_name": s["curator_name"],
             })
-    flat_lessons.sort(key=lambda x: x["date"])
+    flat_lessons.sort(key=lambda x: (x["course_id"], x["lesson_number"]))
     return flat_lessons
