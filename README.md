@@ -23,9 +23,18 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE=30
 REFRESH_TOKEN_EXPIRE=10080
 UPLOAD_DIR=uploads
+
+# Первый администратор — создаётся автоматически при старте, если нет ни одного admin
+FIRST_ADMIN_USERNAME=admin
+FIRST_ADMIN_EMAIL=admin@example.com
+FIRST_ADMIN_PASSWORD=supersecret123
+FIRST_ADMIN_FIRST_NAME=Admin
+FIRST_ADMIN_LAST_NAME=Admin
 ```
 
-> ⚠️ **Важно**: В продакшене обязательно замените `SECRET_KEY` на криптографически стойкий случайный ключ!
+> ⚠️ **Важно**: В продакшене обязательно замените `SECRET_KEY` и `FIRST_ADMIN_PASSWORD` на надёжные значения!
+
+При первом запуске, если в базе нет ни одного пользователя с ролью `admin`, приложение автоматически создаст администратора по данным из `.env`. Если переменные `FIRST_ADMIN_*` не заданы — этот шаг пропускается.
 
 3. **Запустите все сервисы**:
 ```bash
@@ -170,6 +179,17 @@ EducationJournal/
 ├── requirements.txt     # Python зависимости
 └── .env                 # Переменные окружения
 ```
+
+## Тестирование API
+
+В корне проекта есть `test.py` — скрипт для ручной проверки основных эндпоинтов:
+
+```bash
+pip install requests
+python test.py
+```
+
+Скрипт последовательно проверяет: health, регистрацию, логин всех ролей, `/users/me`, панель администратора (включая повышение роли), курсы, стримы, статистику куратора и обновление профиля.
 
 ## Поддержка
 
