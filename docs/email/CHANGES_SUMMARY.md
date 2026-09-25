@@ -243,7 +243,7 @@ INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, add is_verified 
 
 ### Автоматический тест
 ```bash
-python test_mail.py
+python -m backend.tests.manual.mail_check
 ```
 
 ### Ручная проверка через cURL

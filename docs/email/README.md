@@ -39,7 +39,7 @@ MAIL_STARTTLS=True
 
 ```bash
 ./.venv/bin/pip install requests
-./.venv/bin/python test_mail.py
+python -m backend.tests.manual.mail_check
 ```
 
 Подробнее: `EMAIL_SETUP.md`

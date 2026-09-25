@@ -1,11 +1,12 @@
 """
 Простой скрипт для тестирования email-подтверждения
-Использование: python test_mail_simple.py
+Использование: python -m backend.tests.manual.mail_check_simple
 """
+import os
 import requests
 import sys
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("API_BASE", "http://127.0.0.1:8000")
 
 def main():
     print("=" * 60)

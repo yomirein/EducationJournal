@@ -79,7 +79,7 @@ INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, add is_verified 
 
 Если миграция не применилась, выполните вручную:
 ```bash
-docker compose exec api alembic upgrade head
+docker compose exec api alembic -c backend/alembic.ini upgrade head
 ```
 
 ## Шаг 5: Тестирование

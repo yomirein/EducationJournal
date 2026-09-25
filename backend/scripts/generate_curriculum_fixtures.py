@@ -254,9 +254,13 @@ def parse_full_package(file_path):
 
     return courses
 
-os.makedirs("backend/app/fixtures", exist_ok=True)
-curriculum = parse_full_package("case_document_full.md")
-with open("backend/app/fixtures/case_curriculum.json", "w", encoding="utf-8") as out:
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+SOURCE = os.path.join(ROOT, "docs", "case_document_full.md")
+FIXTURES_DIR = os.path.join(ROOT, "backend", "app", "fixtures")
+
+os.makedirs(FIXTURES_DIR, exist_ok=True)
+curriculum = parse_full_package(SOURCE)
+with open(os.path.join(FIXTURES_DIR, "case_curriculum.json"), "w", encoding="utf-8") as out:
     json.dump(curriculum, out, ensure_ascii=False, indent=2)
 
 print("Saved to backend/app/fixtures/case_curriculum.json successfully!")

@@ -1,10 +1,14 @@
+import os
+import re
+import sys
+
 import requests
 
-BASE = "http://localhost:8000"
+BASE = os.getenv("API_BASE", "http://127.0.0.1:8000")
 
-# Credentials from .env
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "supersecret123"
+# Defaults match the demo admin created by backend/scripts/seed.py.
+ADMIN_USERNAME = os.getenv("FIRST_ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("FIRST_ADMIN_PASSWORD", "admin12345")
 
 USERS = [
     {"first_name": "Curator", "last_name": "Test", "username": "curator_test", "email": "curator@test.com", "password": "secret123"},
@@ -25,9 +29,12 @@ def auth(token):
 
 
 def ok(label, r):
-    status = "OK" if r.ok else "FAIL"
+    # Labels like "... (expect 409)" describe a negative check that passes on that status.
+    expected = re.search(r"expect (\d{3})", label)
+    passed = r.status_code == int(expected.group(1)) if expected else r.ok
+    status = "OK" if passed else "FAIL"
     print(f"[{status}] {label} — {r.status_code}")
-    if not r.ok:
+    if not passed:
         print("      ", r.text[:300])
     return r
 
@@ -134,8 +141,8 @@ def test_curator_stats():
         print(f"[SKIP] curator login — {e}")
         return
 
-    ok("stats course 1 (curator)",  requests.get(f"{BASE}/panel/stats/courses/1",  headers=auth(curator_token)))
-    ok("stats stream 1 (curator)",  requests.get(f"{BASE}/panel/stats/streams/1",  headers=auth(curator_token)))
+    ok("stats course 1 (curator_test, not its curator: expect 403)",  requests.get(f"{BASE}/panel/stats/courses/1",  headers=auth(curator_token)))
+    ok("stats stream 1 (curator_test, not its curator: expect 403)",  requests.get(f"{BASE}/panel/stats/streams/1",  headers=auth(curator_token)))
 
 
 def test_update_me():
@@ -149,6 +156,8 @@ def test_update_me():
 
 
 if __name__ == "__main__":
+    if os.getenv("PIXELSTART_ALLOW_API_SMOKE") != "1":
+        sys.exit("Скрипт создаёт пользователей и меняет роли. Запускайте только на демо-базе с PIXELSTART_ALLOW_API_SMOKE=1.")
     test_health()
     test_register()
     test_login()

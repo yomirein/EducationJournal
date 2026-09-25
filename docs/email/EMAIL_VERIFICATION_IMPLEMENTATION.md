@@ -121,12 +121,12 @@ MAIL_STARTTLS=True
 После запуска контейнеров миграция применится автоматически. Для ручного применения:
 
 ```bash
-docker compose exec api alembic upgrade head
+docker compose exec api alembic -c backend/alembic.ini upgrade head
 ```
 
 Или при локальной разработке:
 ```bash
-alembic upgrade head
+alembic -c backend/alembic.ini upgrade head
 ```
 
 ## Тестирование

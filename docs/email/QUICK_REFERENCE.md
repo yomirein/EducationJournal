@@ -16,16 +16,16 @@
 - `backend/app/core/config.py` — настройки SMTP
 - `backend/app/services.py` — методы верификации
 - `backend/app/api/endpoints/auth.py` — новые эндпоинты
-- `requirements.txt` — `fastapi-mail>=1.4,<2`
+- `backend/requirements.txt` — `fastapi-mail>=1.4,<2`
 - `.env` — переменные SMTP
 - `README.md` — документация
 
 ### Созданы (5):
 - `backend/app/core/email.py` — утилиты отправки
-- `migrations/versions/0002_add_is_verified.py` — миграция БД
-- `test_mail.py` — полный тест
-- `test_mail_simple.py` — быстрый тест
-- `instructions/EMAIL_SETUP.md` — инструкция
+- `backend/migrations/versions/0003_add_is_verified.py` — миграция БД
+- `backend/tests/manual/mail_check.py` — полный тест
+- `backend/tests/manual/mail_check_simple.py` — быстрый тест
+- `docs/email/EMAIL_SETUP.md` — инструкция
 
 ## Новые API эндпоинты
 
@@ -70,7 +70,7 @@ MAIL_PASSWORD=<mailtrap-password>
 
 ```bash
 ./.venv/bin/pip install requests
-./.venv/bin/python test_mail.py
+python -m backend.tests.manual.mail_check
 ```
 
 ## Примеры использования
@@ -186,4 +186,4 @@ FRONTEND_URL=http://localhost:3000
 
 ## Подробнее
 
-См. `instructions/EMAIL_SETUP.md` для полной документации.
+См. `docs/email/EMAIL_SETUP.md` для полной документации.

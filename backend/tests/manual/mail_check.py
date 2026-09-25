@@ -2,12 +2,13 @@
 Тест email-подтверждения регистрации
 Демонстрирует полный цикл: регистрация → получение токена → подтверждение
 """
+import os
 import requests
 import time
 from datetime import datetime
 
 # Конфигурация
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("API_BASE", "http://127.0.0.1:8000")
 TEST_USER = {
     "first_name": "Тестовый",
     "last_name": "Пользователь",

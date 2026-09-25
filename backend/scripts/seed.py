@@ -28,7 +28,7 @@ from backend.app.core.security import hash_password
 
 
 async def seed():
-    fixtures_path = os.path.join(os.path.dirname(__file__), "backend/app/fixtures/case_curriculum.json")
+    fixtures_path = os.path.join(os.path.dirname(__file__), "..", "app", "fixtures", "case_curriculum.json")
     if not os.path.exists(fixtures_path):
         print("Ошибка: файл case_curriculum.json не найден. Сначала сгенерируйте фикстуры.")
         return
