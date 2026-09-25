@@ -6,10 +6,10 @@
     <title>
       Ученики потока — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260926">
+    <script src="../assets/api.js?v=20260926" defer>
     </script>
-    <script src="../assets/app.js?v=20260925" defer>
+    <script src="../assets/app.js?v=20260926" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -97,9 +97,9 @@
             <div class="field-grid" style="align-items:center;">
               <div class="field">
                 <label for="stream_id">
-                  ID потока
+                  Поток
                 </label>
-                <input id="stream_id" name="stream_id" value="1">
+                <select id="stream_id" name="stream_id" data-stream-select data-stream-reload="participants"></select>
               </div>
               <button class="button button-soft" type="button" data-load-target="participants">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Обновить список
@@ -108,44 +108,6 @@
             <div class="participants-grid" data-participants-grid></div>
             <pre class="data-output" data-result="participants" style="display:none;">
             </pre>
-          </section>
-          <section class="card" style="margin-top:18px">
-            <h2>
-              Решение по заявке
-            </h2>
-            <form class="auth-form" data-form="participant-decision">
-              <div class="field-grid">
-                <div class="field">
-                  <label for="decision-stream">
-                    ID потока
-                  </label>
-                  <input id="decision-stream" name="stream_id" type="number" value="1" required>
-                </div>
-                <div class="field">
-                  <label for="decision-user">
-                    ID ученика
-                  </label>
-                  <input id="decision-user" name="user_id" type="number" required>
-                </div>
-                <div class="field">
-                  <label for="decision">
-                    Решение
-                  </label>
-                  <select id="decision" name="decision">
-                    <option value="accept">
-                      Принять
-                    </option>
-                    <option value="reject">
-                      Отклонить
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <button class="button button-dark" type="submit">
-                Применить решение
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-              </button>
-            </form>
           </section>
         </div>
       </main>

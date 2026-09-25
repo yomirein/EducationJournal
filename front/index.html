@@ -6,9 +6,9 @@
     <title>
       PixelStart Platform
     </title>
-    <link rel="stylesheet" href="assets/styles.css?v=20260925">
-    <script src="assets/api.js?v=20260925" defer></script>
-    <script src="assets/app.js?v=20260925" defer></script>
+    <link rel="stylesheet" href="assets/styles.css?v=20260926">
+    <script src="assets/api.js?v=20260926" defer></script>
+    <script src="assets/app.js?v=20260926" defer></script>
   </head>
   <body class="public-page">
     <main class="entry-shell">
@@ -74,44 +74,25 @@
           </div>
 
           <!-- 1-Click Fast Entry Presets for Jury / Users -->
-          <div id="landing-demo-entry" hidden style="margin-top:20px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; text-align:left;">
+          <div id="landing-demo-entry" data-demo-only hidden style="margin-top:20px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; text-align:left;">
             <div style="font-size:11px; text-transform:uppercase; font-weight:800; color:var(--accent, #b8f34a); letter-spacing:0.06em; margin-bottom:10px;">
               Быстрый вход для жюри и проверки (1 клик):
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" onclick="landingQuickLogin('student', 'student12345', 'student/index.html')">
+              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="student">
                 <span>Войти как Ученик (Иван)</span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">student / student12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" onclick="landingQuickLogin('curator', 'curator12345', 'curator/index.html')">
+              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="curator">
                 <span>Войти как Куратор (Анна)</span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">curator / curator12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" onclick="landingQuickLogin('admin', 'admin12345', 'admin/index.html')">
+              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="admin">
                 <span>Войти как Администратор</span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">admin / admin12345</span>
               </button>
             </div>
           </div>
-          <script>
-            if (['localhost', '127.0.0.1', '::1'].includes(location.hostname)) {
-              document.getElementById('landing-demo-entry').hidden = false;
-            }
-            async function landingQuickLogin(login, password, target) {
-              if (!['localhost', '127.0.0.1', '::1'].includes(location.hostname)) return;
-              try {
-                if (window.pixelApi) {
-                  const res = await window.pixelApi.post('/auth/login', { login, password });
-                  window.pixelApi.auth.save(res);
-                  const user = await window.pixelApi.get('/users/me').catch(() => null);
-                  if (user) localStorage.setItem('pixelstart_user', JSON.stringify(user));
-                }
-                window.location.href = target;
-              } catch (e) {
-                alert('Ошибка входа: ' + e.message);
-              }
-            }
-          </script>
           <div class="terminal-status">
             <span>
             </span>
