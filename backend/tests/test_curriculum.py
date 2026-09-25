@@ -9,7 +9,7 @@ from backend.app.evaluator import evaluate_submission, validate_student_code
 from backend.app.models import UserRole
 
 
-FIXTURE = Path(__file__).resolve().parents[1] / "backend/app/fixtures/case_curriculum.json"
+FIXTURE = Path(__file__).resolve().parents[1] / "app/fixtures/case_curriculum.json"
 
 
 class CurriculumChecks(unittest.TestCase):

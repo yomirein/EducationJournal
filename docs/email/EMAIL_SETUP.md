@@ -221,10 +221,10 @@ http://127.0.0.1:8000/auth/verify.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
 
 ```bash
 ./.venv/bin/pip install requests
-./.venv/bin/python test_mail.py
+python -m backend.tests.manual.mail_check
 ```
 
-Скрипт `test_mail.py`:
+Скрипт `backend/tests/manual/mail_check.py`:
 - Регистрирует тестового пользователя
 - Проверяет отправку письма
 - Демонстрирует вход до подтверждения email
@@ -232,7 +232,7 @@ http://127.0.0.1:8000/auth/verify.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
 - Тестирует повторную отправку письма
 - Позволяет интерактивно ввести токен для подтверждения
 
-Упрощённая версия: `test_mail_simple.py`.
+Упрощённая версия: `backend/tests/manual/mail_check_simple.py`.
 
 ### Ручное тестирование через cURL
 

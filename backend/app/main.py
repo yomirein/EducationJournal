@@ -67,6 +67,6 @@ async def health():
 
 
 # Frontend static files mount (mounted last as catch-all for web UI)
-front_path = Path(__file__).resolve().parent / "front"
+front_path = Path(__file__).resolve().parents[2] / "front"
 if front_path.exists():
     app.mount("/", StaticFiles(directory=str(front_path), html=True), name="front")
