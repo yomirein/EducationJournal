@@ -1,0 +1,227 @@
+.topbar-broadcast-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.topbar-broadcast-btn:hover {
+  background: var(--line);
+  border-color: var(--lime-dark);
+}
+
+.broadcast-badge-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--brand-amber);
+  color: var(--brand-night);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--panel);
+  animation: pulseBadge 2s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.user-streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--brand-amber-50);
+  border: 1px solid #fed7aa;
+  color: var(--brand-amber-text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+html[data-theme="dark"] .user-streak-badge,
+html.dark .user-streak-badge {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: rgba(255, 152, 0, 0.4);
+  color: #ffb74d;
+}
+
+.broadcast-stream-tag {
+  background: rgba(52, 87, 240, 0.12);
+  color: var(--lime-dark);
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .broadcast-stream-tag,
+html.dark .broadcast-stream-tag {
+  color: var(--brand-blue);
+}
+
+.broadcast-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.broadcast-feed-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--brand-blue);
+  border-radius: var(--r-field);
+  padding: 18px 20px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.broadcast-feed-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-hover);
+}
+
+.broadcast-feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.broadcast-stream-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-blue);
+  background: var(--brand-blue-50);
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+}
+
+.broadcast-date-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.broadcast-feed-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.notif-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 60;
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 18px 44px rgb(11 18 32 / 22%);
+}
+
+.notif-dropdown-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notif-dropdown-list {
+  display: grid;
+  gap: 8px;
+}
+
+.notif-link {
+  border: 0;
+  background: none;
+  color: var(--brand-blue);
+  font: 700 12px var(--display);
+  cursor: pointer;
+}
+
+.notif-all {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.notif-empty {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.notif-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand-blue);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.notif-item.is-read {
+  border-left-color: var(--line);
+  opacity: .78;
+}
+
+.notif-item-head,
+.notif-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notif-title {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.notif-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.notif-page-list {
+  display: grid;
+  gap: 12px;
+}

@@ -1,0 +1,171 @@
+.cohort-green {
+  background: var(--status-done-bg);
+  border-color: #bce4d0;
+  color: var(--status-done);
+}
+
+.cohort-green .cohort-count {
+  color: var(--status-done);
+}
+
+.cohort-yellow {
+  background: var(--status-returned-bg);
+  border-color: #fed7aa;
+  color: var(--status-returned);
+}
+
+.cohort-yellow .cohort-count {
+  color: var(--status-returned);
+}
+
+.cohort-red {
+  background: var(--status-failed-bg);
+  border-color: #fca5a5;
+  color: var(--status-failed);
+}
+
+.cohort-red .cohort-count {
+  color: var(--status-failed);
+}
+
+html[data-theme="dark"] .retention-radar {
+  background: #131c30;
+  border-color: #22304a;
+  color: #eef2ff;
+}
+
+html[data-theme="dark"] .cohort-green,
+html.dark .cohort-green,
+body.dark-theme .cohort-green {
+  background: #102d20;
+  border-color: #1d4e38;
+  color: #34d399;
+}
+
+html[data-theme="dark"] .cohort-green .cohort-count,
+html.dark .cohort-green .cohort-count,
+body.dark-theme .cohort-green .cohort-count {
+  color: #34d399;
+}
+
+html[data-theme="dark"] .cohort-yellow,
+html.dark .cohort-yellow,
+body.dark-theme .cohort-yellow {
+  background: #3b2314;
+  border-color: #5e381f;
+  color: #fb923c;
+}
+
+html[data-theme="dark"] .cohort-yellow .cohort-count,
+html.dark .cohort-yellow .cohort-count,
+body.dark-theme .cohort-yellow .cohort-count {
+  color: #fb923c;
+}
+
+html[data-theme="dark"] .cohort-red,
+html.dark .cohort-red,
+body.dark-theme .cohort-red {
+  background: #3b1818;
+  border-color: #5e2222;
+  color: #f87171;
+}
+
+html[data-theme="dark"] .cohort-red .cohort-count,
+html.dark .cohort-red .cohort-count,
+body.dark-theme .cohort-red .cohort-count {
+  color: #f87171;
+}
+
+.retention-radar {
+  margin-top: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.retention-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.cohort-card {
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cohort-green {
+  background: var(--status-done-bg);
+  border: 1px solid #bce4d0;
+}
+
+.cohort-yellow {
+  background: var(--status-returned-bg);
+  border: 1px solid #fed7aa;
+}
+
+.cohort-red {
+  background: var(--status-failed-bg);
+  border: 1px solid #fecaca;
+}
+
+.cohort-count {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Curator route cards read as buttons. */
+
+.cohort-card {
+  position: relative;
+  border-left: 4px solid var(--brand-blue);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.cohort-card::after {
+  content: "Открыть →";
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--brand-blue);
+  color: #ffffff;
+  font: 700 12px var(--display);
+}
+
+.cohort-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgb(52 87 240 / 16%);
+}
+
+/* Curator route cards: text colours follow the theme instead of inline values. */
+
+.cohort-card .cohort-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cohort-green .eyebrow {
+  color: var(--status-done);
+}
+
+.cohort-yellow .eyebrow {
+  color: var(--status-returned);
+}
+
+.cohort-red .eyebrow {
+  color: var(--status-failed);
+}
+
+html[data-theme="dark"] .cohort-card .cohort-count,
+body.dark-theme .cohort-card .cohort-count {
+  color: var(--ink);
+}

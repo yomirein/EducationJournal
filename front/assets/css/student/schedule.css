@@ -1,0 +1,98 @@
+.schedule-feed-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.schedule-card-row {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.schedule-card-row:hover {
+  transform: translateY(-2px);
+  border-color: var(--lime);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Preserve the shared card radius when page styles load after ui.css. */
+.card.schedule-card-row {
+  border-radius: 12px;
+}
+
+.schedule-date-badge {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.schedule-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.schedule-stream-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.schedule-lesson-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+@media (max-width: 620px) {
+  .schedule-card-row {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .schedule-info-col {
+    min-width: 0;
+  }
+
+  .schedule-lesson-title {
+    overflow-wrap: anywhere;
+  }
+
+  .schedule-card-meta {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .schedule-action-col {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+}

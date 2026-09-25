@@ -1,0 +1,202 @@
+.submissions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.submissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.submission-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.submission-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--lime-dark);
+  box-shadow: 0 10px 24px rgba(21, 33, 28, 0.08);
+}
+
+.sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.student-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sub-code-preview {
+  background: var(--brand-mist);
+  border: 1px solid var(--brand-line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--brand-ink);
+  margin: 10px 0;
+  max-height: 90px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sub-code-preview::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, var(--brand-mist));
+}
+
+.review-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+  background: rgba(10, 16, 13, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.review-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.review-modal-box {
+  background: var(--panel);
+  border-radius: 16px;
+  max-width: 640px;
+  width: calc(100% - 32px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+  transform: scale(0.92);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.review-modal.visible .review-modal-box {
+  transform: scale(1);
+}
+
+.code-viewer-box {
+  background: #131c30;
+  color: var(--brand-blue);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  max-height: 250px;
+  white-space: pre-wrap;
+  margin: 14px 0;
+  border: 1px solid #22304a;
+}
+
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.chip {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  color: #ffffff;
+}
+
+.student-badge-wrap {
+  min-width: 0;
+}
+
+/* Visible, focusable text boxes on the review page and in forms. */
+
+.review-modal textarea,
+.review-modal input,
+[data-form="reject-file"] input,
+[data-form="reject-file"] select {
+  border: 1.5px solid var(--brand-blue-200);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.review-modal textarea:focus,
+[data-form="reject-file"] input:focus,
+[data-form="reject-file"] select:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgb(52 87 240 / 18%);
+}
+
+/* Review queue card header: name and stream on the left, compact grade on the right. */
+
+.submission-item .sub-header {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.submission-item .student-badge-wrap {
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+}
+
+.sub-student {
+  min-width: 0;
+}
+
+.sub-student strong {
+  display: block;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.sub-student span {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

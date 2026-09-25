@@ -1,0 +1,64 @@
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--brand-blue-50);
+  color: var(--brand-blue-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.participant-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.participant-item:hover {
+  border-color: var(--lime-dark);
+  transform: translateY(-2px);
+}
+
+.participant-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.participant-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.participant-actions .button {
+  flex: 1;
+  min-height: 36px;
+  font-size: 13px;
+}
+
+/* Avatars keep their size in curator lists. */
+
+.avatar-circle {
+  flex: 0 0 36px;
+  min-width: 36px;
+}
+
+.participant-info {
+  min-width: 0;
+}

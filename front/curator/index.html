@@ -4,10 +4,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Панель куратора · PixelStart</title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20261029">
-    <script src="../assets/theme-init.js?v=20261026"></script>
-    <script src="../assets/api.js?v=20261026" defer></script>
-    <script src="../assets/app.js?v=20261030" defer></script>
+    <link rel="stylesheet" href="../assets/css/core/base.css?v=2026092603">
+    <link rel="stylesheet" href="../assets/css/shared/ui.css?v=2026092603">
+    <link rel="stylesheet" href="../assets/css/shared/layout.css?v=2026092603">
+    <link rel="stylesheet" href="../assets/css/shared/participants.css?v=2026092603">
+    <link rel="stylesheet" href="../assets/css/shared/notifications.css?v=2026092603">
+    <link rel="stylesheet" href="../assets/css/curator/dashboard.css?v=2026092603">
+    <script src="../assets/theme-init.js?v=2026092603"></script>
+    <script src="../assets/api.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/ui.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/util.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/session.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/course-helpers.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/page-data.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/access.js?v=2026092603" defer></script>
+    <script src="../assets/js/core/user.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/quick-login.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/theme.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/demo-switcher.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/ticker.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/notifications.js?v=2026092603" defer></script>
+    <script src="../assets/js/curator/warnings.js?v=2026092603" defer></script>
+    <script src="../assets/js/curator/alerts.js?v=2026092603" defer></script>
+    <script src="../assets/js/shared/theme-sync.js?v=2026092603" defer></script>
   </head>
   <body class="curator-theme">
     <div class="app-shell">
@@ -48,7 +67,12 @@
               Объявления
             </span>
           </a>
-                  <a href="profile.html">
+        </nav>
+        <p class="side-label" style="margin-top:30px">
+          Аккаунт
+        </p>
+        <nav class="side-nav">
+          <a href="profile.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             <span>
               Профиль
@@ -67,6 +91,7 @@
           <span class="role" data-user-role-badge>Куратор</span>
         </div>
       </aside>
+
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
@@ -123,6 +148,7 @@
                 Создано на платформе
               </span>
             </div>
+
             <div class="card stat-card soft-blue">
               <span class="eyebrow">
                 Ученики
@@ -132,6 +158,7 @@
                 В активном потоке
               </span>
             </div>
+
             <div class="card stat-card soft-yellow">
               <span class="eyebrow">
                 Очередь работ
@@ -170,6 +197,7 @@
               </span>
             </a>
           </div>
+
           <section class="retention-radar">
             <div>
               <p class="eyebrow" style="color:var(--lime-dark); margin-bottom:4px;">Рабочий маршрут куратора</p>

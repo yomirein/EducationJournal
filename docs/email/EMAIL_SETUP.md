@@ -397,7 +397,7 @@ curl -X POST "http://localhost:8000/auth/resend-verification?email=user@example.
 
 ## Интеграция с frontend
 
-Реализовано в `front/auth/verify.html` (логика — `front/assets/app.js`, блок `[data-verify-status]`):
+Реализовано в `front/auth/verify.html` (логика — `front/assets/js/forms/auth.js`, блок `[data-verify-status]`):
 1. После регистрации пользователь видит сообщение о письме с подтверждением
 2. Страница `/auth/verify.html?token=...` отправляет `POST /auth/verify-email` и показывает результат
 3. Форма на той же странице повторно отправляет письмо через `/auth/resend-verification`

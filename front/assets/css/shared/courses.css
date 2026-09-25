@@ -1,0 +1,146 @@
+.course-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  border-radius: var(--r-card);
+}
+
+.course-art {
+  height: 150px;
+  position: relative;
+  background: var(--brand-blue-50);
+}
+
+.course-art.green,
+.course-art.blue,
+.course-art.coral {
+  background: var(--brand-blue-50);
+}
+
+.art-label {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: var(--brand-blue-hover);
+  font: 700 12px var(--display);
+}
+
+.art-code {
+  position: absolute;
+  top: 54px;
+  left: 18%;
+  padding: 10px 12px;
+  border: 1px solid var(--brand-blue-200);
+  border-radius: var(--r-field);
+  background: var(--panel);
+  color: var(--brand-ink);
+  font: 600 13px var(--display);
+}
+
+.art-code:last-child {
+  top: 96px;
+  left: 35%;
+  transform: rotate(3deg);
+}
+
+.course-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 20px;
+}
+
+/* Description takes the free space so the action sits on the card's bottom edge. */
+
+.course-body > p {
+  flex: 1;
+}
+
+.course-body > .button {
+  align-self: flex-start;
+}
+
+.course-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--brand-ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.course-body h3 {
+  margin: 0 0 8px;
+  font: 700 22px var(--display);
+}
+
+.course-body p {
+  min-height: 48px;
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+html[data-theme="dark"] .course-card,
+html.dark .course-card,
+body.dark-theme .course-card {
+  background: #131c30;
+  border-color: #22304a;
+  color: #eef2ff;
+}
+
+.course-passport-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+
+.course-passport-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.course-passport-pill.grade {
+  background: rgba(52, 87, 240, 0.15);
+  border-color: rgba(52, 87, 240, 0.35);
+  color: var(--status-done);
+}
+
+html[data-theme="dark"] .course-passport-pill.grade,
+body.dark-theme .course-passport-pill.grade {
+  color: var(--brand-blue);
+}
+
+.course-passport-pill.tool {
+  background: rgba(76, 151, 255, 0.12);
+  border-color: rgba(76, 151, 255, 0.35);
+  color: #1a4f94;
+}
+
+html[data-theme="dark"] .course-passport-pill.tool,
+body.dark-theme .course-passport-pill.tool {
+  color: #70aeff;
+}
+
+.course-card {
+  border-radius: 12px;
+}
+
+/* Keep the shared mobile card padding when component styles load after ui.css. */
+@media (max-width: 620px) {
+  .card.course-card {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,156 @@
+.code-block {
+  padding: 18px;
+  border-radius: var(--r-field);
+  background: var(--brand-night);
+  color: #eef2ff;
+  font: 600 14px/1.8 var(--font-mono);
+}
+
+.task-answer {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--brand-line);
+  border-radius: var(--r-field);
+  background: var(--panel);
+}
+
+input.task-answer {
+  min-height: 48px;
+}
+
+.sample-tests-box {
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.sample-tests-header {
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.03);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sample-test-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--line);
+}
+
+.sample-test-item:last-child {
+  border-bottom: none;
+}
+
+.sample-col {
+  padding: 12px 16px;
+}
+
+.sample-col-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.sample-col-code {
+  font-family: monospace;
+  font-size: 13px;
+  background: rgba(0,0,0,0.04);
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: block;
+  white-space: pre-wrap;
+}
+
+.criteria-box {
+  background: rgba(52, 87, 240, 0.08);
+  border: 1px solid rgba(52, 87, 240, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 18px 0;
+}
+
+.criteria-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-blue-hover);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.criteria-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--brand-ink);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Visible, focusable text boxes on the review page and in forms. */
+
+.task-answer {
+  border: 1.5px solid var(--brand-blue-200);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.task-answer:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgb(52 87 240 / 18%);
+}
+
+/* Grade note under a task. */
+
+.grade-note {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.grade-note strong {
+  display: block;
+}
+
+.grade-note p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.grade-note--done {
+  background: var(--status-done-bg);
+  border-color: var(--status-done);
+  color: var(--status-done);
+}
+
+.grade-note--pending {
+  background: var(--status-review-bg);
+  border-color: var(--status-review);
+  color: var(--status-review);
+}
+
+.grade-note--failed {
+  background: var(--status-failed-bg);
+  border-color: var(--status-failed);
+  color: var(--status-failed);
+}
+
+.criteria-note {
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--status-done);
+  border-radius: 8px;
+  background: var(--status-done-bg);
+  font-size: 12px;
+}
