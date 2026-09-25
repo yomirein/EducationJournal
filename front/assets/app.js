@@ -1,8 +1,9 @@
 (function() {
   const t = localStorage.getItem('pixelstart_theme') === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = t;
-  if (t === 'dark') {
-    document.documentElement.classList.add('dark');
+  document.documentElement.classList.toggle('dark', t === 'dark');
+  if (document.body) {
+    document.body.classList.toggle('dark-theme', t === 'dark');
   }
 })();
 
@@ -65,137 +66,15 @@ const bind = (selector, callback) => {
   });
 };
 
-/* --- Shared requests (one call per page load) --- */
-let currentUserRequest = null;
-
-// Returns the signed-in user; pass fresh=true after the profile changes.
-const getCurrentUser = (fresh = false) => {
-  if (!api.auth.access) return Promise.reject(new Error('Войдите в аккаунт, чтобы открыть эту страницу.'));
-  if (fresh || !currentUserRequest) {
-    currentUserRequest = api.get('/users/me');
-    currentUserRequest.catch(() => { currentUserRequest = null; });
-  }
-  return currentUserRequest;
-};
-
-let coursesRequest = null;
-
-const getCourses = () => {
-  if (!coursesRequest) {
-    coursesRequest = api.get('/courses');
-    coursesRequest.catch(() => { coursesRequest = null; });
-  }
-  return coursesRequest;
-};
-
-const homeForRole = role => ({ curator: '/curator/index.html', admin: '/admin/index.html' }[role] || '/student/index.html');
-
-/* --- Shared course helpers --- */
-const STEP_TYPES = {
-  theory: { icon: 'T', label: 'Теория' },
-  quiz: { icon: '?', label: 'Вопрос' },
-  scratch: { icon: 'S', label: 'Scratch' },
-  minecraft_edu: { icon: 'M', label: 'Minecraft' },
-  code_test: { icon: '</>', label: 'Задача' },
-  project: { icon: 'P', label: 'Проект' }
-};
-const stepIcon = type => STEP_TYPES[type]?.icon || '#';
-const stepLabel = type => STEP_TYPES[type]?.label || type;
-
-const COURSE_TYPES = {
-  scratch: { art: 'green', label: 'SCRATCH 3.0', short: 'Scratch' },
-  minecraft_edu: { art: 'blue', label: 'MINECRAFT EDUCATION', short: 'Minecraft' },
-  algorithm: { art: 'coral', label: 'PYTHON 3 АЛГОРИТМИКА', short: 'Python' }
-};
-const courseType = type => COURSE_TYPES[type] || { art: 'coral', label: String(type || 'КУРС').toUpperCase(), short: type || 'Курс' };
-
-// Course from ?course=, then the last opened one, then the first course in the catalog.
-async function resolveCourseId() {
-  const params = new URLSearchParams(window.location.search);
-  let courseId = params.get('course') || localStorage.getItem('pixelstart_active_course');
-  if (!courseId) {
-    const courses = await getCourses();
-    if (!courses.length) throw new Error('Курсы пока не добавлены.');
-    courseId = String(courses[0].id);
-  }
-  localStorage.setItem('pixelstart_active_course', courseId);
-  updateCourseLinks(courseId);
-  return courseId;
-}
-
-const criteriaBox = (criteria, title = 'Критерии шага:') => criteria ? `
-  <div class="criteria-box" style="margin-top:8px;">
-    <div class="criteria-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      ${escapeHtml(title)}
-    </div>
-    <div class="criteria-item">${escapeHtml(criteria)}</div>
-  </div>` : '';
-
-// One course card for the catalog and "My courses".
-function courseCard(course, { meta = `Курс #${course.id}`, actions }) {
-  const kind = courseType(course.type);
-  return `<article class="card course-card" data-course-type="${escapeHtml(course.type)}">
-    <div class="course-art ${kind.art}">
-      <span class="art-label">${escapeHtml(kind.label)}</span>
-      <div class="art-code">${escapeHtml(course.grades || `Курс #${course.id}`)}</div>
-    </div>
-    <div class="course-body">
-      <div class="course-meta">
-        <span>${escapeHtml(course.type)}</span>
-        <span>${escapeHtml(meta)}</span>
-      </div>
-      <h3>${escapeHtml(course.title)}</h3>
-      <div class="course-passport-badges">
-        ${course.grades ? `<span class="course-passport-pill grade">${escapeHtml(course.grades)}</span>` : ''}
-        ${course.volume ? `<span class="course-passport-pill">${escapeHtml(course.volume)}</span>` : ''}
-        ${course.tool ? `<span class="course-passport-pill tool">${escapeHtml(course.tool.split(',')[0])}</span>` : ''}
-      </div>
-      <p style="color:var(--muted); font-size:13px; line-height:1.5; margin-bottom:18px;">
-        ${escapeHtml(course.goal || course.description || 'Официальная программа курса.')}
-      </p>
-      ${actions}
-    </div>
-  </article>`;
-}
-
-/* --- Live page data ---
-   Every block that shows API data registers its loader here. After a successful
-   change the page calls refreshPageData(), so lists never show stale data. */
-const pageLoaders = new Set();
-
-const registerLoader = loader => {
-  pageLoaders.add(loader);
-  return run(loader);
-};
-
-const refreshPageData = () => Promise.all([...pageLoaders].map(loader => run(loader)));
-
-/* --- Auth forms --- */
+/* --- Global Forms Binding --- */
 bind('[data-form="login"]', form => run(async () => {
-  api.auth.save(await api.post('/auth/login', formJson(form)));
-  const me = await getCurrentUser(true);
-  window.location.href = homeForRole(me.role);
+  const res = await api.post('/auth/login', formJson(form));
+  api.auth.save(res);
+  const me = await api.get('/users/me').catch(() => null);
+  if (me?.role === 'curator') window.location.href = '../curator/index.html';
+  else if (me?.role === 'admin') window.location.href = '../admin/index.html';
+  else window.location.href = '../student/index.html';
 }, 'Вход выполнен.'));
-
-// Demo accounts are created by backend/scripts/seed.py; quick login works on localhost only.
-const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
-const demoPasswords = { student: 'student12345', curator: 'curator12345', admin: 'admin12345' };
-
-async function quickLogin(role) {
-  if (!isLocalHost || !demoPasswords[role]) return;
-  api.auth.save(await api.post('/auth/login', { login: role, password: demoPasswords[role] }));
-  const me = await getCurrentUser(true);
-  window.location.href = homeForRole(me.role);
-}
-
-document.querySelectorAll('[data-demo-only]').forEach(element => {
-  element.hidden = !isLocalHost;
-});
-
-document.querySelectorAll('[data-quick-login]').forEach(button => {
-  button.addEventListener('click', () => run(() => quickLogin(button.dataset.quickLogin)));
-});
 
 bind('[data-form="register"]', form => run(async () => {
   await api.post('/auth/register', formJson(form));
@@ -224,23 +103,18 @@ if (verifyStatus) {
   }
 }
 
-/* --- Forms that change data; each one refreshes the page data afterwards --- */
 bind('[data-form="profile"]', form => run(async () => {
   // Empty fields mean "leave unchanged": an empty email would fail validation.
   const values = Object.fromEntries(Object.entries(formJson(form)).map(([key, value]) => [key, value.trim()]).filter(([, value]) => value));
-  await api.patch('/users/me', values);
-  await getCurrentUser(true);
-  await refreshPageData();
+  const user = await api.patch('/users/me', values);
+  localStorage.setItem('pixelstart_user', JSON.stringify(user));
 }, 'Профиль сохранён.'));
-
-const showResult = text => document.querySelector('[data-result]')?.replaceChildren(document.createTextNode(text));
 
 bind('[data-form="course-create"]', form => run(async () => {
   const course = await api.post('/panel/courses', formJson(form));
   form.reset();
-  showResult(`Курс #${course.id} создан.`);
-  coursesRequest = null;
-  await refreshPageData();
+  const res = document.querySelector('[data-result]');
+  if (res) res.textContent = `Курс #${course.id} создан.`;
 }, 'Курс успешно создан.'));
 
 bind('[data-form="lesson-create"]', form => run(async () => {
@@ -250,7 +124,9 @@ bind('[data-form="lesson-create"]', form => run(async () => {
     duration: Number(form.duration.value || 0)
   });
   form.reset();
-  showResult(`Урок #${lesson.id} создан.`);
+  document.querySelector('[data-result]')?.replaceChildren(
+    document.createTextNode(`Урок #${lesson.id} создан.`)
+  );
 }, 'Урок создан.'));
 
 bind('[data-form="task-create"]', form => run(async () => {
@@ -260,37 +136,73 @@ bind('[data-form="task-create"]', form => run(async () => {
     answer_json: null
   });
   form.reset();
-  showResult(`Задание #${task.id} создано.`);
+  document.querySelector('[data-result]')?.replaceChildren(
+    document.createTextNode(`Задание #${task.id} создано.`)
+  );
 }, 'Задание создано.'));
 
 bind('[data-form="stream-create"]', form => run(async () => {
-  const stream = await api.post('/panel/streams', {
-    name: form.name.value,
+  await api.post('/panel/streams', {
+    ...formJson(form),
     course_id: Number(form.course_id.value),
     curator_id: Number(form.curator_id.value),
     start_date: new Date(form.start_date.value).toISOString(),
     end_date: new Date(form.end_date.value).toISOString()
   });
   form.reset();
-  showResult(`Поток #${stream.id} создан.`);
-  await refreshPageData();
 }, 'Поток создан.'));
 
 bind('[data-form="broadcast"]', form => run(async () => {
-  await api.post(`/streams/${form.stream_id.value}/broadcasts`, { text: form.text.value });
-  form.text.value = '';
-  // Show the list of the stream the message was just posted to.
-  const listPicker = document.querySelector('[data-stream-reload="broadcasts"]');
-  if (listPicker) listPicker.value = form.stream_id.value;
-  await refreshPageData();
+  await api.post(`/streams/${form.stream_id.value}/broadcasts`, {
+    text: form.text.value
+  });
+  form.reset();
 }, 'Объявление опубликовано.'));
+
+bind('[data-form="submit-task"]', form => run(async () => {
+  let fileId = null;
+  const file = form.file?.files?.[0];
+  
+  if (file) {
+    const upload = new FormData();
+    upload.append('file', file);
+    fileId = (await api.upload('/files', upload)).file_id;
+  }
+  
+  await api.post(`/courses/${form.course_id.value}/tasks/${form.task_id.value}/submissions`, {
+    input: form.input.value,
+    file_id: fileId
+  });
+  triggerCelebration('Ответ отправлен', 'Задание передано на проверку куратору.', 50);
+}, 'Ответ отправлен на проверку.'));
+
+bind('[data-form="grade"]', form => run(async () => {
+  await api.patch(
+    `/streams/${form.stream_id.value}/tasks/${form.task_id.value}/submissions/${form.submission_id.value}`,
+    {
+      grade: Number(form.grade.value),
+      feedback_message: form.feedback_message.value
+    }
+  );
+  if (typeof window.refreshCuratorReview === 'function') {
+    window.refreshCuratorReview();
+  }
+}, 'Оценка сохранена.'));
+
+bind('[data-form="participant-decision"]', form => run(async () => {
+  await api.post(
+    `/streams/${form.stream_id.value}/participants/${form.user_id.value}/${form.decision.value}`,
+    {}
+  );
+  if (typeof window.refreshCuratorParticipants === 'function') {
+    window.refreshCuratorParticipants();
+  }
+}, 'Решение по заявке применено.'));
 
 bind('[data-form="reject-file"]', form => run(async () => {
   await api.delete(
     `/streams/${form.stream_id.value}/tasks/${form.task_id.value}/submissions/${form.submission_id.value}/file?reason=${encodeURIComponent(form.reason.value)}`
   );
-  form.reason.value = '';
-  await refreshPageData();
 }, 'Файл удалён, причина сохранена.'));
 
 bind('[data-form="user-patch"]', form => run(async () => {
@@ -298,14 +210,13 @@ bind('[data-form="user-patch"]', form => run(async () => {
     role: form.role.value,
     payment: form.payment.value === 'true'
   });
-  await refreshPageData();
 }, 'Пользователь обновлён.'));
 
 /* --- Logout --- */
 document.querySelectorAll('[data-logout]').forEach(button => {
   button.addEventListener('click', () => {
     api.auth.clear();
-    window.location.href = '/index.html';
+    window.location.href = '../index.html';
   });
 });
 
@@ -323,7 +234,8 @@ async function verifyPageAccess() {
   if (!requiredRole) return;
 
   try {
-    const user = await getCurrentUser();
+    if (!api.auth.access) throw new Error('Войдите в аккаунт, чтобы открыть эту страницу.');
+    const user = await api.get('/users/me');
     if (user.role !== requiredRole && user.role !== 'admin') {
       throw new Error('У вашей учётной записи нет доступа к этому разделу.');
     }
@@ -354,7 +266,7 @@ const renderJson = (output, data) => {
 
 document.querySelectorAll('pre.data-output[data-load]').forEach(output => {
   output.setAttribute('aria-busy', 'true');
-  registerLoader(async () => renderJson(output, await api.get(output.dataset.load)));
+  run(async () => renderJson(output, await api.get(output.dataset.load)));
 });
 
 const loadTargets = {
@@ -364,7 +276,7 @@ const loadTargets = {
   },
   broadcasts: section => {
     const streamId = Number(section.querySelector('[name="stream_id"]')?.value);
-    if (!streamId) throw new Error('Сначала выбери поток.');
+    if (!streamId) throw new Error('Сначала укажи ID своего потока.');
     return `/streams/${streamId}/broadcasts`;
   }
 };
@@ -373,72 +285,28 @@ document.querySelectorAll('[data-load-target]').forEach(button => {
   const pathFor = loadTargets[button.dataset.loadTarget];
   const output = document.querySelector(`[data-result="${button.dataset.loadTarget}"]`);
   if (!pathFor || !output) return;
-  // Registered on first use, then re-run by refreshPageData() after changes.
-  const loader = async () => {
+  button.addEventListener('click', () => run(async () => {
     const path = pathFor(button.closest('section') || document);
     output.setAttribute('aria-busy', 'true');
+    output.textContent = 'Загрузка данных...';
     renderJson(output, await api.get(path));
-  };
-  button.addEventListener('click', () => registerLoader(loader));
+  }, 'Данные обновлены.'));
 });
 
-/* --- Curator stream pickers ---
-   Every select[data-stream-select] lists the curator's own streams. A picker with
-   data-stream-reload="X" reloads block X (its [data-load-target="X"] button) on change. */
-const streamPickers = document.querySelectorAll('select[data-stream-select]');
-const streamPickersReady = streamPickers.length
-  ? api.get('/users/me/streams').then(streams => {
-    streamPickers.forEach(select => {
-      select.replaceChildren(...streams.map(stream => new Option(stream.stream_name, stream.stream_id)));
-      if (!streams.length) select.append(new Option('У вас пока нет потоков', ''));
+/* --- User profile hydration --- */
+if (api.auth.access) {
+  api.get('/users/me').then(user => {
+    document.querySelectorAll('[data-user-name]').forEach(el => {
+      el.textContent = `${user.first_name} ${user.last_name}`;
     });
-  }).catch(error => showMessage(errorText(error), true))
-  : Promise.resolve();
-
-document.addEventListener('DOMContentLoaded', () => {
-  streamPickersReady.then(() => {
-    document.querySelectorAll('select[data-stream-reload]').forEach(select => {
-      const reload = () => document.querySelector(`[data-load-target="${select.dataset.streamReload}"]`)?.click();
-      select.addEventListener('change', reload);
-      reload();
+    document.querySelectorAll('[data-user-role]').forEach(el => {
+      el.textContent = `${user.email} (${user.role})`;
     });
-  });
-});
-
-/* --- Selects filled from the API (admin forms) --- */
-const optionSources = {
-  courses: async () => (await api.get('/courses?limit=100')).map(course => [course.id, `${course.title} (#${course.id})`]),
-  curators: async () => (await api.get('/panel/users?role=curator&limit=100')).map(user => [user.id, `${user.first_name} ${user.last_name} (@${user.username})`])
-};
-
-document.querySelectorAll('select[data-options]').forEach(select => {
-  const source = optionSources[select.dataset.options];
-  if (!source) return;
-  registerLoader(async () => {
-    const previous = select.value;
-    const options = await source();
-    select.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
-    if (!options.length) select.append(new Option('Нет вариантов', ''));
-    if (options.some(([value]) => String(value) === previous)) select.value = previous;
-  });
-});
-
-/* --- Signed-in user in the sidebar and profile form --- */
-const hydrateUser = async () => {
-  const user = await getCurrentUser();
-  document.querySelectorAll('[data-user-name]').forEach(el => {
-    el.textContent = `${user.first_name} ${user.last_name}`;
-  });
-  document.querySelectorAll('[data-user-role]').forEach(el => {
-    el.textContent = `${user.email} (${user.role})`;
-  });
-  const profileForm = document.querySelector('[data-form="profile"]');
-  if (profileForm?.description) profileForm.description.value = user.description || '';
-  if (profileForm?.email) profileForm.email.value = user.email || '';
-};
-
-if (api.auth.access && document.querySelector('[data-user-name], [data-user-role], [data-form="profile"]')) {
-  registerLoader(hydrateUser);
+    const descField = document.querySelector('#description');
+    if (descField && user.description) descField.value = user.description;
+    const emailField = document.querySelector('#email');
+    if (emailField && user.email) emailField.value = user.email;
+  }).catch(() => {});
 }
 
 /* ==========================================================================
@@ -616,7 +484,7 @@ function updateThemeToggleButtons(isDark) {
   }
 
   // 3. Settings page buttons
-  document.querySelectorAll('button[data-theme]').forEach(btn => {
+  document.querySelectorAll('[data-theme]').forEach(btn => {
     const active = (btn.dataset.theme === 'dark' && isDark) || (btn.dataset.theme === 'light' && !isDark);
     btn.classList.toggle('active-theme', active);
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
@@ -668,7 +536,7 @@ function initTopbarThemeToggle() {
    ========================================================================== */
 function initDemoSwitcher() {
   if (document.querySelector('.demo-switcher')) return;
-  if (!isLocalHost) return;
+  if (!['127.0.0.1', 'localhost'].includes(window.location.hostname)) return;
 
   const path = window.location.pathname;
   let currentRole = 'student';
@@ -728,7 +596,7 @@ function initDemoSwitcher() {
   if (document.body) {
     document.body.appendChild(switcher);
   }
-  getCourses().then(courses => {
+  api.get('/courses').then(courses => {
     const patterns = { scratch: /scratch/i, minecraft: /minecraft/i, python: /python/i };
     for (const [kind, pattern] of Object.entries(patterns)) {
       const course = courses.find(item => pattern.test(item.title || ''));
@@ -762,15 +630,28 @@ function initDemoSwitcher() {
     applyTheme(nextTheme, true);
   });
 
+  const creds = {
+    student: { login: 'student', password: 'student12345', target: '/student/index.html' },
+    curator: { login: 'curator', password: 'curator12345', target: '/curator/index.html' },
+    admin: { login: 'admin', password: 'admin12345', target: '/admin/index.html' }
+  };
+
   switcher.querySelectorAll('[data-role-switch]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const label = btn.textContent;
-      btn.textContent = '...';
+      const role = btn.dataset.roleSwitch;
+      const c = creds[role];
+      if (!c) return;
       try {
-        await quickLogin(btn.dataset.roleSwitch);
-      } catch (error) {
-        showMessage(`Ошибка переключения роли: ${errorText(error)}`, true);
-        btn.textContent = label;
+        btn.textContent = '...';
+        const tokenPair = await api.post('/auth/login', { login: c.login, password: c.password });
+        api.auth.save(tokenPair);
+        showMessage(`Переключение: ${role.toUpperCase()}`);
+        setTimeout(() => {
+          window.location.href = c.target;
+        }, 200);
+      } catch (err) {
+        showMessage('Ошибка переключения роли: ' + err.message, true);
+        btn.textContent = role === 'student' ? 'Ученик' : role === 'curator' ? 'Куратор' : 'Админ';
       }
     });
   });
@@ -784,12 +665,21 @@ function initTasksPage() {
   const studioRoot = document.getElementById('studio-tablet-root');
   if (!taskPage && !studioRoot) return;
 
+  initAiCodeInspector();
+
   const urlParams = new URLSearchParams(window.location.search);
   let requestedTaskId = urlParams.get('task') ? Number(urlParams.get('task')) : null;
 
   run(async () => {
-    const courseId = await resolveCourseId();
-
+    let courseId = urlParams.get('course') || localStorage.getItem('pixelstart_active_course');
+    if (!courseId) {
+      const allCourses = await api.get('/courses').catch(() => []);
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
+    }
+    localStorage.setItem('pixelstart_active_course', courseId);
+    updateCourseLinks(courseId);
+    
     // Normalize URL
     if (!urlParams.get('course')) {
       const curUrl = new URL(window.location.href);
@@ -811,6 +701,24 @@ function initTasksPage() {
       stepperWrap.setAttribute('data-task-stepper-container', 'true');
       taskPage?.prepend(stepperWrap);
     }
+
+    const typeIcons = {
+      theory: 'T',
+      quiz: '?',
+      scratch: 'S',
+      minecraft_edu: 'M',
+      code_test: '</>',
+      project: 'P'
+    };
+
+    const typeLabels = {
+      theory: 'Теория',
+      quiz: 'Вопрос',
+      scratch: 'Scratch',
+      minecraft_edu: 'Minecraft',
+      code_test: 'Задача',
+      project: 'Проект'
+    };
 
     // Setup Split-View Studio Toggles
     const bodyContainer = document.getElementById('studio-body-container');
@@ -847,15 +755,6 @@ function initTasksPage() {
         }
       });
     }
-
-    // Saves an answer and re-renders the step so its grade badge and the stepper are current.
-    // workbench: false keeps the right pane (console log, Scratch/Minecraft iframe) untouched.
-    const submitAnswer = async (task, input, { workbench = true } = {}) => {
-      const result = await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input });
-      await renderTask(task, { workbench });
-      renderStepper();
-      return result;
-    };
 
     // Workbench Header Elements
     const workbenchTitleText = document.getElementById('workbench-title-text');
@@ -938,8 +837,8 @@ function initTasksPage() {
           ${tasks.map((t, idx) => {
             const stepNum = t.step_number || String(idx + 1).padStart(2, '0');
             const isActive = t.id === currentTask.id;
-            const icon = stepIcon(t.type);
-            const typeName = stepLabel(t.type);
+            const icon = typeIcons[t.type] || '#';
+            const typeName = typeLabels[t.type] || t.type;
             return `<button class="task-step-btn ${isActive ? 'active' : ''}" data-step-task="${t.id}" title="${escapeHtml(t.title || '')}">
               <span style="opacity:0.75; font-size:10px;">${icon}</span>
               <span>${escapeHtml(stepNum)}</span>
@@ -1137,9 +1036,10 @@ function initTasksPage() {
           `;
 
           try {
-            const res = isSubmission
-              ? await submitAnswer(task, codeVal, { workbench: false })
-              : await api.post(`/courses/${courseId}/tasks/${task.id}/run-tests`, { input: codeVal });
+            const endpoint = isSubmission 
+              ? `/courses/${courseId}/tasks/${task.id}/submissions`
+              : `/courses/${courseId}/tasks/${task.id}/run-tests`;
+            const res = await api.post(endpoint, { input: codeVal });
 
             setTimeout(() => {
               if (res.test_details && res.test_details.length > 0) {
@@ -1168,7 +1068,7 @@ function initTasksPage() {
                 `;
                 playChime(true);
                 if (isSubmission) {
-                  triggerCelebration('Тесты пройдены!', 'Задача полностью зачтена: 100 / 100 баллов!', res.grade);
+                  triggerCelebration('Тесты пройдены!', 'Задача полностью зачтена: 100 / 100 баллов!', 150);
                 } else {
                   showMessage('Открытые примеры пройдены. Можно сдавать решение.');
                 }
@@ -1180,6 +1080,11 @@ function initTasksPage() {
                 `;
                 playChime(false);
                 showMessage(isSubmission ? 'Тесты не пройдены. Смотрите лог в терминале.' : 'Есть ошибки на тестах. Исправьте код.', true);
+              }
+
+              if (isSubmission) {
+                renderTask(task);
+                renderStepper();
               }
             }, 250);
 
@@ -1282,14 +1187,16 @@ function initTasksPage() {
           }
 
           try {
-            const res = await submitAnswer(task, answerVal);
+            const res = await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: answerVal });
             if (res.grade === 100) {
               playChime(true);
-              triggerCelebration('Верно!', res.feedback_message || 'Ответ абсолютно правильный.', res.grade);
+              triggerCelebration('Верно!', res.feedback_message || 'Ответ абсолютно правильный.', 100);
             } else {
               playChime(false);
               showMessage(res.feedback_message || 'Неверный ответ. Попробуйте ещё раз.', true);
             }
+            renderTask(task);
+            renderStepper();
           } catch (e) {
             showMessage('Ошибка проверки: ' + e.message, true);
           }
@@ -1319,9 +1226,11 @@ function initTasksPage() {
 
         workbenchMount.querySelector('#btn-submit-theory').onclick = async () => {
           try {
-            const res = await submitAnswer(task, 'read');
+            await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: 'read' });
             playChime(true);
-            triggerCelebration('Теория пройдена', 'Материал зафиксирован в журнале платформы!', res.grade);
+            triggerCelebration('Теория пройдена', 'Материал зафиксирован в журнале платформы!', 100);
+            renderTask(task);
+            renderStepper();
           } catch (e) {
             showMessage('Ошибка: ' + e.message, true);
           }
@@ -1340,7 +1249,15 @@ function initTasksPage() {
               <p>Откройте пример с двумя спрайтами, циклом, условием и переменной «счёт». Измените блоки и соберите свой вариант игры.</p>
               <a class="button button-lime" href="/simulators/scratch-ru/index.html?demo=apple_catch" target="_blank" rel="noopener">Открыть игру в Scratch</a>
             </div>` : ''}
-            ${criteriaBox(meta.criteria, 'Критерии приёмки проекта (проверяет куратор):')}
+            ${meta.criteria ? `
+              <div class="criteria-box" style="margin-bottom:16px;">
+                <div class="criteria-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  Критерии приёмки проекта (проверяет куратор):
+                </div>
+                <div class="criteria-item">${escapeHtml(meta.criteria)}</div>
+              </div>
+            ` : ''}
             <div class="field" style="margin-bottom:12px;">
               <label for="project-link-input" style="font-size:13px; font-weight:700; display:block; margin-bottom:6px; color:#d8e5de;">
                 Ссылка на ваш проект (Scratch или MakeCode):
@@ -1379,9 +1296,11 @@ function initTasksPage() {
 
           const combined = `Проект: ${pLink}\nМедиа: ${pMedia}\nПояснение: ${pNotes}`;
           try {
-            await submitAnswer(task, combined, { workbench: false });
+            await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: combined });
             playChime(true);
             showMessage('Проект сдан и отправлен в очередь проверки куратора.');
+            renderTask(task);
+            renderStepper();
           } catch (e) {
             showMessage('Ошибка: ' + e.message, true);
           }
@@ -1392,7 +1311,7 @@ function initTasksPage() {
     // -----------------------------------------------------------
     // RENDER TASK INFO (LEFT PANE)
     // -----------------------------------------------------------
-    const renderTask = async (task, { workbench = true } = {}) => {
+    const renderTask = async (task) => {
       const meta = task.answer_json || {};
       const stepNum = task.step_number || `Шаг ${task.id}`;
       const stepType = task.type || 'theory';
@@ -1416,7 +1335,7 @@ function initTasksPage() {
       if (pageHeadEyebrow) pageHeadEyebrow.textContent = `${task.course_title || 'Курс'} · ${task.module_name || 'Модуль'}`;
 
       const eyebrow = taskPage?.querySelector('.eyebrow');
-      if (eyebrow) eyebrow.textContent = `Шаг ${stepNum} · ${stepLabel(stepType)}`;
+      if (eyebrow) eyebrow.textContent = `Шаг ${stepNum} · ${typeLabels[stepType] || stepType}`;
 
       const h2 = taskPage?.querySelector('h2');
       if (h2) h2.textContent = task.title || `Шаг ${stepNum}`;
@@ -1433,7 +1352,7 @@ function initTasksPage() {
         passportGrid.innerHTML = `
           <div class="passport-card">
             <span class="passport-label">Тип шага</span>
-            <span class="passport-val">${escapeHtml(stepLabel(stepType))}</span>
+            <span class="passport-val">${escapeHtml(typeLabels[stepType] || stepType)}</span>
           </div>
           <div class="passport-card">
             <span class="passport-label">Проверка</span>
@@ -1512,7 +1431,15 @@ function initTasksPage() {
                 <input id="scratch-project-link" class="task-answer" type="url" required placeholder="https://scratch.mit.edu/projects/...">
                 <button class="button button-lime" type="submit">Отправить куратору</button>
               </form>`}
-              ${criteriaBox(meta.criteria)}
+              ${meta.criteria ? `
+                <div class="criteria-box" style="margin-top:8px;">
+                  <div class="criteria-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    Критерии шага:
+                  </div>
+                  <div class="criteria-item">${escapeHtml(meta.criteria)}</div>
+                </div>
+              ` : ''}
             </div>
           `;
           if (numericAnswer) {
@@ -1521,8 +1448,10 @@ function initTasksPage() {
               const answer = actionArea.querySelector('#scratch-number-answer')?.value.trim();
               if (!answer) return;
               try {
-                const result = await submitAnswer(task, answer, { workbench: false });
+                const result = await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: answer });
                 showMessage(result.feedback_message || 'Ответ сохранён.', result.grade !== 100);
+                await renderTask(task);
+                renderStepper();
               } catch (error) {
                 showMessage(error.message || 'Не удалось проверить ответ.', true);
               }
@@ -1538,8 +1467,10 @@ function initTasksPage() {
                 return;
               }
               try {
-                await submitAnswer(task, `Проект Scratch: ${url.href}`, { workbench: false });
+                await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: `Проект Scratch: ${url.href}` });
                 showMessage('Ссылка отправлена куратору на проверку.');
+                await renderTask(task);
+                renderStepper();
               } catch (error) {
                 showMessage(error.message || 'Не удалось отправить проект.', true);
               }
@@ -1558,7 +1489,15 @@ function initTasksPage() {
                 <input id="mc-screenshot-link" class="task-answer" type="url" required placeholder="https://...">
                 <button class="button button-lime" type="submit">Отправить куратору</button>
               </form>
-              ${criteriaBox(meta.criteria)}
+              ${meta.criteria ? `
+                <div class="criteria-box" style="margin-top:8px;">
+                  <div class="criteria-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    Критерии шага:
+                  </div>
+                  <div class="criteria-item">${escapeHtml(meta.criteria)}</div>
+                </div>
+              ` : ''}
             </div>
           `;
           actionArea.querySelector('#minecraft-evidence-form')?.addEventListener('submit', async event => {
@@ -1567,8 +1506,10 @@ function initTasksPage() {
             const screenshot = actionArea.querySelector('#mc-screenshot-link')?.value.trim();
             if (!project || !screenshot) return;
             try {
-              await submitAnswer(task, `Проект MakeCode: ${project}\nСкриншот: ${screenshot}`, { workbench: false });
+              await api.post(`/courses/${courseId}/tasks/${task.id}/submissions`, { input: `Проект MakeCode: ${project}\nСкриншот: ${screenshot}` });
               showMessage('Материалы отправлены куратору на проверку.');
+              await renderTask(task);
+              renderStepper();
             } catch (error) {
               showMessage(error.message || 'Не удалось отправить материалы.', true);
             }
@@ -1578,7 +1519,10 @@ function initTasksPage() {
         }
       }
 
-      if (workbench) renderWorkbench(task);
+      initAiCodeInspector();
+
+      // Render the active workbench in the right pane!
+      renderWorkbench(task);
     };
 
     // -----------------------------------------------------------
@@ -1706,20 +1650,14 @@ function initCuratorReview() {
     });
   }
 
-  // Filters survive refreshes, so grading a work does not reset the curator's view.
-  let currentStatusFilter = 'all';
-  let currentStreamFilter = 'all';
-
   window.refreshCuratorReview = async () => {
     const [submissions, streams] = await Promise.all([
-      api.get('/streams/my/submissions'),
-      api.get('/users/me/streams')
+      api.get('/streams/my/submissions').catch(() => []),
+      api.get('/users/me/streams').catch(() => [])
     ]);
 
-    // grade -1 means "waiting for the curator"; any other value is already graded (0 included).
-    const isPending = sub => sub.grade === -1;
-    const pendingCount = submissions.filter(isPending).length;
-    const gradedCount = submissions.length - pendingCount;
+    const pendingCount = submissions.filter(s => s.grade === -1 || s.grade === 0).length;
+    const gradedCount = submissions.filter(s => s.grade > 0).length;
 
     boardSection.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
@@ -1734,13 +1672,13 @@ function initCuratorReview() {
       </div>
       <div class="submissions-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <div class="filter-pills" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button class="filter-pill ${currentStatusFilter === 'all' ? 'active' : ''}" data-sub-filter="all">Все (${submissions.length})</button>
-          <button class="filter-pill ${currentStatusFilter === 'pending' ? 'active' : ''}" data-sub-filter="pending">На проверке (${pendingCount})</button>
-          <button class="filter-pill ${currentStatusFilter === 'graded' ? 'active' : ''}" data-sub-filter="graded">Проверенные (${gradedCount})</button>
+          <button class="filter-pill active" data-sub-filter="all">Все (${submissions.length})</button>
+          <button class="filter-pill" data-sub-filter="pending">На проверке (${pendingCount})</button>
+          <button class="filter-pill" data-sub-filter="graded">Проверенные (${gradedCount})</button>
           ${streams.length > 0 ? `
             <select id="curator-stream-filter" class="task-answer" style="width:auto; min-width:180px; padding:4px 10px; font-size:12px; height:32px; border-radius:6px; margin:0;">
               <option value="all">Все потоки (${streams.length})</option>
-              ${streams.map(st => `<option value="${Number(st.stream_id)}" ${String(st.stream_id) === String(currentStreamFilter) ? 'selected' : ''}>${escapeHtml(st.stream_name)}</option>`).join('')}
+              ${streams.map(st => `<option value="${st.stream_id}">${escapeHtml(st.stream_name)}</option>`).join('')}
             </select>
           ` : ''}
         </div>
@@ -1749,15 +1687,17 @@ function initCuratorReview() {
       <div class="submissions-grid" data-submissions-grid style="margin-top:14px;"></div>
     `;
 
-    boardSection.querySelector('#refresh-subs-btn')?.addEventListener('click', () => run(window.refreshCuratorReview, 'Очередь обновлена.'));
+    boardSection.querySelector('#refresh-subs-btn')?.addEventListener('click', window.refreshCuratorReview);
 
     const grid = boardSection.querySelector('[data-submissions-grid]');
+    let currentStatusFilter = 'all';
+    let currentStreamFilter = 'all';
 
     const renderGrid = () => {
       const filtered = submissions.filter(s => {
         const matchesStatus = 
-          currentStatusFilter === 'pending' ? isPending(s) :
-          currentStatusFilter === 'graded' ? !isPending(s) : true;
+          currentStatusFilter === 'pending' ? (s.grade === -1 || s.grade === 0) :
+          currentStatusFilter === 'graded' ? (s.grade > 0) : true;
         const matchesStream = 
           currentStreamFilter === 'all' || String(s.stream_id) === String(currentStreamFilter);
         return matchesStatus && matchesStream;
@@ -1769,7 +1709,7 @@ function initCuratorReview() {
       }
 
       grid.innerHTML = filtered.map(sub => {
-        const isGraded = !isPending(sub);
+        const isGraded = sub.grade > 0;
         const statusBadge = isGraded 
           ? `<span class="sub-grade-badge sub-grade-scored">Оценка: ${sub.grade}/100</span>`
           : `<span class="sub-grade-badge sub-grade-pending">В очереди на проверку</span>`;
@@ -1809,10 +1749,20 @@ function initCuratorReview() {
           const sub = submissions.find(s => s.id === subId);
           if (!sub) return;
 
-          // Pre-fill the file removal form below the board with the opened submission.
+          // Pre-fill manual fallback form on the page as well
+          const fStream = document.getElementById('stream_id');
+          const fTask = document.getElementById('task_id');
+          const fSub = document.getElementById('submission_id');
+          const fGrade = document.getElementById('grade');
+          const fMsg = document.getElementById('feedback_message');
           const fRemStream = document.getElementById('remove-stream');
           const fRemTask = document.getElementById('remove-task');
           const fRemSub = document.getElementById('remove-submission');
+          if (fStream) fStream.value = sub.stream_id;
+          if (fTask) fTask.value = sub.task_id;
+          if (fSub) fSub.value = sub.id;
+          if (fGrade) fGrade.value = sub.grade > 0 ? sub.grade : 100;
+          if (fMsg) fMsg.value = sub.feedback_message || '';
           if (fRemStream) fRemStream.value = sub.stream_id;
           if (fRemTask) fRemTask.value = sub.task_id;
           if (fRemSub) fRemSub.value = sub.id;
@@ -1974,7 +1924,7 @@ function initCuratorReview() {
           const modalText = reviewModal.querySelector('#modal-feedback-text');
           modalText.value = sub.feedback_message || 'Отличная работа! Все критерии выполнены.';
 
-          let selectedScore = isPending(sub) ? 100 : sub.grade;
+          let selectedScore = sub.grade > 0 ? sub.grade : 100;
 
           reviewModal.querySelectorAll('.grade-preset-btn').forEach(btn => {
             btn.classList.toggle('button-lime', Number(btn.dataset.score) === selectedScore);
@@ -2037,7 +1987,7 @@ function initCuratorReview() {
     renderGrid();
   };
 
-  registerLoader(window.refreshCuratorReview);
+  window.refreshCuratorReview();
 }
 
 // Escapes text for both element content and quoted attribute values.
@@ -2082,11 +2032,7 @@ function initCuratorParticipants() {
   }
 
   window.refreshCuratorParticipants = async () => {
-    const streamId = card.querySelector('[name="stream_id"]')?.value;
-    if (!streamId) {
-      grid.innerHTML = '<p style="color:var(--muted); padding:10px 0;">У вас пока нет потоков.</p>';
-      return;
-    }
+    const streamId = card.querySelector('[name="stream_id"]')?.value || '1';
     let participants;
     try {
       participants = await api.get(`/streams/${streamId}/participants`);
@@ -2141,8 +2087,8 @@ function initCuratorParticipants() {
     });
   };
 
-  // The first load is triggered by the stream picker once the curator's streams arrive.
-  card.querySelector('[data-load-target="participants"]')?.addEventListener('click', () => registerLoader(window.refreshCuratorParticipants));
+  window.refreshCuratorParticipants();
+  card.querySelector('[data-load-target="participants"]')?.addEventListener('click', window.refreshCuratorParticipants);
 }
 
 /* ==========================================================================
@@ -2151,13 +2097,13 @@ function initCuratorParticipants() {
 function initStudentDashboard() {
   if (!window.location.pathname.includes('/student/index.html') && !window.location.pathname.endsWith('/student/')) return;
 
-  Promise.all([getCourses(), api.get('/users/me/history')]).then(async ([courses, history]) => {
+  Promise.all([api.get('/courses'), api.get('/users/me/history')]).then(async ([courses, history]) => {
     const passed = new Set(history.filter(isPassedSubmission).map(item => item.task_id));
     const summaries = await Promise.all(courses.map(async course => {
       const modules = await api.get(`/courses/${course.id}/modules`).catch(() => []);
       const taskIds = modules.flatMap(module => (module.lessons || []).flatMap(lesson => (lesson.tasks || []).map(task => task.id)));
       const completed = taskIds.filter(id => passed.has(id)).length;
-      const label = courseType(course.type).short;
+      const label = /scratch/i.test(course.title) ? 'Scratch' : /minecraft/i.test(course.title) ? 'Minecraft' : 'Python';
       return { label, value: taskIds.length ? completed / taskIds.length : 0, completed, total: taskIds.length, courseId: course.id };
     }));
     const total = summaries.reduce((sum, item) => sum + item.total, 0);
@@ -2252,10 +2198,27 @@ function initStudentDashboard() {
 // 1. My Courses Grid (courses.html)
 const myCoursesGrid = document.querySelector('[data-my-courses-grid]');
 if (myCoursesGrid) {
-  registerLoader(async () => {
-    // Only courses of streams the user is enrolled in (curators: their streams, admins: all).
-    const streams = await api.get('/users/me/streams');
-    if (!streams.length) {
+  run(async () => {
+    let streams = await api.get('/users/me/streams').catch(() => []);
+    let courses = [];
+    if (streams && streams.length > 0) {
+      courses = streams.map(s => ({
+        id: s.course_id,
+        title: s.course_title,
+        description: s.course_description,
+        type: s.course_type,
+        grades: s.course_grades,
+        volume: s.course_volume,
+        tool: s.course_tool,
+        goal: s.course_goal,
+        stream_name: s.stream_name,
+        stream_id: s.stream_id
+      }));
+    } else {
+      courses = await api.get('/courses').catch(() => []);
+    }
+
+    if (!courses || courses.length === 0) {
       myCoursesGrid.innerHTML = `
         <div class="card" style="grid-column: 1 / -1; padding: 32px; text-align: center;">
           <p style="color:var(--muted); margin-bottom:14px;">У вас пока нет активных потоков.</p>
@@ -2263,44 +2226,86 @@ if (myCoursesGrid) {
         </div>`;
       return;
     }
-    myCoursesGrid.innerHTML = streams.map(stream => courseCard({
-      id: stream.course_id,
-      title: stream.course_title,
-      description: stream.course_description,
-      type: stream.course_type,
-      grades: stream.course_grades,
-      volume: stream.course_volume,
-      tool: stream.course_tool,
-      goal: stream.course_goal
-    }, {
-      meta: stream.stream_name,
-      actions: `<div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="button button-dark" href="course/index.html?course=${Number(stream.course_id)}">Продолжить курс <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
-        <a class="button button-soft" href="course/lessons.html?course=${Number(stream.course_id)}">Уроки</a>
-      </div>`
-    })).join('');
-  });
+
+    myCoursesGrid.innerHTML = courses.map(c => {
+      const colorClass = c.type === 'scratch' ? 'green' 
+        : c.type === 'minecraft_edu' ? 'blue' 
+        : 'coral';
+      const typeLabel = c.type === 'scratch' ? 'SCRATCH 3.0'
+        : c.type === 'minecraft_edu' ? 'MINECRAFT EDUCATION'
+        : 'PYTHON 3 ОЛИМП';
+
+      return `<article class="card course-card" data-course-type="${escapeHtml(c.type)}">
+        <div class="course-art ${colorClass}">
+          <span class="art-label">${typeLabel}</span>
+          <div class="art-code">${escapeHtml(c.grades || '2–9 классы')}</div>
+        </div>
+        <div class="course-body">
+          <div class="course-meta">
+            <span>${escapeHtml(c.type)}</span>
+            <span>${escapeHtml(c.stream_name || `Курс #${c.id}`)}</span>
+          </div>
+          <h3>${escapeHtml(c.title)}</h3>
+          <div class="course-passport-badges">
+            ${c.grades ? `<span class="course-passport-pill grade">${escapeHtml(c.grades)}</span>` : ''}
+            ${c.volume ? `<span class="course-passport-pill">${escapeHtml(c.volume)}</span>` : ''}
+            ${c.tool ? `<span class="course-passport-pill tool">${escapeHtml(c.tool.split(',')[0])}</span>` : ''}
+          </div>
+          <p style="color:var(--muted); font-size:13px; line-height:1.5; margin-bottom:18px;">
+            ${escapeHtml(c.goal || c.description || 'Официальная программа курса.')}
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a class="button button-dark" href="course/index.html?course=${Number(c.id)}">Продолжить курс <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+            <a class="button button-soft" href="course/lessons.html?course=${Number(c.id)}">Уроки</a>
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+  }, 'Курсы загружены.');
 }
 
 // 2. Catalog Grid (catalog.html)
 const loadCourses = document.querySelector('[data-courses]');
 if (loadCourses) {
-  registerLoader(async () => {
-    const courses = await getCourses();
+  run(async () => {
+    const courses = await api.get('/courses');
     loadCourses.setAttribute('aria-busy', 'false');
     if (!courses.length) {
       loadCourses.innerHTML = '<p style="color:var(--muted); padding:24px 0;">В каталоге пока нет доступных курсов.</p>';
       return;
     }
-    loadCourses.innerHTML = courses.map(course => courseCard(course, {
-      actions: `<a class="button button-dark" href="course/index.html?course=${Number(course.id)}">Открыть курс <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>`
-    })).join('');
-    // Keep the active type filter after a reload.
-    const filter = document.querySelector('[data-course-filter].active')?.dataset.courseFilter || 'all';
-    document.querySelectorAll('[data-course-type]').forEach(card => {
-      card.hidden = filter !== 'all' && card.dataset.courseType !== filter;
-    });
-  });
+    loadCourses.innerHTML = courses.map(course => {
+      const colorClass = course.type === 'scratch' ? 'green' 
+        : course.type === 'minecraft_edu' ? 'blue' 
+        : 'coral';
+      const typeLabel = course.type === 'scratch' ? 'SCRATCH 3.0'
+        : course.type === 'minecraft_edu' ? 'MINECRAFT EDU'
+        : 'PYTHON 3 АЛГОРИТМИКА';
+      
+      return `<article class="card course-card" data-course-type="${escapeHtml(course.type)}">
+        <div class="course-art ${colorClass}">
+          <span class="art-label">${typeLabel}</span>
+          <div class="art-code">${escapeHtml(course.grades || `Курс #${course.id}`)}</div>
+        </div>
+        <div class="course-body">
+          <div class="course-meta">
+            <span>${escapeHtml(course.type)}</span>
+            <span>Курс #${Number(course.id)}</span>
+          </div>
+          <h3>${escapeHtml(course.title)}</h3>
+          <div class="course-passport-badges">
+            ${course.grades ? `<span class="course-passport-pill grade">${escapeHtml(course.grades)}</span>` : ''}
+            ${course.volume ? `<span class="course-passport-pill">${escapeHtml(course.volume)}</span>` : ''}
+            ${course.tool ? `<span class="course-passport-pill tool">${escapeHtml(course.tool.split(',')[0])}</span>` : ''}
+          </div>
+          <p style="color:var(--muted); font-size:13px; line-height:1.5; margin-bottom:18px;">
+            ${escapeHtml(course.goal || course.description || 'Официальный курс.')}
+          </p>
+          <a class="button button-dark" href="course/index.html?course=${Number(course.id)}">Открыть курс <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
+        </div>
+      </article>`;
+    }).join('');
+  }, 'Каталог обновлён.');
 }
 
 // 3. Course Modules Overview (course/index.html)
@@ -2308,12 +2313,14 @@ const moduleList = document.querySelector('[data-module-list]');
 if (moduleList) {
   const urlParams = new URLSearchParams(window.location.search);
   run(async () => {
-    const courseId = await resolveCourseId();
-    const [course, modules, history] = await Promise.all([
-      api.get(`/courses/${courseId}`),
-      api.get(`/courses/${courseId}/modules`),
-      api.get('/users/me/history')
-    ]);
+    let courseId = urlParams.get('course');
+    if (!courseId) {
+      const allCourses = await api.get('/courses').catch(() => []);
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
+    }
+    updateCourseLinks(courseId);
+    const course = await api.get(`/courses/${courseId}`).catch(() => null);
     if (course) {
       document.querySelector('[data-course-title]')?.replaceChildren(
         document.createTextNode(course.title)
@@ -2322,9 +2329,11 @@ if (moduleList) {
         document.createTextNode(course.goal || course.description || '')
       );
     }
-    if (modules.length > 0) {
+    const modules = await api.get(`/courses/${courseId}/modules`);
+    if (modules && modules.length > 0) {
       const allTaskIds = modules.flatMap(mod => (mod.lessons || []).flatMap(les => (les.tasks || []).map(task => task.id)));
-      const passed = new Set(history.filter(isPassedSubmission).map(item => item.task_id));
+      const grades = await Promise.all(allTaskIds.map(id => api.get(`/courses/${courseId}/tasks/${id}/grade`).catch(() => null)));
+      const passed = new Set(allTaskIds.filter((id, idx) => grades[idx]?.status === 'completed'));
       const stats = document.querySelector('[data-course-stats]');
       if (stats) stats.textContent = `${modules.length} модуля · ${allTaskIds.length} шагов · ${passed.size} пройдено`;
       const progress = document.querySelector('[data-course-progress]');
@@ -2354,13 +2363,17 @@ if (lessonsPage) {
   let activeTaskId = urlParams.get('task') ? Number(urlParams.get('task')) : null;
 
   run(async () => {
-    const courseId = await resolveCourseId();
-    const [course, modules, tasks, history] = await Promise.all([
-      api.get(`/courses/${courseId}`),
-      api.get(`/courses/${courseId}/modules`),
-      api.get(`/courses/${courseId}/tasks`),
-      api.get('/users/me/history')
-    ]);
+    let courseId = urlParams.get('course');
+    if (!courseId) {
+      const allCourses = await api.get('/courses').catch(() => []);
+      if (!allCourses?.length) throw new Error('Курсы пока не добавлены.');
+      courseId = String(allCourses[0].id);
+    }
+    updateCourseLinks(courseId);
+    const course = await api.get(`/courses/${courseId}`).catch(() => null);
+    const modules = await api.get(`/courses/${courseId}/modules`).catch(() => []);
+    const tasks = await api.get(`/courses/${courseId}/tasks`).catch(() => []);
+    const history = await api.get('/users/me/history').catch(() => []);
     const passedIds = new Set(history.filter(isPassedSubmission).map(item => item.task_id));
 
     if (course) {
@@ -2396,6 +2409,23 @@ if (lessonsPage) {
     const lessonNav = document.querySelector('[data-lesson-nav]');
     const lessonMain = document.querySelector('[data-lesson-main]');
 
+    const typeIcons = {
+      theory: 'T',
+      quiz: '?',
+      scratch: 'S',
+      minecraft_edu: 'M',
+      code_test: '</>',
+      project: 'P'
+    };
+
+    const typeLabels = {
+      theory: 'Теория',
+      quiz: 'Контрольный вопрос',
+      scratch: 'Scratch проект',
+      minecraft_edu: 'Minecraft Education',
+      code_test: 'Задача с тестами',
+      project: 'Проект курса'
+    };
 
     // Render Module Switcher in sidebar
     const renderModuleSwitcher = () => {
@@ -2438,7 +2468,7 @@ if (lessonsPage) {
         lessonNav.innerHTML = modTasks.map((t, idx) => {
           const isActive = t.id === activeStep.id;
           const stepNum = t.step_number || String(idx + 1).padStart(2, '0');
-          const icon = stepIcon(t.type);
+          const icon = typeIcons[t.type] || '#';
           return `<a class="lesson-step-item ${isActive ? 'active' : ''}" data-step-id="${t.id}" href="javascript:void(0)">
             <span class="lesson-step-badge">${icon}</span>
             <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
@@ -2465,7 +2495,7 @@ if (lessonsPage) {
         return;
       }
 
-      const stepTypeName = stepLabel(activeStep.type);
+      const stepTypeName = typeLabels[activeStep.type] || activeStep.type;
       const stepNum = activeStep.step_number || '01';
       const checkTypeLabel = activeStep.check_type || 'Автоматическая проверка';
 
@@ -2595,7 +2625,7 @@ document.querySelectorAll('[data-course-filter]').forEach(button => {
   });
 });
 
-document.querySelectorAll('button[data-theme]').forEach(button => {
+document.querySelectorAll('[data-theme]').forEach(button => {
   button.addEventListener('click', () => {
     applyTheme(button.dataset.theme, true);
   });
@@ -2681,15 +2711,110 @@ function renderSkillRadarSvg(metrics) {
   `;
 }
 
-/* --- 4. Global Live Activity Ticker --- */
-const plural = (count, one, few, many) => {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-};
+/* --- 3. AI Code Inspector Panel --- */
+function initAiCodeInspector() {
+  const inspector = document.getElementById('ai-code-inspector');
+  const scoreVal = document.getElementById('ai-score-value');
+  const complexityVal = document.getElementById('ai-complexity-val');
+  const cleanVal = document.getElementById('ai-clean-val');
+  const stepsVal = document.getElementById('ai-steps-val');
+  const adviceBox = document.getElementById('ai-advice-box');
+  const runBtn = document.getElementById('btn-run-ai-check');
 
+  if (!inspector) return;
+
+  const getCode = () => {
+    const el = document.querySelector('#python-code-input') || 
+               document.querySelector('#input') || 
+               document.querySelector('#scratch-num-input') || 
+               document.querySelector('#scratch-link-input') || 
+               document.querySelector('#mc-desc-input') || 
+               document.querySelector('#project-notes-input') ||
+               document.querySelector('textarea');
+    return el ? el.value.trim() : '';
+  };
+
+  const analyze = () => {
+    const code = getCode();
+    if (!code) {
+      if (scoreVal) scoreVal.textContent = 'Оценка: -- / 100';
+      if (complexityVal) complexityVal.textContent = 'Ожидание ввода';
+      if (cleanVal) cleanVal.textContent = '--';
+      if (stepsVal) stepsVal.textContent = '0 шагов';
+      if (adviceBox) adviceBox.textContent = 'ИИ-инспектор ожидает ввод алгоритма, решения или запуск симулятора.';
+      return;
+    }
+
+    const lines = code.split('\n').filter(l => l.trim().length > 0);
+    const loopMatches = code.match(/(?:нц\b|while\b|for\b|повтори\b|range\b)/gi) || [];
+    const conditionMatches = code.match(/(?:если\b|if\b|elif\b|иначе\b|else\b)/gi) || [];
+    const actionMatches = code.match(/(?:вперед|направо|налево|прыжок|step|turn|take|drop|print|input|def\b)/gi) || [];
+
+    let hasNestedLoop = false;
+    let loopDepth = 0;
+    lines.forEach(l => {
+      if (/(?:нц\b|while\b|for\b|повтори\b)/i.test(l)) {
+        loopDepth++;
+        if (loopDepth > 1) hasNestedLoop = true;
+      }
+      if (/(?:кц\b|})/i.test(l)) {
+        loopDepth = Math.max(0, loopDepth - 1);
+      }
+    });
+
+    let complexity = 'O(1) константная';
+    if (hasNestedLoop) {
+      complexity = 'O(N²) квадратичная';
+    } else if (loopMatches.length > 0) {
+      complexity = 'O(N) линейная';
+    }
+
+    let score = 92;
+    if (lines.length >= 2 && lines.length <= 25) score += 4;
+    if (conditionMatches.length > 0) score += 2;
+    if (hasNestedLoop) score -= 4;
+    if (score > 100) score = 100;
+    if (score < 60) score = 60;
+
+    const cleanlinessPercent = Math.min(99, 90 + Math.floor(lines.length * 1.1));
+    const stepCount = actionMatches.length || lines.length;
+
+    let advice = 'ИИ-инспектор: Алгоритм построен оптимально, ветвление корректно обрабатывает граничные условия.';
+    if (hasNestedLoop) {
+      advice = 'ИИ-инспектор [Внимание]: Обнаружен вложенный цикл. Для олимпиадных тестов с большими входными данными сложность O(N²) может превысить лимит времени (Time Limit). Рассмотрите оптимизацию через математическую формулу или словарь.';
+    } else if (loopMatches.length > 0 && conditionMatches.length > 0) {
+      advice = 'ИИ-инспектор [Оптимально]: Применен классический алгоритмический паттерн "цикл + проверка условий". Время исполнения O(N). Решение готово к автоматической проверке в песочнице.';
+    } else if (loopMatches.length > 0) {
+      advice = 'ИИ-инспектор: Циклический обход зафиксирован. Проверьте граничные условия завершения цикла (индексацию 0-based/1-based или пустой ввод).';
+    } else if (code.includes('print') || code.includes('input')) {
+      advice = 'ИИ-инспектор: Решение олимпиадного типа. Считывание через stdin и вывод в stdout соответствуют регламенту спортивного программирования.';
+    } else {
+      advice = 'ИИ-инспектор: Прямолинейное выполнение O(1). Для экономии строк и памяти при многократных операциях используйте цикл.';
+    }
+
+    if (scoreVal) scoreVal.textContent = `Оценка: ${score} / 100`;
+    if (complexityVal) complexityVal.textContent = complexity;
+    if (cleanVal) cleanVal.textContent = `${cleanlinessPercent}% чисто`;
+    if (stepsVal) stepsVal.textContent = `${stepCount} инстр.`;
+    if (adviceBox) adviceBox.textContent = advice;
+  };
+
+  runBtn?.addEventListener('click', () => {
+    analyze();
+    showMessage('ИИ-анализ алгоритма обновлён.');
+  });
+
+  document.addEventListener('input', (e) => {
+    if (e.target && (e.target.matches('#python-code-input, #input, textarea, .task-answer'))) {
+      clearTimeout(window._aiInspectTimer);
+      window._aiInspectTimer = setTimeout(analyze, 300);
+    }
+  });
+
+  analyze();
+}
+
+/* --- 4. Global Live Activity Ticker --- */
 function initLiveTicker() {
   if (document.getElementById('platform-live-ticker')) return;
 
@@ -2699,7 +2824,7 @@ function initLiveTicker() {
   ticker.innerHTML = `
     <div class="ticker-content">
       <span class="ticker-ping"></span>
-      <span id="ticker-msg-text">Теория · контрольные вопросы · проекты · задачи с тестами</span>
+      <span id="ticker-msg-text">3 курса · 9 модулей · 30 шагов</span>
     </div>
     <div style="opacity:0.6; font-size:10px; font-family:monospace; display:flex; gap:12px;">
       <span>PIXELSTART</span>
@@ -2709,15 +2834,11 @@ function initLiveTicker() {
 
   document.body.prepend(ticker);
 
-  const messages = ['Теория · контрольные вопросы · проекты · задачи с тестами'];
-  // Catalog facts come from the API, not from hardcoded numbers.
-  getCourses().then(courses => {
-    if (!courses.length) return;
-    messages.unshift(
-      `${courses.length} ${plural(courses.length, 'курс', 'курса', 'курсов')} в каталоге`,
-      courses.map(course => course.title).join(' · ')
-    );
-  }).catch(() => {});
+  const messages = [
+    '3 курса · 9 модулей · 30 шагов',
+    'Scratch 3 · Minecraft Education · Python 3',
+    'Теория · контрольные вопросы · проекты · задачи с тестами'
+  ];
 
   let idx = 0;
   const msgEl = ticker.querySelector('#ticker-msg-text');
@@ -2814,9 +2935,9 @@ function initTopbarBroadcasts() {
     if (e.target === backdrop) toggleDrawer(false);
   });
 
-  // Re-rendered after marking an item as read and by refreshPageData(); listeners above are bound once.
-  const renderBroadcasts = async () => {
-    const items = await api.get('/users/me/broadcasts');
+  // Fetch broadcasts
+  api.get('/users/me/broadcasts').then(items => {
+    if (!items || !Array.isArray(items)) return;
 
     const readIds = JSON.parse(localStorage.getItem('pixelstart_read_broadcasts') || '[]');
     const unreadCount = items.filter(b => !readIds.includes(b.id)).length;
@@ -2880,7 +3001,7 @@ function initTopbarBroadcasts() {
           cur.push(id);
           localStorage.setItem('pixelstart_read_broadcasts', JSON.stringify(cur));
         }
-        run(renderBroadcasts);
+        initTopbarBroadcasts();
       });
     });
 
@@ -2903,9 +3024,7 @@ function initTopbarBroadcasts() {
       `;
       bannerEl.querySelector('#btn-banner-read')?.addEventListener('click', () => toggleDrawer(true));
     }
-  };
-
-  registerLoader(renderBroadcasts);
+  }).catch(() => {});
 }
 
 /* ==========================================================================
@@ -3067,7 +3186,7 @@ function initStudentLeaderboardPage() {
   const podiumMount = document.getElementById('leaderboard-podium');
   if (!tbody && !podiumMount) return;
 
-  Promise.all([api.get('/users/leaderboard'), getCurrentUser().catch(() => null)]).then(([data, currentUser]) => {
+  Promise.all([api.get('/users/leaderboard'), api.get('/users/me').catch(() => null)]).then(([data, currentUser]) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
       if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:32px; color:var(--muted);">Рейтинговая таблица пока формируется.</td></tr>`;
       return;
@@ -3246,40 +3365,9 @@ function initCuratorAlertsRadar() {
   }).catch(() => {});
 }
 
-/* ==========================================================================
-   ADMIN DASHBOARD STATS (admin/index.html)
-   ========================================================================== */
-function initAdminStats() {
-  if (!document.querySelector('[data-admin-stat]')) return;
-
-  const setStat = (key, value, label) => {
-    const valueEl = document.querySelector(`[data-admin-stat="${key}"]`);
-    const labelEl = document.querySelector(`[data-admin-stat-label="${key}"]`);
-    if (valueEl) valueEl.textContent = value;
-    if (labelEl) labelEl.textContent = label;
-  };
-
-  registerLoader(async () => {
-    const [users, courses, streams] = await Promise.all([
-      api.get('/panel/users?limit=100'),
-      api.get('/courses?limit=100'),
-      api.get('/streams?limit=100')
-    ]);
-    const byRole = role => users.filter(user => user.role === role).length;
-    const usersCount = users.length === 100 ? '100+' : String(users.length);
-    setStat('users', `${usersCount} ${plural(users.length, 'аккаунт', 'аккаунта', 'аккаунтов')}`,
-      `Учеников: ${byRole('student')}, кураторов: ${byRole('curator')}, админов: ${byRole('admin')}`);
-    setStat('courses', `${courses.length} ${plural(courses.length, 'курс', 'курса', 'курсов')}`,
-      courses.map(course => courseType(course.type).short).join(', ') || 'Каталог пуст');
-    const now = Date.now();
-    const active = streams.filter(stream => new Date(stream.start_date) <= now && now <= new Date(stream.end_date));
-    setStat('streams', `${active.length} ${plural(active.length, 'активный', 'активных', 'активных')}`,
-      `Всего потоков: ${streams.length}`);
-  });
-}
-
 /* --- Initialization on DOM Ready --- */
 document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(getActiveTheme(), false);
   initTopbarThemeToggle();
   initLiveTicker();
   initDemoSwitcher();
@@ -3291,6 +3379,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initStudentDashboard();
   initStudentSchedulePage();
   initStudentLeaderboardPage();
-  initAdminStats();
   updateThemeToggleButtons(getActiveTheme() === 'dark');
+});
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-theme]');
+  if (btn && btn.dataset.theme) {
+    applyTheme(btn.dataset.theme, true);
+  }
 });

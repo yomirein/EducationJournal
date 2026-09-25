@@ -6,10 +6,10 @@
     <title>
       Объявление — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260926">
-    <script src="../assets/api.js?v=20260926" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
+    <script src="../assets/api.js?v=20260925" defer>
     </script>
-    <script src="../assets/app.js?v=20260926" defer>
+    <script src="../assets/app.js?v=20260925" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -36,9 +36,6 @@
             </b>
           </span>
         </a>
-        <p class="side-label">
-          Мой поток
-        </p>
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
@@ -65,15 +62,6 @@
             </span>
           </a>
         </nav>
-        <div class="side-user">
-          <strong>
-            Роль curator
-          </strong>
-          Доступ к своим потокам
-          <span class="role">
-            Curator
-          </span>
-        </div>
       </aside>
       <main class="main">
         <header class="topbar">
@@ -106,9 +94,9 @@
             <form class="auth-form" data-form="broadcast">
               <div class="field">
                 <label for="stream_id">
-                  Поток
+                  ID потока
                 </label>
-                <select id="stream_id" name="stream_id" required data-stream-select></select>
+                <input id="stream_id" name="stream_id" type="number" value="1" required>
               </div>
               <div class="field">
                 <label for="text">
@@ -128,13 +116,13 @@
               Предыдущие объявления
             </h2>
             <div class="entry-actions">
-              <select name="stream_id" aria-label="Поток" data-stream-select data-stream-reload="broadcasts"></select>
+              <input name="stream_id" type="number" value="1" aria-label="ID потока">
               <button class="button button-soft" type="button" data-load-target="broadcasts">
                 Загрузить
               </button>
             </div>
             <pre class="data-output" data-result="broadcasts">
-              Загрузка объявлений…
+              Нажми «Загрузить».
             </pre>
           </section>
         </div>

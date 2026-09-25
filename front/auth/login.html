@@ -6,10 +6,10 @@
     <title>
       Вход — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260926">
-    <script src="../assets/api.js?v=20260926" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
+    <script src="../assets/api.js?v=20260925" defer>
     </script>
-    <script src="../assets/app.js?v=20260926" defer>
+    <script src="../assets/app.js?v=20260925" defer>
     </script>
   </head>
   <body>
@@ -75,21 +75,25 @@
           <h2>
             Вход в систему
           </h2>
-          <!-- 1-Click Quick Demo Login Presets (shown on localhost only) -->
-          <div data-demo-only hidden style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:18px;">
+          <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+            Выберите демо-роль для входа в 1 клик или введите логин и пароль:
+          </p>
+
+          <!-- 1-Click Quick Demo Login Presets -->
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:18px;">
             <div style="font-size:11px; text-transform:uppercase; font-weight:800; color:var(--accent); letter-spacing:0.06em; margin-bottom:8px;">
               Быстрый вход для жюри и тестов:
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="student">
+              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" onclick="handleQuickLogin('student', 'student12345', '../student/index.html')">
                 <span>Войти как <strong>Ученик</strong> (Иван)</span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">student / student12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="curator">
+              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" onclick="handleQuickLogin('curator', 'curator12345', '../curator/index.html')">
                 <span>Войти как <strong>Куратор</strong> (Анна)</span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">curator / curator12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="admin">
+              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" onclick="handleQuickLogin('admin', 'admin12345', '../admin/index.html')">
                 <span>Войти как <strong>Администратор</strong></span>
                 <span style="opacity:0.75; font-size:11px; font-family:monospace;">admin / admin12345</span>
               </button>
@@ -120,6 +124,26 @@
             </button>
           </form>
 
+          <script>
+            async function handleQuickLogin(login, password, redirectUrl) {
+              const loginInput = document.getElementById('login');
+              const passwordInput = document.getElementById('password');
+              if (loginInput) loginInput.value = login;
+              if (passwordInput) passwordInput.value = password;
+
+              try {
+                const res = await window.pixelApi.post('/auth/login', { login, password });
+                window.pixelApi.auth.save(res);
+                const user = await window.pixelApi.get('/users/me').catch(() => null);
+                if (user) {
+                  localStorage.setItem('pixelstart_user', JSON.stringify(user));
+                }
+                window.location.href = redirectUrl;
+              } catch (e) {
+                alert('Ошибка авторизации: ' + e.message);
+              }
+            }
+          </script>
           <p class="auth-switch">
             <a href="reset.html">
               Восстановить пароль
