@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     updateSyntaxHighlight();
-    codeTextarea.focus();
+    codeTextarea.focus({ preventScroll: true });
   }
 
   // 9. Обработчики запуска

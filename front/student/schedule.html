@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Учебный маршрут · PixelStart</title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer></script>
-    <script src="../assets/app.js?v=20260925" defer></script>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261029">
+    <script src="../assets/theme-init.js?v=20261026"></script>
+    <script src="../assets/api.js?v=20261026" defer></script>
+    <script src="../assets/app.js?v=20261027" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -91,16 +92,16 @@
 
           <!-- Schedule Filter Tabs -->
           <div class="filter-tabs-bar" id="schedule-tabs">
-            <button class="filter-tab-btn active" data-filter="all" type="button">
+            <button class="chip-toggle active" data-filter="all" type="button">
               Все занятия <span class="tab-count-pill" id="count-all">0</span>
             </button>
-            <button class="filter-tab-btn" data-filter="active" type="button">
+            <button class="chip-toggle" data-filter="active" type="button">
               В процессе <span class="tab-count-pill" id="count-active">0</span>
             </button>
-            <button class="filter-tab-btn" data-filter="completed" type="button">
+            <button class="chip-toggle" data-filter="completed" type="button">
               Сдано <span class="tab-count-pill" id="count-completed">0</span>
             </button>
-            <button class="filter-tab-btn" data-filter="upcoming" type="button">
+            <button class="chip-toggle" data-filter="upcoming" type="button">
               Предстоит <span class="tab-count-pill" id="count-upcoming">0</span>
             </button>
           </div>
