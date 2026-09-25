@@ -54,6 +54,16 @@ def test_register():
     # duplicate
     ok("register duplicate (expect 409)", requests.post(f"{BASE}/auth/register", json=USERS[0]))
 
+    # Login requires a confirmed email; without the mailbox the admin confirms the test users.
+    ok("login unverified (expect 403)",
+       requests.post(f"{BASE}/auth/login", json={"login": USERS[0]["username"], "password": USERS[0]["password"]}))
+    admin_token = login(ADMIN_USERNAME, ADMIN_PASSWORD)
+    users = requests.get(f"{BASE}/panel/users?limit=100", headers=auth(admin_token)).json()
+    for u in USERS:
+        user_id = next(item["id"] for item in users if item["username"] == u["username"])
+        ok(f"verify {u['username']}",
+           requests.patch(f"{BASE}/panel/users/{user_id}", json={"is_verified": True}, headers=auth(admin_token)))
+
 
 def test_login():
     print("\n=== Login ===")

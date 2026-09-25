@@ -27,6 +27,7 @@ async def _ensure_first_admin():
             email=settings.first_admin_email,
             password_hash=hash_password(settings.first_admin_password),
             role=UserRole.admin,
+            is_verified=True,
         ))
         await db.commit()
         print(f"[startup] Created first admin: {settings.first_admin_username}")

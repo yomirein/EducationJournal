@@ -95,3 +95,36 @@ async def send_verification_email(email: str, token: str) -> bool:
     </html>
     """
     return await send_email(email, "Подтверждение email — PixelStart", html_body)
+
+
+async def send_password_reset_email(email: str, token: str) -> bool:
+    reset_url = f"{settings.frontend_url.rstrip('/')}/auth/reset.html?token={quote(token)}"
+    html_body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #3457f0;">Восстановление пароля</h2>
+                <p>Здравствуйте!</p>
+                <p>Кто-то запросил смену пароля для вашего аккаунта на платформе PixelStart. Чтобы задать новый пароль, нажмите на кнопку:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}"
+                       style="background-color: #3457f0; color: white; padding: 12px 30px;
+                              text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Задать новый пароль
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">
+                    Если кнопка не работает, скопируйте ссылку в браузер:<br>
+                    <a href="{reset_url}" style="color: #3457f0;">{reset_url}</a>
+                </p>
+                <p style="color: #666; font-size: 14px;">
+                    Ссылка действует {settings.password_reset_token_expire} минут и сработает один раз.
+                </p>
+                <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                    Если вы не запрашивали смену пароля, просто проигнорируйте письмо — пароль останется прежним.
+                </p>
+            </div>
+        </body>
+    </html>
+    """
+    return await send_email(email, "Восстановление пароля — PixelStart", html_body)

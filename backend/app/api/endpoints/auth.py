@@ -4,7 +4,15 @@ from backend.app.core.config import settings
 from backend.app.core.rate_limit import rate_limit
 from backend.app.core.security import create_token, verify_token
 from backend.app.db import get_session
-from backend.app.schemas import Login, RefreshRequest, TokenPair, UserCreate, UserOut
+from backend.app.schemas import (
+    ForgotPasswordRequest,
+    Login,
+    RefreshRequest,
+    ResetPasswordRequest,
+    TokenPair,
+    UserCreate,
+    UserOut,
+)
 from backend.app.services import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -44,6 +52,28 @@ async def resend_verification(
     db: AsyncSession = Depends(get_session),
 ):
     await AuthService(db).resend_verification(email, background_tasks)
+
+
+@router.post(
+    "/forgot-password",
+    status_code=204,
+    dependencies=[Depends(rate_limit(5, 600))],
+)
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_session),
+):
+    await AuthService(db).forgot_password(data.login, background_tasks)
+
+
+@router.post(
+    "/reset-password",
+    status_code=204,
+    dependencies=[Depends(rate_limit(10, 600))],
+)
+async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(get_session)):
+    await AuthService(db).reset_password(data.token, data.password)
 
 
 @router.post(

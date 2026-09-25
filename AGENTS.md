@@ -16,6 +16,7 @@ UI text, user-facing error messages in the frontend, docs and commit discussion 
 - `backend/app/core/` — `config.py` (pydantic-settings, reads `.env` from CWD), `security.py` (JWT, argon2), `email.py`, `rate_limit.py`.
 - `backend/app/models.py` / `schemas.py` — SQLAlchemy models / Pydantic v2 schemas.
 - `backend/app/core/email.py` — outgoing mail via SMTP (`fastapi-mail`): `send_email()` never raises (logs to `pixelstart.email`), `send_verification_email()`. Local dev uses Mailpit from docker-compose (UI http://127.0.0.1:8025), prod uses Yandex SMTP (`smtp.yandex.ru:465`, SSL, app password, `MAIL_FROM` = login). Check settings with `python -m backend.scripts.send_test_email you@example.com`.
+- `backend/app/progress.py` — the only place for pass rules, points, ranks and curator early warnings (`stream_progress`). Endpoints `/users/me/rating`, `/streams/{id}/progress` and panel stats use it; do not re-implement "is passed" elsewhere.
 - `backend/app/evaluator.py` — auto-grading; runs student Python in a subprocess with rlimits and an AST allow-list.
 - `backend/migrations/` — Alembic; `backend/alembic.ini` resolves paths relative to itself.
 - `backend/scripts/seed.py` — **destructive** demo seed; requires `PIXELSTART_ALLOW_DEMO_SEED=1`.
@@ -51,13 +52,15 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 
 - **Request bodies are Pydantic schemas** in `schemas.py` — never `data: dict`. Partial updates use `model_dump(exclude_unset=True)`.
 - **Endpoints that return ORM `User` objects must set `response_model=UserOut`**, otherwise `password_hash` leaks.
-- Errors: `raise HTTPException(status, "English message")`. Integrity violations on commit → rollback + 409.
+- Errors: `raise HTTPException(status, "English message")`. Integrity violations on commit → rollback + 409. Every new `detail` text needs a Russian translation in `ERROR_TEXTS` in `front/assets/api.js` (validation errors are translated there by type); errors carry `error.status` for the UI.
 - Some endpoints return hand-built dicts (e.g. submissions, schedule, leaderboard). When adding fields, keep existing keys: `front/assets/app.js` reads them directly.
 - DB access: async SQLAlchemy 2 (`select(...)`, `await db.scalar/scalars/execute`). Sessions come from `Depends(get_session)`.
 - Datetimes are timezone-aware (`datetime.now(timezone.utc)`).
 - Schema changes need an Alembic revision in `backend/migrations/versions/` (`alembic -c backend/alembic.ini revision --autogenerate -m "..."`). Migrations use PostgreSQL syntax; SQLite is not supported.
 
 ## Security invariants (do not regress)
+
+- Login requires `is_verified`. Password reset tokens carry a fingerprint of the password hash (`password_fingerprint`), so a link stops working after use; `/auth/forgot-password` always answers 204.
 
 - `require_role(...)` for role gates; stream endpoints use `staff = require_role(curator, admin)` plus `owned(stream_id, user, db)` (admin sees all, curator only own streams).
 - Grading and file removal must go through `stream_submission(stream, task_id, submission_id, db)`: it checks that the submission belongs to the task, the stream's course and a participant of that stream (IDOR guard).
@@ -72,6 +75,8 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 
 - **Data freshness:** every block that shows API data registers its loader with `registerLoader(loader)`; every successful change calls `await refreshPageData()`, which re-runs all registered loaders. New lists and forms must follow this, never patch the DOM by hand after a mutation.
 - Use the shared helpers in the top of `app.js` instead of re-implementing them: `getCurrentUser()` / `getCourses()` (one request per page), `resolveCourseId()`, `stepIcon/stepLabel`, `courseType`, `courseCard`, `criteriaBox`, `quickLogin`, `homeForRole`. Inside the task studio, submit answers with `submitAnswer(task, input, { workbench })`.
+- Students enrol via the course page: `[data-course-enroll]` lists the course's streams with the status from `GET /users/me/applications` and posts `POST /streams/{id}/join`. Course pages load steps through `loadCourseTasks()`, which shows an enrol hint on 403 instead of an endless loading state.
+- Status badges use the design system classes `status status-done|review|failed|progress`; plural forms go through `plural(n, one, few, many)`.
 - Curator pages pick streams from `select[data-stream-select]` (filled from `/users/me/streams`); `data-stream-reload="X"` reloads the `[data-load-target="X"]` block on change. Do not hardcode stream ids.
 - Demo quick-login buttons use `data-quick-login="<role>"` inside a `data-demo-only` container; no inline scripts in HTML.
 - HTML pages load assets with a cache-busting query (`assets/app.js?v=YYYYMMDD`). When you change `api.js`, `app.js` or `styles.css`, bump the `v=` value in **all** HTML files, or browsers keep the old file.

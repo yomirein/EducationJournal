@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Проверка — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Проверка работ · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body class="curator-theme">
     <div class="app-shell">
@@ -36,6 +32,9 @@
             </b>
           </span>
         </a>
+        <p class="side-label">
+          Мой поток
+        </p>
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon">
@@ -70,11 +69,16 @@
             </span>
           </a>
         </nav>
+        <div class="side-user">
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Куратор</span>
+        </div>
       </aside>
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Поток /
+            Куратор /
             <strong>
               Проверка работ
             </strong>
@@ -102,50 +106,6 @@
             </p>
           </div>
           <div id="submissions-board-section" class="card" style="margin-bottom:22px;"></div>
-          <section class="card" style="opacity:0.85;">
-            <h2>
-              Ручной ввод (API Fallback)
-            </h2>
-            <form class="auth-form" data-form="grade">
-              <div class="field-grid">
-                <div class="field">
-                  <label for="stream_id">
-                    ID потока
-                  </label>
-                  <input id="stream_id" name="stream_id" type="number" value="1" required>
-                </div>
-                <div class="field">
-                  <label for="task_id">
-                    ID задания
-                  </label>
-                  <input id="task_id" name="task_id" type="number" value="1" required>
-                </div>
-                <div class="field">
-                  <label for="submission_id">
-                    ID отправки
-                  </label>
-                  <input id="submission_id" name="submission_id" type="number" required>
-                </div>
-                <div class="field">
-                  <label for="grade">
-                    Оценка -1..100
-                  </label>
-                  <input id="grade" name="grade" type="number" min="-1" max="100" required>
-                </div>
-                <div class="field full">
-                  <label for="feedback_message">
-                    Обратная связь
-                  </label>
-                  <textarea id="feedback_message" name="feedback_message" placeholder="Что получилось и что попробовать дальше">
-                  </textarea>
-                </div>
-              </div>
-              <button class="button button-dark" type="submit">
-                Сохранить оценку
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-              </button>
-            </form>
-          </section>
           <section class="card" style="margin-top:18px">
             <h2>
               Удалить файл с причиной
@@ -154,21 +114,21 @@
               <div class="field-grid">
                 <div class="field">
                   <label for="remove-stream">
-                    ID потока
+                    Поток
                   </label>
-                  <input id="remove-stream" name="stream_id" type="number" value="1">
+                  <select id="remove-stream" name="stream_id" required data-stream-select></select>
                 </div>
                 <div class="field">
                   <label for="remove-task">
                     ID задания
                   </label>
-                  <input id="remove-task" name="task_id" type="number" value="1">
+                  <input id="remove-task" name="task_id" type="number" required>
                 </div>
                 <div class="field">
                   <label for="remove-submission">
                     ID отправки
                   </label>
-                  <input id="remove-submission" name="submission_id" type="number">
+                  <input id="remove-submission" name="submission_id" type="number" required>
                 </div>
                 <div class="field">
                   <label for="reason">

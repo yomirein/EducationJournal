@@ -93,7 +93,6 @@ async def schedule(
             "course_type": c.type,
             "curator_name": f"{u.first_name} {u.last_name}" if u else "Куратор",
             "participant_status": p.status,
-            "rating": p.user_stream_rating,
             "lessons": lessons_list,
         })
 

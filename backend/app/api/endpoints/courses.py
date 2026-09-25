@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -202,6 +203,7 @@ async def submit(
 
     item.input = data.input
     item.file_id = data.file_id
+    item.submitted_at = datetime.now(timezone.utc)
     item.grade = eval_result["grade"]
     item.feedback_message = eval_result["feedback_message"]
 

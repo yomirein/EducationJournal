@@ -3,10 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Авторизация — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
+    <title>Авторизация · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
   </head>
   <body>
     <main class="auth-page">
@@ -44,21 +42,11 @@
             Войди или создай профиль, чтобы курсы, задания и прогресс были привязаны к твоему аккаунту.
           </p>
           <div class="auth-terminal">
-            &gt;
-            connect_account()
+            &gt; start_adventure()
             <br>
-            <span style="color:var(--coral)">
-              jwt
-            </span>
-            =
-            <span style="color:var(--lime)">
-              ready
-            </span>
+            <span style="color:var(--coral)">status</span> = <span style="color:var(--lime)">active</span>
             <br>
-            &gt;
-            <span style="color:var(--yellow)">
-              start!
-            </span>
+            &gt; <span style="color:var(--yellow)">start!</span>
           </div>
         </div>
       </section>
@@ -66,30 +54,20 @@
         <div class="auth-card">
           <a class="brand" href="../index.html">
             <span class="brand-mark">
-              <i>
-              </i>
-              <i>
-              </i>
-              <i>
-              </i>
-              <i>
-              </i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
             </span>
             <span>
-              pixel
-              <span>
-                start
-              </span>
-              <b>
-                kids
-              </b>
+              pixel<span>start</span> <b>kids</b>
             </span>
           </a>
           <h2>
             Войти в платформу
           </h2>
           <p>
-            Используй логин или почту. После входа сервер определит роль аккаунта.
+            Используйте логин и пароль для входа в свой личный кабинет.
           </p>
           <div class="entry-actions">
             <a class="button button-dark" href="login.html">
@@ -106,5 +84,7 @@
         </div>
       </section>
     </main>
+    <div class="toast" role="status">
+    </div>
   </body>
 </html>

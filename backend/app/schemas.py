@@ -41,6 +41,15 @@ class Login(BaseModel):
     password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    login: str = Field(min_length=1, max_length=320)
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=1)
+    password: str = Field(min_length=8)
+
+
 class RefreshRequest(BaseModel):
     refresh_token: str = Field(min_length=1)
 
@@ -158,6 +167,7 @@ class BroadcastCreate(BaseModel):
 class AdminUserUpdate(BaseModel):
     role: UserRole | None = None
     payment: bool | None = None
+    is_verified: bool | None = None
 
 
 class LessonUpdate(BaseModel):

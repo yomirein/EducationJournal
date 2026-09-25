@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Журнал — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Журнал · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -91,15 +87,9 @@
           </a>
         </nav>
         <div class="side-user">
-          <strong data-user-name>
-            Мой аккаунт
-          </strong>
-          <span data-user-role>
-            Загрузка профиля...
-          </span>
-          <span class="role">
-            Student
-          </span>
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Ученик</span>
         </div>
       </aside>
       <main class="main">
@@ -155,9 +145,7 @@
               <span class="eyebrow">
                 Прогресс курса
               </span>
-              <strong class="stat-value" data-overall-percent>
-                —
-              </strong>
+              <strong class="stat-value" data-overall-percent>0%</strong>
               <div class="progress">
                 <span data-overall-progress style="width:0%">
                 </span>
@@ -167,9 +155,7 @@
               <span class="eyebrow">
                 Опыт и рейтинг
               </span>
-              <strong class="stat-value" data-load="/users/me/rating">
-                —
-              </strong>
+              <strong class="stat-value" data-load="/users/me/rating">0</strong>
               <span class="stat-label">
                 За принятые задания
               </span>
@@ -178,14 +164,11 @@
               <span class="eyebrow">
                 Пройдено
               </span>
-              <strong class="stat-value" data-completed-count>
-                —
-              </strong>
+              <strong class="stat-value" data-completed-count>0</strong>
               <span class="stat-label">
                 шагов учебной программы
               </span>
             </div>
-          </div>
           </div>
           <section class="radar-card" id="radar-matrix-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
@@ -199,6 +182,17 @@
               <div class="radar-svg-box" id="radar-svg-container">
               </div>
               <div class="radar-metrics-list" data-course-progress-list>Загрузка прогресса…</div>
+            </div>
+          </section>
+          <section class="card" data-rating-breakdown style="margin-top:18px">
+            <p class="eyebrow">
+              Рейтинг
+            </p>
+            <h2>
+              Из чего сложился результат
+            </h2>
+            <div data-rating-body>
+              <p style="color:var(--muted);">Загрузка рейтинга…</p>
             </div>
           </section>
           <div class="grid grid-2" style="margin-top:18px">
