@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Панель куратора — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Панель куратора · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body class="curator-theme">
     <div class="app-shell">
@@ -66,27 +62,20 @@
           </a>
         </nav>
         <div class="side-user">
-          <strong>
-            Роль curator
-          </strong>
-          Доступ к своим потокам
-          <span class="role">
-            Curator
-          </span>
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Куратор</span>
         </div>
       </aside>
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Служебная зона /
+            Куратор /
             <strong>
-              Панель куратора
+              Панель управления
             </strong>
           </div>
           <div class="top-actions">
-            <span class="status">
-              JWT required
-            </span>
             <button class="button button-soft" data-logout>
               Выйти
             </button>
@@ -115,15 +104,24 @@
           </div>
           <!-- Curator Alerts Radar Mount -->
           <div id="curator-alerts-radar"></div>
+          <section class="card" data-risk-board style="margin-bottom:18px">
+            <p class="eyebrow">
+              Раннее предупреждение
+            </p>
+            <h2>
+              Кому нужна помощь
+            </h2>
+            <div data-risk-body>
+              <p style="color:var(--muted);">Загрузка прогресса учеников…</p>
+            </div>
+          </section>
 
           <div class="grid grid-3">
             <div class="card stat-card accent-card">
               <span class="eyebrow">
                 Учебные потоки
               </span>
-              <strong class="stat-value" id="curator-stat-streams">
-                —
-              </strong>
+              <strong class="stat-value" id="curator-stat-streams">0</strong>
               <span class="stat-label">
                 Создано на платформе
               </span>
@@ -132,9 +130,7 @@
               <span class="eyebrow">
                 Ученики
               </span>
-              <strong class="stat-value" id="curator-stat-students">
-                —
-              </strong>
+              <strong class="stat-value" id="curator-stat-students">0</strong>
               <span class="stat-label">
                 В активном потоке
               </span>

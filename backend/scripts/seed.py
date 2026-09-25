@@ -62,6 +62,7 @@ async def seed():
                 password_hash=hash_password("admin12345"),
                 role=UserRole.admin,
                 payment=True,
+                is_verified=True,
                 description="Главный администратор платформы"
             )
             db.add(admin)
@@ -76,6 +77,7 @@ async def seed():
                 password_hash=hash_password("curator12345"),
                 role=UserRole.curator,
                 payment=True,
+                is_verified=True,
                 description="Куратор потоков по направлению Scratch, Minecraft и Python"
             )
             db.add(curator)
@@ -90,6 +92,7 @@ async def seed():
                 password_hash=hash_password("student12345"),
                 role=UserRole.student,
                 payment=True,
+                is_verified=True,
                 description="Ученик олимпиадного направления"
             )
             db.add(student)
@@ -240,15 +243,17 @@ async def seed():
             db.add(sub3)
 
         # 4. Seed realistic peer students for competitive leaderboard
+        # (login, first name, last name, solved steps, days since the last submission).
+        # artem_bot has been idle for 10 days so the curator dashboard shows an early warning.
         peers_data = [
-            ("alex_coder", "Алексей", "Смирнов", 4),
-            ("maria_dev", "Мария", "Ковалёва", 3),
-            ("timur_pro", "Тимур", "Гасанов", 2),
-            ("sofi_code", "София", "Лебедева", 2),
-            ("artem_bot", "Артём", "Новиков", 1),
+            ("alex_coder", "Алексей", "Смирнов", 4, 1),
+            ("maria_dev", "Мария", "Ковалёва", 3, 2),
+            ("timur_pro", "Тимур", "Гасанов", 2, 3),
+            ("sofi_code", "София", "Лебедева", 2, 4),
+            ("artem_bot", "Артём", "Новиков", 1, 10),
         ]
-        
-        for username, fname, lname, solved_count in peers_data:
+
+        for username, fname, lname, solved_count, idle_days in peers_data:
             peer = await db.scalar(select(User).where(User.username == username))
             if not peer:
                 peer = User(
@@ -258,6 +263,7 @@ async def seed():
                     last_name=lname,
                     password_hash=hash_password("student12345"),
                     role=UserRole.student,
+                    is_verified=True,
                 )
                 db.add(peer)
                 await db.flush()
@@ -287,7 +293,8 @@ async def seed():
                             user_id=peer.id,
                             grade=100,
                             input="# Решение зачтено в автоматическом режиме",
-                            feedback_message="Автопроверка: 100/100"
+                            feedback_message="Автопроверка: 100/100",
+                            submitted_at=datetime.now(timezone.utc) - timedelta(days=idle_days),
                         ))
 
         # 5. Seed Stream Broadcasts from Curator

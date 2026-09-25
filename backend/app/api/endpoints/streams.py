@@ -18,6 +18,7 @@ from backend.app.models import (
     Submission,
     User,
 )
+from backend.app.progress import stream_progress
 from backend.app.schemas import BroadcastCreate, GradeUpdate
 
 router = APIRouter(prefix="/streams", tags=["streams"])
@@ -151,13 +152,23 @@ async def participants(
             "user_id": part.user_id,
             "stream_id": part.stream_id,
             "status": part.status,
-            "user_stream_rating": part.user_stream_rating,
             "first_name": usr.first_name,
             "last_name": usr.last_name,
             "username": usr.username,
         }
         for part, usr in rows.all()
     ]
+
+
+@router.get("/{stream_id}/progress")
+async def progress(
+    stream_id: int,
+    user=Depends(staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """Every accepted student's progress with early warnings (behind the timeline, inactive)."""
+    stream = await owned(stream_id, user, db)
+    return await stream_progress(db, stream)
 
 
 @router.post('/{stream_id}/participants/{user_id}/accept')

@@ -186,6 +186,10 @@ class Submission(Base):
     input: Mapped[str | None] = mapped_column(Text)
     feedback_message: Mapped[str | None] = mapped_column(Text)
     grade: Mapped[int] = mapped_column(Integer, default=-1)
+    # Last time the student sent this answer; drives the curator's inactivity alerts.
+    submitted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class Broadcast(Base):

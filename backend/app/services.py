@@ -1,8 +1,14 @@
 from fastapi import HTTPException, BackgroundTasks
 from sqlalchemy.exc import IntegrityError
-from backend.app.core.security import hash_password, verify_password, create_token
+from backend.app.core.security import (
+    create_token,
+    decode_token,
+    hash_password,
+    password_fingerprint,
+    verify_password,
+)
 from backend.app.core.config import settings
-from backend.app.core.email import send_verification_email
+from backend.app.core.email import send_password_reset_email, send_verification_email
 from backend.app.models import User, UserRole
 from backend.app.repositories import UserRepository
 
@@ -39,13 +45,11 @@ class AuthService:
         return user
 
     async def verify_email(self, token: str):
-        from backend.app.core.security import verify_token
-
-        user_id = verify_token(token, "email_verification")
-        if not user_id:
+        data = decode_token(token, "email_verification")
+        if not data:
             raise HTTPException(400, "Invalid or expired verification token")
 
-        user = await self.users.by_id(int(user_id))
+        user = await self.users.by_id(int(data["sub"]))
         if not user:
             raise HTTPException(404, "User not found")
 
@@ -70,10 +74,36 @@ class AuthService:
         )
         background_tasks.add_task(send_verification_email, user.email, token)
 
+    async def forgot_password(self, login: str, background_tasks: BackgroundTasks) -> None:
+        """Mails a reset link. Silent when the account is unknown, so the form cannot probe accounts."""
+        user = await self.users.by_login(login.strip())
+        if not user:
+            return
+        token = create_token(
+            str(user.id),
+            "password_reset",
+            settings.password_reset_token_expire,
+            extra={"pwd": password_fingerprint(user.password_hash)},
+        )
+        background_tasks.add_task(send_password_reset_email, user.email, token)
+
+    async def reset_password(self, token: str, password: str) -> None:
+        data = decode_token(token, "password_reset")
+        user = await self.users.by_id(int(data["sub"])) if data else None
+        # The fingerprint changes with the password, so a link works only once.
+        if not user or data.get("pwd") != password_fingerprint(user.password_hash):
+            raise HTTPException(400, "Invalid or expired reset token")
+        user.password_hash = hash_password(password)
+        # Following the emailed link proves the user owns the address.
+        user.is_verified = True
+        await self.db.commit()
+
     async def login(self, login, password):
         user = await self.users.by_login(login)
         if not user or not verify_password(password, user.password_hash):
             raise HTTPException(401, "Invalid credentials")
+        if not user.is_verified:
+            raise HTTPException(403, "Email is not verified")
         return {
             "access_token": create_token(
                 str(user.id), "access", settings.access_token_expire

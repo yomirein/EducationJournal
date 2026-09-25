@@ -14,8 +14,8 @@ from backend.app.models import (
     Task,
     StreamParticipant,
     Submission,
-    StreamRating,
 )
+from backend.app.progress import stream_progress
 from backend.app.schemas import (
     AdminUserUpdate,
     CourseCreate,
@@ -228,12 +228,13 @@ async def course_stats(
         )
     ):
         raise HTTPException(403, "Course access denied")
-    count = await db.scalar(
-        select(func.count(func.distinct(StreamParticipant.user_id)))
-        .join(Stream)
-        .where(Stream.course_id == course_id, StreamParticipant.status == "accepted")
-    )
-    return {"students": count or 0, "average_rating": 0}
+    streams = (await db.scalars(select(Stream).where(Stream.course_id == course_id))).all()
+    rows = [row for stream in streams for row in await stream_progress(db, stream)]
+    return {
+        "students": len({row["user_id"] for row in rows}),
+        "average_percent": round(sum(row["percent"] for row in rows) / len(rows)) if rows else 0,
+        "at_risk": sum(1 for row in rows if row["risk_reasons"]),
+    }
 
 
 @stats_router.get("/streams/{stream_id}")
@@ -247,18 +248,12 @@ async def stream_stats(
         raise HTTPException(404, "Stream not found")
     if user.role == UserRole.curator and stream.curator_id != user.id:
         raise HTTPException(403, "Stream access denied")
-    rows = await db.scalars(
-        select(StreamRating.rating)
-        .join(StreamParticipant, StreamParticipant.user_id == StreamRating.user_id)
-        .where(
-            StreamParticipant.stream_id == stream_id,
-            StreamParticipant.status == "accepted",
-        )
-    )
-    ratings = list(rows.all())
+    rows = await stream_progress(db, stream)
     return {
-        "average_rating": sum(ratings) / len(ratings) if ratings else 0,
-        "students": len(ratings),
+        "students": len(rows),
+        "average_percent": round(sum(row["percent"] for row in rows) / len(rows)) if rows else 0,
+        "expected_percent": rows[0]["expected_percent"] if rows else 0,
+        "at_risk": sum(1 for row in rows if row["risk_reasons"]),
     }
 
 

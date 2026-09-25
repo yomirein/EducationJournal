@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Админ-панель — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Админ-панель · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body class="admin-theme">
     <div class="app-shell">
@@ -42,45 +38,40 @@
         <nav class="side-nav">
           <a class="active" href="index.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-            <span>
-              Панель
-            </span>
+            <span>Панель</span>
+          </a>
+          <a href="users.html">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span>Пользователи</span>
           </a>
           <a href="streams.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg></span>
-            <span>
-              Потоки
-            </span>
+            <span>Потоки</span>
           </a>
           <a href="course.html">
-            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-            <span>
-              Курс
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            <span>Курсы</span>
+          </a>
+          <a href="lessons.html">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+            <span>Уроки</span>
           </a>
         </nav>
         <div class="side-user">
-          <strong>
-            Admin only
-          </strong>
-          Роль проверяется backend
-          <span class="role">
-            Admin
-          </span>
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Администратор</span>
         </div>
       </aside>
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Служебная зона /
+            Администрирование /
             <strong>
-              Админ-панель
+              Панель управления
             </strong>
           </div>
           <div class="top-actions">
-            <span class="status">
-              JWT required
-            </span>
             <button class="button button-soft" data-logout>
               Выйти
             </button>
@@ -90,7 +81,7 @@
           <div class="page-head">
             <div>
               <p class="eyebrow">
-                Только роль admin
+                Платформа PixelStart
               </p>
               <h1>
                 Центр
@@ -111,33 +102,33 @@
               <span class="eyebrow">
                 Пользователи
               </span>
-              <strong class="stat-value">
-                3 аккаунта
+              <strong class="stat-value" data-admin-stat="users">
+                —
               </strong>
-              <span class="stat-label">
-                Студент, Куратор, Админ
+              <span class="stat-label" data-admin-stat-label="users">
+                Загрузка…
               </span>
             </div>
             <div class="card stat-card soft-blue">
               <span class="eyebrow">
                 Каталог курсов
               </span>
-              <strong class="stat-value">
-                3 курса
+              <strong class="stat-value" data-admin-stat="courses">
+                —
               </strong>
-              <span class="stat-label">
-                Minecraft, Scratch, Алгоритмы
+              <span class="stat-label" data-admin-stat-label="courses">
+                Загрузка…
               </span>
             </div>
             <div class="card stat-card soft-yellow">
               <span class="eyebrow">
                 Потоки обучения
               </span>
-              <strong class="stat-value">
-                1 активный
+              <strong class="stat-value" data-admin-stat="streams">
+                —
               </strong>
-              <span class="stat-label">
-                Осенний поток 2026
+              <span class="stat-label" data-admin-stat-label="streams">
+                Загрузка…
               </span>
             </div>
           </div>

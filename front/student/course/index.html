@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Курс — PixelStart
-    </title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260925">
-    <script src="../../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Курс · PixelStart</title>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20261003">
+    <script src="../../assets/api.js?v=20261003" defer></script>
+    <script src="../../assets/app.js?v=20261003" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -77,7 +73,20 @@
               Мои курсы
             </span>
           </a>
+          <a href="../index.html">
+            <span class="nav-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <span>
+              Журнал
+            </span>
+          </a>
         </nav>
+        <div class="side-user">
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Ученик</span>
+        </div>
       </aside>
       <main class="main">
         <header class="topbar">
@@ -123,13 +132,18 @@
                 <span data-course-progress style="width:0%">
                 </span>
               </div>
+              <p data-course-next style="margin:10px 0 0; font-size:13px;"></p>
             </div>
           </div>
+          <section class="card" data-course-enroll hidden style="margin-top:18px">
+          </section>
           <div class="module-list" data-module-list style="margin-top:18px">
             <p class="course-loading">Загружаем модули…</p>
           </div>
         </div>
       </main>
+    </div>
+    <div class="toast" role="status">
     </div>
   </body>
 </html>

@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Зал славы и рейтинг — PixelStart IT TOP</title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer></script>
-    <script src="../assets/app.js?v=20260925" defer></script>
+    <title>Рейтинг · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body>
     <div class="app-shell">
@@ -56,7 +56,7 @@
         <div class="side-user">
           <strong data-user-name>Мой аккаунт</strong>
           <span data-user-role>Загрузка...</span>
-          <span class="role">Student</span>
+          <span class="role" data-user-role-badge>Ученик</span>
         </div>
       </aside>
 
@@ -132,10 +132,18 @@
             </div>
           </div>
 
+          <section class="card" data-rating-rules style="margin-top:18px">
+            <p class="eyebrow">
+              Как считается рейтинг
+            </p>
+            <ul data-rating-rules-list style="margin:8px 0 0; padding-left:18px; line-height:1.7;">
+            </ul>
+          </section>
+
           <!-- Sticky Student Position Bar -->
           <div class="student-sticky-rank-bar" id="student-sticky-rank">
             <div class="rank-stat">
-              <span class="rank-num">—</span>
+              <span class="rank-num">#</span>
               <div>
                 <strong>Загрузка позиции</strong>
                 <span style="display:block; font-size:11px; color:var(--muted);">Данные из журнала</span>
@@ -143,7 +151,7 @@
             </div>
             <div style="display:flex; align-items:center; gap:20px;">
               <div style="text-align:right;">
-                <strong style="color:var(--accent); font-size:16px;">— XP</strong>
+                <strong style="color:var(--accent); font-size:16px;">0 XP</strong>
               </div>
               <a class="button button-lime" href="courses.html" style="min-height:34px; padding:0 16px; font-size:12px; font-weight:700;">
                 В Студию

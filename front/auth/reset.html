@@ -3,10 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Восстановление — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
+    <title>Восстановление · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
   </head>
   <body>
     <main class="auth-page">
@@ -41,7 +39,7 @@
             </em>
           </h1>
           <p>
-            API-прототип пока не содержит endpoint восстановления, поэтому экран готов как следующий backend-контракт.
+            Ссылка из письма действует час и срабатывает один раз.
           </p>
         </div>
       </section>
@@ -69,21 +67,38 @@
             </span>
           </a>
           <h2>
-            Восстановление
+            Восстановление пароля
           </h2>
-          <p>
-            Форма готова для будущего endpoint reset-password.
+          <p data-reset-status aria-live="polite">
+            Укажите логин или почту — пришлём ссылку для смены пароля.
           </p>
-          <form class="auth-form">
+          <form class="auth-form" data-form="forgot-password">
             <div class="field">
               <label for="identity">
                 Логин или почта
               </label>
-              <input id="identity" required>
+              <input id="identity" name="login" required autocomplete="username">
             </div>
-            <button class="button button-dark" type="button" data-toast="Backend endpoint восстановления будет подключён здесь.">
-              Отправить код
+            <button class="button button-dark" type="submit">
+              Отправить ссылку
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </button>
+          </form>
+          <form class="auth-form" data-form="reset-password" hidden>
+            <div class="field">
+              <label for="new-password">
+                Новый пароль
+              </label>
+              <input id="new-password" name="password" type="password" minlength="8" required autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="new-password-repeat">
+                Повторите пароль
+              </label>
+              <input id="new-password-repeat" name="password_repeat" type="password" minlength="8" required autocomplete="new-password">
+            </div>
+            <button class="button button-dark" type="submit">
+              Сохранить пароль
             </button>
           </form>
           <p class="auth-switch">
@@ -96,9 +111,7 @@
     </main>
     <div class="toast" role="status">
     </div>
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </body>
 </html>

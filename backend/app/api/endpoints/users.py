@@ -6,6 +6,7 @@ from backend.app.api.deps import get_current_user, require_role
 from backend.app.db import get_session
 from backend.app.models import Course, Stream, StreamParticipant, User, UserRole
 from backend.app.schemas import UserOut, UserUpdate
+from backend.app.progress import RATING_RULES, stream_progress
 from backend.app.services import UserService
 
 router = APIRouter(tags=["users"])
@@ -209,6 +210,29 @@ async def profile(
     return target
 
 
+@router.get("/users/me/applications")
+async def my_applications(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+):
+    """All stream applications of the current user with their status (pending/accepted/rejected)."""
+    rows = await db.execute(
+        select(StreamParticipant, Stream)
+        .join(Stream, Stream.id == StreamParticipant.stream_id)
+        .where(StreamParticipant.user_id == user.id)
+        .order_by(StreamParticipant.id)
+    )
+    return [
+        {
+            "stream_id": stream.id,
+            "stream_name": stream.name,
+            "course_id": stream.course_id,
+            "status": part.status,
+        }
+        for part, stream in rows.all()
+    ]
+
+
 @router.get("/users/me/streams")
 async def my_streams(
     user=Depends(get_current_user),
@@ -278,10 +302,37 @@ async def user_streams(
 async def rating(
     user=Depends(get_current_user), db: AsyncSession = Depends(get_session)
 ):
-    from backend.app.models import StreamRating
-
-    item = await db.get(StreamRating, user.id)
-    return item or {"user_id": user.id, "rating": 0.0}
+    """Explainable rating: per course points, place in the stream, step breakdown and the next step."""
+    streams = (await db.execute(
+        select(Stream, Course)
+        .join(Course, Course.id == Stream.course_id)
+        .join(StreamParticipant, StreamParticipant.stream_id == Stream.id)
+        .where(StreamParticipant.user_id == user.id, StreamParticipant.status == "accepted")
+        .order_by(Stream.id)
+    )).all()
+    courses = []
+    for stream, course in streams:
+        rows = await stream_progress(db, stream, with_steps=True)
+        own = next((row for row in rows if row["user_id"] == user.id), None)
+        if not own:
+            continue
+        courses.append({
+            "course_id": course.id,
+            "course_title": course.title,
+            "course_type": course.type,
+            "stream_id": stream.id,
+            "stream_name": stream.name,
+            "participants": len(rows),
+            **{key: own[key] for key in (
+                "rank", "points", "max_points", "passed", "total", "pending",
+                "percent", "expected_percent", "next_step", "steps",
+            )},
+        })
+    return {
+        "total_points": sum(item["points"] for item in courses),
+        "rules": RATING_RULES,
+        "courses": courses,
+    }
 
 
 @router.get("/users/me/history")
@@ -311,6 +362,8 @@ async def history(
             "task_id": sub.task_id,
             "course_id": course_id,
             "task_type": str(tsk.type.value if hasattr(tsk.type, "value") else tsk.type),
+            "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
+            "step_number": tsk.step_number,
             "task_description": tsk.description,
             "input": sub.input,
             "file_id": sub.file_id,

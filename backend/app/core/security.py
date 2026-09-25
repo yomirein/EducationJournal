@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
@@ -14,10 +15,16 @@ def verify_password(password: str, hashed: str) -> bool:
     return password_hash.verify(password, hashed)
 
 
-def create_token(subject: str, token_type: str, minutes: int) -> str:
+def password_fingerprint(hashed: str) -> str:
+    """Short digest of the stored hash: a reset link stops working once the password changes."""
+    return hashlib.sha256(hashed.encode()).hexdigest()[:16]
+
+
+def create_token(subject: str, token_type: str, minutes: int, extra: dict | None = None) -> str:
     now = datetime.now(timezone.utc)
     return jwt.encode(
         {
+            **(extra or {}),
             "sub": subject,
             "type": token_type,
             "iat": now,
@@ -28,9 +35,16 @@ def create_token(subject: str, token_type: str, minutes: int) -> str:
     )
 
 
-def verify_token(token: str, token_type: str) -> str | None:
+def decode_token(token: str, token_type: str) -> dict | None:
     try:
         data = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        return data["sub"] if data.get("type") == token_type else None
-    except (JWTError, KeyError, TypeError):
+    except (JWTError, TypeError):
         return None
+    if data.get("type") != token_type or "sub" not in data:
+        return None
+    return data
+
+
+def verify_token(token: str, token_type: str) -> str | None:
+    data = decode_token(token, token_type)
+    return data["sub"] if data else None

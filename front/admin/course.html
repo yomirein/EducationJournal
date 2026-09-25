@@ -3,14 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>
-      Конструктор курса — PixelStart
-    </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
-    </script>
-    <script src="../assets/app.js?v=20260925" defer>
-    </script>
+    <title>Конструктор курса · PixelStart</title>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261003">
+    <script src="../assets/api.js?v=20261003" defer></script>
+    <script src="../assets/app.js?v=20261003" defer></script>
   </head>
   <body class="admin-theme">
     <div class="app-shell">
@@ -36,33 +32,43 @@
             </b>
           </span>
         </a>
+        <p class="side-label">
+          Управление
+        </p>
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-            <span>
-              Панель
-            </span>
+            <span>Панель</span>
+          </a>
+          <a href="users.html">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span>Пользователи</span>
           </a>
           <a href="streams.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg></span>
-            <span>
-              Потоки
-            </span>
+            <span>Потоки</span>
           </a>
           <a class="active" href="course.html">
-            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-            <span>
-              Курс
-            </span>
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            <span>Курсы</span>
+          </a>
+          <a href="lessons.html">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+            <span>Уроки</span>
           </a>
         </nav>
+        <div class="side-user">
+          <strong data-user-name>Мой аккаунт</strong>
+          <span data-user-role>Загрузка...</span>
+          <span class="role" data-user-role-badge>Администратор</span>
+        </div>
       </aside>
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Админ-панель /
+            Администрирование /
             <strong>
-              Конструктор курса
+              Конструктор курсов
             </strong>
           </div>
           <a class="button button-soft" href="index.html">
@@ -74,7 +80,7 @@
           <div class="page-head">
             <div>
               <p class="eyebrow">
-                POST /panel/courses
+                Создание программы обучения
               </p>
               <h1>
                 Собери
@@ -83,6 +89,9 @@
                 </em>
               </h1>
             </div>
+            <p class="page-lede">
+              Задайте название, направление и подробное описание новой образовательной программы.
+            </p>
           </div>
           <section class="card">
             <form class="auth-form" data-form="course-create">
@@ -97,26 +106,17 @@
                   Тип курса
                 </label>
                 <select id="type" name="type">
-                  <option value="scratch">
-                    scratch
-                  </option>
-                  <option value="minecraft_edu">
-                    minecraft_edu
-                  </option>
-                  <option value="algorithm">
-                    algorithm
-                  </option>
-                  <option value="custom">
-                    custom
-                  </option>
+                  <option value="scratch">Scratch (визуальное программирование)</option>
+                  <option value="minecraft_edu">Minecraft Education (логика и мир)</option>
+                  <option value="algorithm">Алгоритмика (основы логики)</option>
+                  <option value="custom">Пользовательский курс</option>
                 </select>
               </div>
               <div class="field">
                 <label for="description">
                   Описание
                 </label>
-                <textarea id="description" name="description" placeholder="Что создаст ученик">
-                </textarea>
+                <textarea id="description" name="description" placeholder="Опишите, какие навыки и проекты освоит ученик"></textarea>
               </div>
               <button class="button button-dark" type="submit">
                 Опубликовать курс
@@ -128,10 +128,10 @@
           </section>
           <section class="card" style="margin-top:18px">
             <h2>
-              Следующие сущности
+              Наполнение программы
             </h2>
             <p>
-              После создания курса API поддерживает уроки через `POST /panel/lessons` и задания через `POST /panel/lessons/{lesson_id}/tasks`.
+              После создания курса добавьте уроки с теорией и интерактивные практические задания.
             </p>
             <a class="button button-soft" href="lessons.html">
               Создать урок и задание
