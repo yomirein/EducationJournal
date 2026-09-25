@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import (
     Boolean,
@@ -123,7 +123,7 @@ class Task(Base):
     order_index: Mapped[int] = mapped_column(Integer, default=0)
     description: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     answer_json: Mapped[dict | list | None] = mapped_column(JSON)
     lesson: Mapped[Lesson] = relationship(back_populates="tasks")
@@ -192,7 +192,7 @@ class Broadcast(Base):
     __tablename__ = "broadcasts"
     id: Mapped[int] = mapped_column(primary_key=True)
     timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     curator_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     text: Mapped[str] = mapped_column(Text)

@@ -1,3 +1,4 @@
+from urllib.parse import quote
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from backend.app.core.config import settings
 
@@ -24,7 +25,7 @@ async def send_verification_email(email: str, token: str):
         print(f"[email] Skipping email to {email}: mail settings not configured")
         return
 
-    verification_url = f"{settings.frontend_url}/verify-email?token={token}"
+    verification_url = f"{settings.frontend_url.rstrip('/')}/auth/verify.html?token={quote(token)}"
     html_body = f"""
     <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">

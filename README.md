@@ -4,13 +4,16 @@
 
 ## Быстрый запуск на компьютере
 
-Нужны Python 3.12+ и Git. По умолчанию используется SQLite, поэтому Docker для локальной презентации не обязателен.
+Нужны Python 3.12+, Git и PostgreSQL 16 (локально или через Docker). Проект рассчитан на PostgreSQL: миграции используют его синтаксис.
 
 ```bash
+# PostgreSQL можно поднять из docker-compose:
+docker compose up -d db
 python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
 cp .env.example .env
 # Замените SECRET_KEY в .env на длинный случайный ключ.
+# DATABASE_URL по умолчанию: postgresql+asyncpg://postgres:postgres@localhost:5432/learning
 ./.venv/bin/alembic upgrade head
 # Только для новой пустой демонстрационной БД:
 PIXELSTART_ALLOW_DEMO_SEED=1 ./.venv/bin/python seed.py
@@ -19,7 +22,7 @@ PIXELSTART_ALLOW_DEMO_SEED=1 ./.venv/bin/python seed.py
 
 Откройте [главную страницу](http://127.0.0.1:8000/) или [Swagger API](http://127.0.0.1:8000/docs). Если у вас уже есть рабочая база, **не запускайте `seed.py`**: он очищает учебные данные и создаёт демо-записи. Миграции можно применять отдельно.
 
-Для существующей PostgreSQL задайте в `.env` `DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:5432/DBNAME`. Не коммитьте `.env`.
+Для другой базы PostgreSQL задайте в `.env` `DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST:5432/DBNAME`. Не коммитьте `.env`.
 
 Если в новой базе нужен первый администратор, задайте в `.env` `FIRST_ADMIN_USERNAME`, `FIRST_ADMIN_EMAIL`, `FIRST_ADMIN_PASSWORD`, `FIRST_ADMIN_FIRST_NAME` и `FIRST_ADMIN_LAST_NAME`. При запуске приложение создаст его, только если администраторов ещё нет. Используйте собственный длинный пароль; при отсутствии этих переменных автоматическое создание пропускается.
 
@@ -29,8 +32,8 @@ PIXELSTART_ALLOW_DEMO_SEED=1 ./.venv/bin/python seed.py
 
 ```bash
 cp .env.example .env
-# В .env укажите DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/learning
-# И задайте собственный SECRET_KEY.
+# Задайте собственный SECRET_KEY. DATABASE_URL для контейнера api задаётся в docker-compose.yml (хост db).
+# Пароль БД можно переопределить переменной POSTGRES_PASSWORD.
 docker compose up --build -d
 # Только для пустой БД и локального демо:
 docker compose exec -e PIXELSTART_ALLOW_DEMO_SEED=1 api python seed.py
@@ -53,11 +56,11 @@ MAIL_FROM=youremail@gmail.com
 MAIL_STARTTLS=True
 ```
 
-Для Gmail требуется включить 2FA и создать App Password: https://myaccount.google.com/apppasswords. Подробная инструкция по настройке различных почтовых сервисов и тестированию в `instructions/EMAIL_SETUP.md`.
+Для Gmail требуется включить 2FA и создать App Password: https://myaccount.google.com/apppasswords. Подробная инструкция по настройке различных почтовых сервисов и тестированию в `Instructions/EMAIL_SETUP.md`.
 
 **API-эндпоинты:**
 - `POST /auth/register` — регистрация с автоматической отправкой письма
-- `POST /auth/verify-email?token={token}` — подтверждение email по токену
+- `POST /auth/verify-email?token={token}` — подтверждение email по токену (страница `front/auth/verify.html`, ссылка в письме: `{FRONTEND_URL}/auth/verify.html?token=...`)
 - `POST /auth/resend-verification?email={email}` — повторная отправка письма
 
 ## Как устроено обучение
@@ -91,19 +94,17 @@ EducationJournal/
 │   ├── admin/               # Администрирование
 │   └── simulators/          # Scratch и тренировочный Minecraft-мир
 ├── migrations/              # Миграции Alembic
-├── tests/                   # Проверки программы и оценивания
-├── instructions/            # Инструкции по настройке email и др.
+├── tests/                   # Проверки программы, API smoke-тесты (test.py), тест email (test_mail.py)
+├── Instructions/            # Инструкции по настройке email и др.
 ├── main.py                  # Единый HTTP-сервер
 ├── seed.py                  # Разрушающий демо-засев с явным флагом
-├── test.py                  # API smoke-тесты
-├── test_mail.py             # Тест email-верификации
 └── docker-compose.yml       # API + PostgreSQL
 ```
 
 ## Проверка перед показом
 
 ```bash
-./.venv/bin/python -m unittest discover -s tests -v
+./.venv/bin/python -m unittest tests.test_curriculum -v
 ./.venv/bin/python -m compileall -q backend/app main.py seed.py
 node --check front/assets/app.js
 node --check front/simulators/scratch-ru/js/app.js
@@ -111,16 +112,18 @@ node --check front/simulators/scratch-ru/js/app.js
 
 Проверяйте вручную светлую и тёмную темы, ширину телефона и планшета, ответы с одним и несколькими вариантами, Scratch в развёрнутом и обычном виде, Python на открытых и скрытых тестах и очередь ручной проверки.
 
-`test.py` из репозитория дополнительно проверяет API, создаёт пользователей и меняет роли. Запускайте его только на отдельной демонстрационной базе с явным флагом `PIXELSTART_ALLOW_API_SMOKE=1`; для входа администратора задайте `FIRST_ADMIN_USERNAME` и `FIRST_ADMIN_PASSWORD` в окружении. Для этого отдельного скрипта нужен пакет `requests` (`./.venv/bin/pip install requests`).
+`tests/test.py` дополнительно проверяет API, создаёт пользователей и меняет роли. Запускайте его только на отдельной демонстрационной базе с явным флагом `PIXELSTART_ALLOW_API_SMOKE=1`; для входа администратора задайте `FIRST_ADMIN_USERNAME` и `FIRST_ADMIN_PASSWORD` в окружении. Для этого отдельного скрипта нужен пакет `requests` (`./.venv/bin/pip install requests`).
 
 Для проверки email-верификации:
 
 ```bash
 ./.venv/bin/pip install requests
-./.venv/bin/python test_mail.py
+./.venv/bin/python tests/test_mail.py
 ```
 
-Полная инструкция по тестированию email в `instructions/EMAIL_SETUP.md`.
+Полная инструкция по тестированию email в `Instructions/EMAIL_SETUP.md`.
+
+Эндпоинты `/auth/login`, `/auth/register`, `/auth/verify-email` и `/auth/resend-verification` ограничены по частоте запросов с одного IP (ответ 429). Лимитер хранит счётчики в памяти процесса, поэтому при нескольких воркерах или инстансах нужен общий store (например, Redis).
 
 ## Границы текущей архитектуры
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 from backend.app.models import StepType, UserRole
 
 
@@ -39,6 +39,10 @@ class UserUpdate(BaseModel):
 class Login(BaseModel):
     login: str
     password: str
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str = Field(min_length=1)
 
 
 class TokenPair(BaseModel):
@@ -132,8 +136,41 @@ class TaskOut(ORM):
 
 
 class SubmitCreate(BaseModel):
-    input: str | None = None
-    file_id: str | None = None
+    input: str | None = Field(None, max_length=12_000)
+    file_id: str | None = Field(None, pattern=r"^[0-9a-f]{32}\.(png|jpg|jpeg|webp|pdf|txt)$")
+
+
+class RunTestsRequest(BaseModel):
+    input: str = Field(max_length=12_000)
+
+
+class BroadcastCreate(BaseModel):
+    text: str = Field(max_length=10_000)
+
+    @field_validator("text")
+    @classmethod
+    def not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("text is required")
+        return value
+
+
+class AdminUserUpdate(BaseModel):
+    role: UserRole | None = None
+    payment: bool | None = None
+
+
+class LessonUpdate(BaseModel):
+    module_id: int | None = None
+    type: str | None = Field(None, max_length=50)
+    duration: int | None = Field(None, ge=0)
+
+
+class TaskUpdate(BaseModel):
+    lesson_id: int | None = None
+    type: str | None = Field(None, max_length=50)
+    description: str | None = None
+    answer_json: dict | list | None = None
 
 
 class GradeUpdate(BaseModel):

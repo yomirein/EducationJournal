@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.deps import get_current_user, require_role
 from backend.app.db import get_session
@@ -29,11 +30,17 @@ async def delete_me(
     user=Depends(get_current_user), db: AsyncSession = Depends(get_session)
 ):
     await db.delete(user)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Account curates existing streams; ask an admin to reassign them first")
 
 
 @router.get("/users/leaderboard")
-async def leaderboard(db: AsyncSession = Depends(get_session)):
+async def leaderboard(
+    _user=Depends(get_current_user), db: AsyncSession = Depends(get_session)
+):
     from backend.app.models import User, UserRole, Submission, StreamParticipant, Stream, Task
     from sqlalchemy import func
 

@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: learning
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck:
@@ -16,9 +16,14 @@ services:
   api:
     build: .
     env_file: .env
+    environment:
+      # Inside the compose network the database is reachable as "db", not localhost.
+      DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/learning
     ports: ["8000:8000"]
     volumes: ["./uploads:/app/uploads"]
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:

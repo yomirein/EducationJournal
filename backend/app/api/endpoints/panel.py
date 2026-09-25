@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.deps import require_role
 from backend.app.db import get_session
@@ -16,13 +17,17 @@ from backend.app.models import (
     StreamRating,
 )
 from backend.app.schemas import (
+    AdminUserUpdate,
     CourseCreate,
     CourseUpdate,
     CourseOut,
     StreamCreate,
     StreamOut,
     LessonCreate,
+    LessonUpdate,
     TaskCreate,
+    TaskUpdate,
+    UserOut,
 )
 
 router = APIRouter(
@@ -37,7 +42,7 @@ stats_router = APIRouter(
 )
 
 
-@router.get("/users")
+@router.get("/users", response_model=list[UserOut])
 async def users(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -50,19 +55,17 @@ async def users(
     return list((await db.scalars(q)).all())
 
 
-@router.patch("/users/{user_id}")
-async def patch_user(user_id: int, data: dict, db: AsyncSession = Depends(get_session)):
+@router.patch("/users/{user_id}", response_model=UserOut)
+async def patch_user(
+    user_id: int, data: AdminUserUpdate, db: AsyncSession = Depends(get_session)
+):
     user = await db.get(User, user_id)
     if not user:
         raise HTTPException(404, "User not found")
-    if "role" in data:
-        try:
-            user.role = UserRole(data["role"])
-        except ValueError:
-            raise HTTPException(422, "Invalid role")
-    if "payment" in data:
-        user.payment = bool(data["payment"])
+    for key, value in data.model_dump(exclude_unset=True, exclude_none=True).items():
+        setattr(user, key, value)
     await db.commit()
+    await db.refresh(user)
     return user
 
 
@@ -72,7 +75,11 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_session)):
     if not item:
         raise HTTPException(404, "User not found")
     await db.delete(item)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "User is a curator of existing streams; reassign or delete them first")
 
 
 @router.post("/courses", response_model=CourseOut, status_code=201)
@@ -109,6 +116,8 @@ async def delete_course(course_id: int, db: AsyncSession = Depends(get_session))
 
 @router.post("/streams", response_model=StreamOut, status_code=201)
 async def create_stream(data: StreamCreate, db: AsyncSession = Depends(get_session)):
+    if not await db.get(Course, data.course_id):
+        raise HTTPException(404, "Course not found")
     curator = await db.get(User, data.curator_id)
     if not curator or curator.role != UserRole.curator:
         raise HTTPException(422, "curator_id must reference a curator")
@@ -130,6 +139,8 @@ async def delete_stream(stream_id: int, db: AsyncSession = Depends(get_session))
 
 @router.post("/lessons", status_code=201)
 async def create_lesson(data: LessonCreate, db: AsyncSession = Depends(get_session)):
+    if not await db.get(Module, data.module_id):
+        raise HTTPException(404, "Module not found")
     item = Lesson(**data.model_dump())
     db.add(item)
     await db.commit()
@@ -152,14 +163,16 @@ async def create_task(
 
 @router.put("/lessons/{lesson_id}")
 async def update_lesson(
-    lesson_id: int, data: dict, db: AsyncSession = Depends(get_session)
+    lesson_id: int, data: LessonUpdate, db: AsyncSession = Depends(get_session)
 ):
     item = await db.get(Lesson, lesson_id)
     if not item:
         raise HTTPException(404, "Lesson not found")
-    for key in ("module_id", "type", "duration"):
-        if key in data:
-            setattr(item, key, data[key])
+    values = data.model_dump(exclude_unset=True, exclude_none=True)
+    if "module_id" in values and not await db.get(Module, values["module_id"]):
+        raise HTTPException(404, "Module not found")
+    for key, value in values.items():
+        setattr(item, key, value)
     await db.commit()
     await db.refresh(item)
     return item
@@ -176,14 +189,17 @@ async def delete_lesson(lesson_id: int, db: AsyncSession = Depends(get_session))
 
 @router.put("/tasks/{task_id}")
 async def update_task(
-    task_id: int, data: dict, db: AsyncSession = Depends(get_session)
+    task_id: int, data: TaskUpdate, db: AsyncSession = Depends(get_session)
 ):
     item = await db.get(Task, task_id)
     if not item:
         raise HTTPException(404, "Task not found")
-    for key in ("lesson_id", "type", "description", "answer_json"):
-        if key in data:
-            setattr(item, key, data[key])
+    values = data.model_dump(exclude_unset=True)
+    if values.get("lesson_id") is not None and not await db.get(Lesson, values["lesson_id"]):
+        raise HTTPException(404, "Lesson not found")
+    for key, value in values.items():
+        if value is not None or key == "answer_json":
+            setattr(item, key, value)
     await db.commit()
     await db.refresh(item)
     return item
@@ -251,7 +267,7 @@ async def curator_alerts(
     user=Depends(require_role(UserRole.admin, UserRole.curator)),
     db: AsyncSession = Depends(get_session),
 ):
-    from backend.app.models import Submission, Task, User, Stream, StreamParticipant
+    from backend.app.models import course_modules
 
     sub_stmt = (
         select(Submission, Task, User)
@@ -260,6 +276,27 @@ async def curator_alerts(
         .where(Submission.grade == -1)
         .order_by(Submission.id.desc())
     )
+    students_stmt = (
+        select(func.count(func.distinct(StreamParticipant.user_id)))
+        .join(Stream, Stream.id == StreamParticipant.stream_id)
+        .where(StreamParticipant.status == "accepted")
+    )
+    if user.role == UserRole.curator:
+        # A curator only sees work of students enrolled in their own streams, for tasks of those streams' courses.
+        own_pairs = (
+            select(StreamParticipant.user_id, Lesson.id.label("lesson_id"))
+            .join(Stream, Stream.id == StreamParticipant.stream_id)
+            .join(course_modules, course_modules.c.course_id == Stream.course_id)
+            .join(Lesson, Lesson.module_id == course_modules.c.module_id)
+            .where(Stream.curator_id == user.id)
+            .subquery()
+        )
+        sub_stmt = sub_stmt.where(
+            select(own_pairs.c.user_id)
+            .where(own_pairs.c.user_id == Submission.user_id, own_pairs.c.lesson_id == Task.lesson_id)
+            .exists()
+        )
+        students_stmt = students_stmt.where(Stream.curator_id == user.id)
     sub_rows = (await db.execute(sub_stmt)).all()
     pending_items = [
         {
@@ -275,11 +312,7 @@ async def curator_alerts(
         for sub, tsk, u in sub_rows
     ]
 
-    active_students_count = await db.scalar(
-        select(func.count(func.distinct(StreamParticipant.user_id)))
-        .join(Stream, Stream.id == StreamParticipant.stream_id)
-        .where(StreamParticipant.status == "accepted")
-    ) or 0
+    active_students_count = await db.scalar(students_stmt) or 0
 
     return {
         "pending_count": len(pending_items),
