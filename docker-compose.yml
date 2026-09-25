@@ -13,6 +13,12 @@ services:
       timeout: 5s
       retries: 5
 
+  # Local mail catcher for development: SMTP on 1025, web UI on http://127.0.0.1:8025.
+  # Nothing is delivered to real inboxes. Point MAIL_SERVER at it (see README).
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["1025:1025", "8025:8025"]
+
   api:
     build: .
     env_file: .env

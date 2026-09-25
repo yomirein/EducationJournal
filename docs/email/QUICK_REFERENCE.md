@@ -127,12 +127,12 @@ docker compose logs api | grep email
 
 Должно быть:
 ```
-[email] Verification email sent to ivan@example.com
+INFO:     pixelstart.email - Email 'Подтверждение email — PixelStart' sent to ivan@example.com
 ```
 
 Или при отсутствии SMTP:
 ```
-[email] Skipping email to ivan@example.com: mail settings not configured
+WARNING:     pixelstart.email - Skipping email to ivan@example.com: mail settings not configured
 ```
 
 ### Миграция

@@ -4,24 +4,45 @@
 
 ## Краткая настройка
 
-Добавьте в `.env`:
+Отправка идёт по SMTP (IMAP для отправки не используется). Есть два готовых варианта — оба описаны в `.env.example`:
+
+**Локальная разработка — Mailpit** (письма перехватываются, никуда не уходят, смотреть на http://127.0.0.1:8025):
+
+```bash
+docker compose up -d mailpit
+```
 
 ```env
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=youremail@gmail.com
-MAIL_PASSWORD=<app-password>
-MAIL_FROM=youremail@gmail.com
-MAIL_STARTTLS=True
+MAIL_SERVER=localhost        # mailpit, если API тоже в Docker
+MAIL_PORT=1025
+MAIL_FROM=noreply@pixelstart.dev
 MAIL_SSL_TLS=False
-VERIFICATION_TOKEN_EXPIRE=1440
-FRONTEND_URL=http://localhost:3000
+MAIL_STARTTLS=False
 ```
 
-При отсутствии `MAIL_USERNAME` или `MAIL_PASSWORD` письма не отправляются, но регистрация работает. В логах будет сообщение:
+**Прод — Яндекс Почта:**
+
+```env
+MAIL_SERVER=smtp.yandex.ru
+MAIL_PORT=465
+MAIL_SSL_TLS=True
+MAIL_STARTTLS=False
+MAIL_USERNAME=youremail@yandex.ru
+MAIL_PASSWORD=<пароль приложения>
+MAIL_FROM=youremail@yandex.ru
+FRONTEND_URL=https://ваш-домен
+```
+
+Проверка настроек без регистрации пользователя:
+
+```bash
+python -m backend.scripts.send_test_email you@example.com
+```
+
+Логин и пароль используются только когда заданы оба (`MAIL_USERNAME`, `MAIL_PASSWORD`). Если не задан ни `MAIL_FROM`, ни `MAIL_USERNAME`, письма не отправляются, но регистрация работает. В логе будет:
 
 ```
-[email] Skipping email to user@example.com: mail settings not configured
+WARNING:     pixelstart.email - Skipping email to user@example.com: mail settings not configured
 ```
 
 ## Настройка Gmail
@@ -59,6 +80,8 @@ docker compose restart api
 ## Использование других SMTP-серверов
 
 ### Yandex Mail
+
+Основной вариант для прода — см. «Краткая настройка» выше и README. Кратко: пароль приложения из id.yandex.ru («Безопасность» → «Пароли приложений» → «Почта»), в настройках ящика включён доступ почтовых программ, `MAIL_FROM` совпадает с `MAIL_USERNAME`.
 
 ```env
 MAIL_SERVER=smtp.yandex.ru
@@ -275,13 +298,13 @@ docker compose logs api | grep -i verification
 При локальном запуске логи выводятся в консоль:
 
 ```
-[email] Verification email sent to ivan@example.com
+INFO:     pixelstart.email - Email 'Подтверждение email — PixelStart' sent to ivan@example.com
 ```
 
 Или при отсутствии SMTP-настроек:
 
 ```
-[email] Skipping email to ivan@example.com: mail settings not configured
+WARNING:     pixelstart.email - Skipping email to ivan@example.com: mail settings not configured
 ```
 
 ## Устранение проблем

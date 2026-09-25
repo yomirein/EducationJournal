@@ -15,6 +15,7 @@ UI text, user-facing error messages in the frontend, docs and commit discussion 
 - `backend/app/api/deps.py` — `get_current_user`, `require_role(*roles)`.
 - `backend/app/core/` — `config.py` (pydantic-settings, reads `.env` from CWD), `security.py` (JWT, argon2), `email.py`, `rate_limit.py`.
 - `backend/app/models.py` / `schemas.py` — SQLAlchemy models / Pydantic v2 schemas.
+- `backend/app/core/email.py` — outgoing mail via SMTP (`fastapi-mail`): `send_email()` never raises (logs to `pixelstart.email`), `send_verification_email()`. Local dev uses Mailpit from docker-compose (UI http://127.0.0.1:8025), prod uses Yandex SMTP (`smtp.yandex.ru:465`, SSL, app password, `MAIL_FROM` = login). Check settings with `python -m backend.scripts.send_test_email you@example.com`.
 - `backend/app/evaluator.py` — auto-grading; runs student Python in a subprocess with rlimits and an AST allow-list.
 - `backend/migrations/` — Alembic; `backend/alembic.ini` resolves paths relative to itself.
 - `backend/scripts/seed.py` — **destructive** demo seed; requires `PIXELSTART_ALLOW_DEMO_SEED=1`.

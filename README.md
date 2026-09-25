@@ -71,7 +71,7 @@ docker compose up --build -d
 docker compose exec -e PIXELSTART_ALLOW_DEMO_SEED=1 api python -m backend.scripts.seed
 ```
 
-Откройте http://127.0.0.1:8000/. Миграции контейнер `api` применяет сам при старте. Внутри Compose `DATABASE_URL` указывает на хост `db` (задано в `docker-compose.yml`), поэтому значение из `.env` для контейнера не используется.
+Откройте http://127.0.0.1:8000/. Миграции контейнер `api` применяет сам при старте. Вместе с ним поднимается Mailpit для писем (http://127.0.0.1:8025); чтобы контейнер `api` отправлял в него письма, укажите в `.env` `MAIL_SERVER=mailpit`. Внутри Compose `DATABASE_URL` указывает на хост `db` (задано в `docker-compose.yml`), поэтому значение из `.env` для контейнера не используется.
 
 Остановить: `docker compose down`. Удалить вместе с данными базы: `docker compose down -v`.
 
@@ -132,23 +132,47 @@ uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 | `connection refused` на 5432 | База не запущена: `docker compose up -d db`, проверка — `docker compose ps`. |
 | `port is already allocated` для 5432 или 8000 | Порт занят локальным PostgreSQL или другим сервером. Остановите его или поменяйте левую часть `ports` в `docker-compose.yml` (и порт в `DATABASE_URL`). |
 | `database "learning" does not exist` | Для своего PostgreSQL создайте базу: `createdb learning`. |
+| Письма не приходят | Локально — запущен ли Mailpit (`docker compose ps`) и совпадает ли `MAIL_SERVER`; проверка — `python -m backend.scripts.send_test_email test@example.com`, ошибка будет в выводе. |
 | Ответ `429 Too many requests` | Сработал лимит на `/auth/*` (например, 20 входов в минуту с одного IP). Подождите минуту. |
 
-## Email-подтверждение регистрации
+## Почта (подтверждение регистрации)
 
-Письма отправляются через SMTP в фоне. Без SMTP-настроек регистрация работает, письма просто не отправляются (в логе будет `[email] Skipping email`).
+После регистрации платформа отправляет письмо со ссылкой `{FRONTEND_URL}/auth/verify.html?token=...`; страница сама вызывает `POST /auth/verify-email` и позволяет отправить письмо повторно. Отправка идёт по **SMTP** в фоне: регистрация не ждёт письма и не падает, если почта не настроена или сервер недоступен — причина пишется в лог (`pixelstart.email`).
 
-```env
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=youremail@gmail.com
-MAIL_PASSWORD=<app-password>
-MAIL_FROM=youremail@gmail.com
-MAIL_STARTTLS=True
-FRONTEND_URL=http://127.0.0.1:8000
+### Локально: Mailpit
+
+Mailpit — локальный SMTP-сервер для разработки. Он принимает все письма и показывает их в браузере, **никому ничего не доставляет**. В `.env.example` он уже выбран по умолчанию.
+
+```bash
+docker compose up -d mailpit
+# Проверка отправки без регистрации:
+python -m backend.scripts.send_test_email test@example.com
 ```
 
-Ссылка в письме ведёт на `{FRONTEND_URL}/auth/verify.html?token=...`; страница сама вызывает `POST /auth/verify-email` и позволяет отправить письмо повторно. Подробности и настройка других почтовых сервисов — `docs/email/EMAIL_SETUP.md`.
+Письма смотрите на http://127.0.0.1:8025. Если API запущен в Docker (вариант 1), укажите в `.env` `MAIL_SERVER=mailpit`.
+
+### Прод: Яндекс Почта
+
+Нужен **SMTP** (IMAP — для чтения входящих, для отправки он не нужен).
+
+1. Создайте пароль приложения: [id.yandex.ru](https://id.yandex.ru) → «Безопасность» → «Пароли приложений» → «Почта». Обычный пароль от аккаунта не подойдёт.
+2. В настройках ящика разрешите почтовые программы: Почта → «Все настройки» → «Почтовые программы» → доступ по протоколу IMAP / «С сервера imap.yandex.ru по протоколу IMAP» и «Пароли приложений и OAuth-токены» (без этого SMTP-вход отклоняется).
+3. В `.env` закомментируйте блок Mailpit и включите блок Яндекса:
+
+```env
+MAIL_SERVER=smtp.yandex.ru
+MAIL_PORT=465
+MAIL_SSL_TLS=True
+MAIL_STARTTLS=False
+MAIL_USERNAME=youremail@yandex.ru
+MAIL_PASSWORD=<пароль приложения>
+MAIL_FROM=youremail@yandex.ru      # должен совпадать с MAIL_USERNAME, иначе Яндекс отклонит письмо
+FRONTEND_URL=https://ваш-домен     # адрес сайта, на который ведёт ссылка из письма
+```
+
+4. Проверьте: `python -m backend.scripts.send_test_email ваш-адрес@yandex.ru`.
+
+Типичные ошибки из лога: `535 ... Invalid user or password` — неверный пароль приложения или не включён доступ почтовых программ; `553 ... Sender address rejected` — `MAIL_FROM` не совпадает с логином. Остальные сервисы и подробности — `docs/email/EMAIL_SETUP.md`.
 
 ## Проверки
 
