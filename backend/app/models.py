@@ -65,6 +65,8 @@ class User(Base):
     confirmed_docs: Mapped[list] = mapped_column(JSON, default=list)
     payment: Mapped[bool] = mapped_column(Boolean, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    # New address waiting for confirmation by a link sent to it; `email` changes only after that.
+    pending_email: Mapped[str | None] = mapped_column(String(320))
 
 
 class Course(Base):

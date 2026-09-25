@@ -33,6 +33,8 @@ const ERROR_TEXTS = {
   'Decision must be accept or reject': 'Решение должно быть «принять» или «отклонить».',
   'Email already exists': 'Эта почта уже используется.',
   'Email already verified': 'Почта уже подтверждена.',
+  'Current password is incorrect': 'Текущий пароль указан неверно.',
+  'Invalid or expired email change token': 'Ссылка для смены почты недействительна или устарела. Измените почту в настройках ещё раз.',
   'Email is not verified': 'Почта не подтверждена. Откройте ссылку из письма или запросите новое письмо.',
   'Invalid or expired reset token': 'Ссылка для смены пароля недействительна или уже использована. Запросите новую.',
   'File exceeds 20 MiB': 'Файл больше 20 МБ.',

@@ -77,6 +77,15 @@ async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(
 
 
 @router.post(
+    "/confirm-email-change",
+    response_model=UserOut,
+    dependencies=[Depends(rate_limit(20, 600))],
+)
+async def confirm_email_change(token: str, db: AsyncSession = Depends(get_session)):
+    return await AuthService(db).confirm_email_change(token)
+
+
+@router.post(
     "/login",
     response_model=TokenPair,
     dependencies=[Depends(rate_limit(20, 60))],

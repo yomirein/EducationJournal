@@ -26,6 +26,7 @@ class UserOut(ORM):
     confirmed_docs: list
     payment: bool
     is_verified: bool
+    pending_email: str | None = None
 
 
 class UserUpdate(BaseModel):
@@ -34,6 +35,8 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     description: str | None = None
     password: str | None = Field(None, min_length=8)
+    # Required when changing the password or the email.
+    current_password: str | None = None
 
 
 class Login(BaseModel):
