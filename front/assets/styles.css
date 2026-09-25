@@ -1,11 +1,4 @@
-﻿/* ==========================================================================
-   EDUCATION JOURNAL DESIGN SYSTEM - BASE & FOUNDATION
-   Adapted from stylesFROM.css & требования.txt into stylesFOR architecture
-   Brand Palette: Signal Blue #3457F0, Night #0B1220, Amber #F07A2A, Mist #F4F6FB
-   WCAG AA Compliance: Minimum 4.5:1 text contrast locked across all views
-   ========================================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Onest:wght@400;500;600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Onest:wght@400;500;600;700;800&display=swap');
 
 :root {
   color-scheme: light;
@@ -130,10 +123,6 @@ button {
   width: min(1240px, calc(100% - 72px));
   margin: 0 auto;
 }
-
-/* ==========================================================================
-   BUTTONS (WCAG AA Compliant, 56px height for relaxed student cabinet)
-   ========================================================================== */
 
 .button {
   --btn-bg: var(--brand-blue);
@@ -270,11 +259,6 @@ body.dark-theme .button-danger {
   --btn-fg: #fca5a5;
   --btn-border: #f87171;
 }
-
-
-/* ==========================================================================
-   BRAND HEADER & TERMINAL
-   ========================================================================== */
 
 .brand {
   display: inline-flex;
@@ -418,10 +402,6 @@ body.dark-theme .button-danger {
   color: #c1cadb;
   font: 600 12px var(--display);
 }
-
-/* ==========================================================================
-   APP SHELL, SIDEBAR & TOPBAR
-   ========================================================================== */
 
 .app-shell {
   min-height: calc(100vh - var(--ticker-h, 0px));
@@ -596,10 +576,6 @@ body.dark-theme .button-danger {
   padding: 40px 0 80px;
 }
 
-/* ==========================================================================
-   PAGE HEAD & GRID LAYOUTS
-   ========================================================================== */
-
 .page-head {
   display: flex;
   align-items: end;
@@ -715,10 +691,6 @@ h2 em {
   background: var(--brand-blue);
 }
 
-/* ==========================================================================
-   TABS, FIELDS & FORMS
-   ========================================================================== */
-
 .tabs {
   display: flex;
   gap: 4px;
@@ -793,10 +765,6 @@ h2 em {
   gap: 10px;
   margin-top: 20px;
 }
-
-/* ==========================================================================
-   COURSE CARDS & DATA TABLES
-   ========================================================================== */
 
 .course-card {
   display: flex;
@@ -917,10 +885,6 @@ h2 em {
 .data-table td strong {
   font-family: var(--display);
 }
-
-/* ==========================================================================
-   STATUS SYSTEM (Color + Icon Pairings from требования.txt Section 3)
-   ========================================================================== */
 
 .status {
   display: inline-flex;
@@ -1054,10 +1018,6 @@ h2 em {
   color: var(--status-failed);
 }
 
-/* ==========================================================================
-   NEXT STEP HERO CARD & COURSE MAP (требования.txt 1 & 6)
-   ========================================================================== */
-
 .next-step {
   margin-bottom: 24px;
   padding: 28px;
@@ -1111,10 +1071,6 @@ h2 em {
   color: var(--brand-ink);
   font-variant-numeric: tabular-nums;
 }
-
-/* ==========================================================================
-   STEP TYPES (требования.txt Section 5)
-   ========================================================================== */
 
 .step-type-icon {
   width: 32px;
@@ -1210,10 +1166,6 @@ h2 em {
   font: 700 13px var(--display);
 }
 
-/* ==========================================================================
-   LESSON LAYOUT & CODE BLOCKS
-   ========================================================================== */
-
 .lesson-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
@@ -1302,10 +1254,6 @@ h2 em {
   color: var(--brand-ink);
 }
 
-/* ==========================================================================
-   TABLET SIMULATOR FRAME & TASK PAGE
-   ========================================================================== */
-
 .tablet {
   max-width: 780px;
   min-height: 420px;
@@ -1375,10 +1323,6 @@ h2 em {
   color: var(--muted);
   line-height: 1.7;
 }
-
-/* ==========================================================================
-   AUTH PAGE & FORMS
-   ========================================================================== */
 
 .auth-page {
   min-height: calc(100vh - var(--ticker-h, 0px));
@@ -1502,10 +1446,6 @@ h2 em {
   accent-color: var(--brand-blue);
 }
 
-/* ==========================================================================
-   ROLE THEMES (Curator & Admin: Dense Scale, 14px)
-   ========================================================================== */
-
 .admin-theme,
 .curator-theme {
   --brand-blue: #3457f0;
@@ -1527,10 +1467,6 @@ h2 em {
 .curator-theme .data-table {
   font-size: 13px;
 }
-
-/* ==========================================================================
-   TOASTS, DATA OUTPUT & UTILITIES
-   ========================================================================== */
 
 .toast {
   position: fixed;
@@ -1676,10 +1612,6 @@ h2 em {
   box-shadow: 0 0 16px rgba(52, 87, 240, 0.35);
 }
 
-/* ==========================================================================
-   ANIMATIONS & PAGE TRANSITIONS
-   ========================================================================== */
-
 .reveal {
   opacity: 0;
   transform: translateY(14px);
@@ -1710,10 +1642,6 @@ h2 em {
 ::view-transition-new(root) {
   animation-duration: .12s;
 }
-
-/* ==========================================================================
-   MEDIA QUERIES (Responsive Breakpoints: 900px, 620px, Reduced Motion)
-   ========================================================================== */
 
 @media (max-width: 900px) {
   .app-shell {
@@ -1955,14 +1883,6 @@ h2 em {
   }
 }
 
-/* ==========================================================================
-   DARK THEME SYSTEM
-   ========================================================================== */
-
-/* ==========================================================================
-   DARK THEME SYSTEM (BRAND NIGHT ADAPTATION)
-   ========================================================================== */
-
 html[data-theme="dark"],
 html.dark,
 body.dark-theme,
@@ -2191,9 +2111,6 @@ body.dark-theme .card p {
   color: #8a96ad;
 }
 
-/* ==========================================================================
-   PIXELSTART LANDING PAGE
-   ========================================================================= */
 .landing-page {
   --landing-ink: #0b1220;
   --landing-paper: #f4f6fb;
@@ -2402,14 +2319,6 @@ body.dark-theme .topbar-theme-toggle:hover {
   position: relative;
   box-shadow: 0 0 16px rgba(52, 87, 240, 0.35);
 }
-
-/* ==========================================================================
-   DELUXE UI COMPONENTS & SIMULATORS
-   ========================================================================== */
-
-/* ==========================================================================
-   PIXELSTART DELUXE UI & ANIMATIONS (CTO HACKATHON EDITION)
-   ========================================================================== */
 
 /* --- Animations & Keyframes --- */
 @keyframes pulseGlow {
@@ -3034,10 +2943,6 @@ html[data-theme="dark"] .task-step-btn.active {
   margin-top: 2px;
 }
 
-/* ==========================================================================
-   WOW FEATURE SUITE (CTO HACKATHON EDITION · ZERO STICKERS)
-   ========================================================================== */
-
 /* --- 1. Interactive Skill Radar Matrix --- */
 .radar-card {
   margin-top: 20px;
@@ -3331,10 +3236,6 @@ body:has(> .live-ticker) {
   display: inline-block;
   animation: pulseGlow 1.8s infinite ease-in-out;
 }
-
-/* ==========================================================================
-   DELUXE FEATURE 9: CURRICULUM STEP TYPES, QUIZ, CODE TEST RUNNER & PASSPORTS
-   ========================================================================== */
 
 /* --- Step Passport & Metadata Cards --- */
 .step-passport-grid {
@@ -3690,9 +3591,6 @@ body.dark-theme .course-passport-pill.tool {
   border-top: 1px solid var(--border);
 }
 
-/* ==========================================================================
-   ALL-IN-ONE STUDIO WORKBENCH (tasks.html Split-View Layout)
-   ========================================================================== */
 .tablet.studio-tablet {
   max-width: 1440px;
   width: 100%;
@@ -4053,9 +3951,6 @@ html[data-theme="dark"] .studio-pane-info {
   color: #fff;
 }
 
-/* ==========================================================================
-   UNIFIED HEADER & TOPBAR CONTROLS
-   ========================================================================== */
 .topbar-broadcast-btn {
   position: relative;
   width: 36px;
@@ -4122,9 +4017,7 @@ html.dark .user-streak-badge {
   color: #ffb74d;
 }
 
-/* ==========================================================================
-   BROADCASTS SLIDE-OVER DRAWER
-   ========================================================================== */
+
 .broadcasts-drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -4221,9 +4114,6 @@ html.dark .broadcast-stream-tag {
   color: var(--brand-blue);
 }
 
-/* ==========================================================================
-   FILTER TABS BAR
-   ========================================================================== */
 .filter-tabs-bar {
   display: flex;
   align-items: center;
@@ -4274,9 +4164,6 @@ html.dark .broadcast-stream-tag {
   color: var(--muted);
 }
 
-/* ==========================================================================
-   SCHEDULE & TIMETABLE FEED
-   ========================================================================== */
 .schedule-feed-grid {
   display: flex;
   flex-direction: column;
@@ -4413,9 +4300,6 @@ html[data-theme="dark"] .status-active {
   border-color: rgba(52, 87, 240, 0.35);
 }
 
-/* ==========================================================================
-   LEADERBOARD PODIUM & RANKINGS
-   ========================================================================== */
 .podium-wrapper {
   display: grid;
   grid-template-columns: 1fr 1.15fr 1fr;
@@ -4839,10 +4723,6 @@ html[data-theme="dark"] .course-banner p {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* ==========================================================================
-   TASTE-SKILL ENHANCED COMPONENTS: PROFILE, BROADCASTS, USERS, STREAMS
-   ========================================================================== */
 
 /* Profile Hero Card */
 .profile-hero-card {
@@ -5297,11 +5177,6 @@ html[data-theme="dark"] .user-badge-role.admin {
   border: 1px dashed var(--line);
   border-radius: var(--r-card);
 }
-
-
-/* ==========================================================================
-   REVIEW PASS: buttons, layout fixes, tables, notifications
-   ========================================================================== */
 
 /* Avatars keep their size in curator lists. */
 .avatar-circle,
