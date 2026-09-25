@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -8,6 +9,9 @@ from backend.app.core.config import settings
 from backend.app.core.security import hash_password
 from backend.app.db import SessionLocal
 from backend.app.models import User, UserRole
+
+# Application loggers (e.g. "pixelstart.email"); uvicorn keeps its own access/error loggers.
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(name)s - %(message)s")
 
 async def _ensure_first_admin():
     if not (settings.first_admin_username and settings.first_admin_email and settings.first_admin_password):

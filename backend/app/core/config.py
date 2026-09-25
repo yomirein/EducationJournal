@@ -14,14 +14,15 @@ class Settings(BaseSettings):
     first_admin_first_name: str = "Admin"
     first_admin_last_name: str = "Admin"
 
-    # Email verification settings
-    mail_server: str = "smtp.gmail.com"
-    mail_port: int = 587
+    # Outgoing mail (SMTP). Defaults target Yandex Mail: SSL on port 465.
+    mail_server: str = "smtp.yandex.ru"
+    mail_port: int = 465
     mail_username: str | None = None
-    mail_password: str | None = None
-    mail_from: str | None = None
-    mail_starttls: bool = True
-    mail_ssl_tls: bool = False
+    mail_password: str | None = None  # Yandex: an app password, not the account password
+    mail_from: str | None = None  # Yandex requires it to match mail_username
+    mail_from_name: str = "PixelStart"
+    mail_starttls: bool = False
+    mail_ssl_tls: bool = True
     verification_token_expire: int = 1440  # 24 hours in minutes
     frontend_url: str = "http://127.0.0.1:8000"
 
