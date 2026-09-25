@@ -6,10 +6,10 @@
     <title>
       Объявление — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260926">
+    <script src="../assets/api.js?v=20260926" defer>
     </script>
-    <script src="../assets/app.js?v=20260925" defer>
+    <script src="../assets/app.js?v=20260926" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -94,9 +94,9 @@
             <form class="auth-form" data-form="broadcast">
               <div class="field">
                 <label for="stream_id">
-                  ID потока
+                  Поток
                 </label>
-                <input id="stream_id" name="stream_id" type="number" value="1" required>
+                <select id="stream_id" name="stream_id" required data-stream-select></select>
               </div>
               <div class="field">
                 <label for="text">
@@ -116,13 +116,13 @@
               Предыдущие объявления
             </h2>
             <div class="entry-actions">
-              <input name="stream_id" type="number" value="1" aria-label="ID потока">
+              <select name="stream_id" aria-label="Поток" data-stream-select data-stream-reload="broadcasts"></select>
               <button class="button button-soft" type="button" data-load-target="broadcasts">
                 Загрузить
               </button>
             </div>
             <pre class="data-output" data-result="broadcasts">
-              Нажми «Загрузить».
+              Загрузка объявлений…
             </pre>
           </section>
         </div>

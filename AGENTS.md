@@ -69,6 +69,10 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 
 ## Frontend gotchas
 
+- **Data freshness:** every block that shows API data registers its loader with `registerLoader(loader)`; every successful change calls `await refreshPageData()`, which re-runs all registered loaders. New lists and forms must follow this, never patch the DOM by hand after a mutation.
+- Use the shared helpers in the top of `app.js` instead of re-implementing them: `getCurrentUser()` / `getCourses()` (one request per page), `resolveCourseId()`, `stepIcon/stepLabel`, `courseType`, `courseCard`, `criteriaBox`, `quickLogin`, `homeForRole`. Inside the task studio, submit answers with `submitAnswer(task, input, { workbench })`.
+- Curator pages pick streams from `select[data-stream-select]` (filled from `/users/me/streams`); `data-stream-reload="X"` reloads the `[data-load-target="X"]` block on change. Do not hardcode stream ids.
+- Demo quick-login buttons use `data-quick-login="<role>"` inside a `data-demo-only` container; no inline scripts in HTML.
 - HTML pages load assets with a cache-busting query (`assets/app.js?v=YYYYMMDD`). When you change `api.js`, `app.js` or `styles.css`, bump the `v=` value in **all** HTML files, or browsers keep the old file.
 - Pages under `/student/`, `/curator/`, `/admin/` are guarded client-side by `verifyPageAccess()` (admin may open all of them). The real authorization is on the backend.
 - `front/assets/styles.css` defines theme tokens on `:root` and dark overrides under `[data-theme="dark"]`; `--text`, `--border`, `--accent`, `--danger` are aliases used by inline styles.
