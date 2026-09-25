@@ -128,3 +128,33 @@ async def send_password_reset_email(email: str, token: str) -> bool:
     </html>
     """
     return await send_email(email, "Восстановление пароля — PixelStart", html_body)
+
+
+async def send_email_change_email(email: str, token: str) -> bool:
+    confirm_url = f"{settings.frontend_url.rstrip('/')}/auth/verify.html?change=1&token={quote(token)}"
+    html_body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #3457f0;">Подтверждение новой почты</h2>
+                <p>Здравствуйте!</p>
+                <p>Этот адрес указали как новую почту аккаунта на платформе PixelStart. Подтвердите смену:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{confirm_url}"
+                       style="background-color: #3457f0; color: white; padding: 12px 30px;
+                              text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Подтвердить новую почту
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">
+                    Если кнопка не работает, скопируйте ссылку в браузер:<br>
+                    <a href="{confirm_url}" style="color: #3457f0;">{confirm_url}</a>
+                </p>
+                <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                    Пока вы не подтвердите смену, вход и письма идут на прежний адрес. Если вы ничего не меняли, проигнорируйте письмо.
+                </p>
+            </div>
+        </body>
+    </html>
+    """
+    return await send_email(email, "Подтверждение новой почты — PixelStart", html_body)

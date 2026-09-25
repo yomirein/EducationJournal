@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     mail_ssl_tls: bool = True
     verification_token_expire: int = 1440  # 24 hours in minutes
     password_reset_token_expire: int = 60  # minutes
+    email_change_token_expire: int = 1440  # minutes
     frontend_url: str = "http://127.0.0.1:8000"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

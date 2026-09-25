@@ -262,8 +262,19 @@ bind('[data-form="resend-verification"]', form => run(async () => {
 }, 'Письмо отправлено повторно.'));
 
 const verifyStatus = document.querySelector('[data-verify-status]');
-if (verifyStatus) {
-  const token = new URLSearchParams(window.location.search).get('token');
+const verifyParams = new URLSearchParams(window.location.search);
+if (verifyStatus && verifyParams.get('change')) {
+  // Link from the "confirm your new email" letter.
+  api.post(`/auth/confirm-email-change?token=${encodeURIComponent(verifyParams.get('token') || '')}`)
+    .then(user => {
+      verifyStatus.textContent = `Готово: почта аккаунта изменена на ${user.email}.`;
+    })
+    .catch(error => {
+      verifyStatus.textContent = `Не удалось сменить почту: ${errorText(error)}`;
+      verifyStatus.classList.add('error-copy');
+    });
+} else if (verifyStatus) {
+  const token = verifyParams.get('token');
   if (!token) {
     verifyStatus.textContent = 'В ссылке нет токена. Запросите письмо ещё раз.';
   } else {
@@ -287,6 +298,35 @@ bind('[data-form="profile"]', form => run(async () => {
   await refreshPageData();
 }, 'Профиль сохранён.'));
 
+bind('[data-form="account"]', form => run(async () => {
+  const user = await getCurrentUser();
+  const email = form.email.value.trim();
+  const payload = {
+    first_name: form.first_name.value.trim(),
+    last_name: form.last_name.value.trim(),
+    description: form.description.value.trim(),
+    email
+  };
+  const emailChanges = email.toLowerCase() !== user.email.toLowerCase();
+  if (emailChanges) {
+    if (!form.current_password.value) throw new Error('Чтобы сменить почту, введите текущий пароль.');
+    payload.current_password = form.current_password.value;
+  }
+  const updated = await api.patch('/users/me', payload);
+  form.current_password.value = '';
+  await getCurrentUser(true);
+  await refreshPageData();
+  showMessage(emailChanges && updated.pending_email
+    ? `Профиль сохранён. Подтвердите новую почту по ссылке, отправленной на ${updated.pending_email}.`
+    : 'Профиль сохранён.');
+}));
+
+bind('[data-form="password-change"]', form => run(async () => {
+  if (form.password.value !== form.password_repeat.value) throw new Error('Пароли не совпадают.');
+  await api.patch('/users/me', { password: form.password.value, current_password: form.current_password.value });
+  form.reset();
+}, 'Пароль изменён.'));
+
 const showResult = text => document.querySelector('[data-result]')?.replaceChildren(document.createTextNode(text));
 
 bind('[data-form="course-create"]', form => run(async () => {
@@ -304,7 +344,10 @@ bind('[data-form="lesson-create"]', form => run(async () => {
     duration: Number(form.duration.value || 0)
   });
   form.reset();
-  showResult(`Урок #${lesson.id} создан.`);
+  showResult(`Урок #${lesson.id} создан. Добавьте в него задание в форме ниже.`);
+  await refreshPageData();
+  const lessonPicker = document.querySelector('[data-form="task-create"] [name="lesson_id"]');
+  if (lessonPicker) lessonPicker.value = String(lesson.id);
 }, 'Урок создан.'));
 
 bind('[data-form="task-create"]', form => run(async () => {
@@ -315,6 +358,7 @@ bind('[data-form="task-create"]', form => run(async () => {
   });
   form.reset();
   showResult(`Задание #${task.id} создано.`);
+  await refreshPageData();
 }, 'Задание создано.'));
 
 bind('[data-form="stream-create"]', form => run(async () => {
@@ -484,7 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
 /* --- Selects filled from the API (admin forms) --- */
 const optionSources = {
   courses: async () => (await api.get('/courses?limit=100')).map(course => [course.id, `${course.title} (#${course.id})`]),
-  curators: async () => (await api.get('/panel/users?role=curator&limit=100')).map(user => [user.id, `${user.first_name} ${user.last_name} (@${user.username})`])
+  curators: async () => (await api.get('/panel/users?role=curator&limit=100')).map(user => [user.id, `${user.first_name} ${user.last_name} (@${user.username})`]),
+  users: async () => (await api.get('/panel/users?limit=100')).map(user => [user.id, `${user.first_name} ${user.last_name} (@${user.username})`]),
+  modules: async () => (await api.get('/panel/modules')).map(mod => [mod.id, `${mod.course_title} · ${mod.name}`]),
+  lessons: async () => (await api.get('/panel/lessons')).map(lesson => [
+    lesson.id,
+    `${lesson.course_title} · ${lesson.module_name} · ${lesson.first_task_title || `Урок #${lesson.id}`} (${lesson.tasks} ${plural(lesson.tasks, 'шаг', 'шага', 'шагов')})`
+  ])
 };
 
 document.querySelectorAll('select[data-options]').forEach(select => {
@@ -520,9 +570,21 @@ const hydrateUser = async () => {
   const profileForm = document.querySelector('[data-form="profile"]');
   if (profileForm?.description) profileForm.description.value = user.description || '';
   if (profileForm?.email) profileForm.email.value = user.email || '';
+  const accountForm = document.querySelector('[data-form="account"]');
+  if (accountForm) {
+    accountForm.first_name.value = user.first_name || '';
+    accountForm.last_name.value = user.last_name || '';
+    accountForm.email.value = user.email || '';
+    accountForm.description.value = user.description || '';
+    const pending = accountForm.querySelector('[data-pending-email]');
+    pending.hidden = !user.pending_email;
+    pending.textContent = user.pending_email
+      ? `Ждём подтверждения новой почты ${user.pending_email}: откройте ссылку из письма. До этого действует текущая.`
+      : '';
+  }
 };
 
-if (api.auth.access && document.querySelector('[data-user-name], [data-user-role], [data-user-role-badge], [data-form="profile"]')) {
+if (api.auth.access && document.querySelector('[data-user-name], [data-user-role], [data-user-role-badge], [data-form="profile"], [data-form="account"]')) {
   registerLoader(hydrateUser);
 }
 
@@ -790,7 +852,7 @@ function initDemoSwitcher() {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <span>Каталог курсов</span>
           </a>
-          <a class="demo-tray-link" href="/student/course/lessons.html" title="Учебный план">
+          <a class="demo-tray-link" href="/student/course/lessons.html" title="Уроки курса">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             <span>Уроки</span>
           </a>
@@ -1558,19 +1620,19 @@ function initTasksPage() {
       if (gradeBadge) {
         if (gradeData) {
           if (gradeData.status === 'completed') {
-            gradeBadge.innerHTML = `<div class="card" style="background:#eefcee; border:2px solid #b8f34a; padding:14px; border-radius:10px;">
-              <strong style="color:#2d6a1d">Шаг успешно пройден. Оценка: ${gradeData.grade} / 100</strong>
-              <p style="margin:6px 0 0; font-size:13px; color:#3b5630">${escapeHtml(gradeData.feedback_message || 'Отличная работа.')}</p>
+            gradeBadge.innerHTML = `<div class="grade-note grade-note--done">
+              <strong>Шаг успешно пройден. Оценка: ${gradeData.grade} / 100</strong>
+              <p>${escapeHtml(gradeData.feedback_message || 'Отличная работа.')}</p>
             </div>`;
           } else if (gradeData.grade === -1) {
-            gradeBadge.innerHTML = `<div class="card" style="background:#fffbe6; border:1px solid #ffd666; padding:12px; border-radius:10px;">
-              <strong style="color:#876800">Решение ожидает проверки куратора</strong>
-              <p style="margin:4px 0 0; font-size:12px; color:#6b5300;">Куратор проверит проект и выставит рецензию с оценкой.</p>
+            gradeBadge.innerHTML = `<div class="grade-note grade-note--pending">
+              <strong>Решение ожидает проверки куратора</strong>
+              <p>Куратор проверит работу и выставит оценку с отзывом.</p>
             </div>`;
           } else {
-            gradeBadge.innerHTML = `<div class="card" style="background:#fff2f0; border:1px solid #ffccc7; padding:12px; border-radius:10px;">
-              <strong style="color:#cf1322">Пока не зачтено (${gradeData.grade} / 100)</strong>
-              <p style="margin:4px 0 0; font-size:12px; color:#a8071a;">${escapeHtml(gradeData.feedback_message || 'Попробуйте ещё раз.')}</p>
+            gradeBadge.innerHTML = `<div class="grade-note grade-note--failed">
+              <strong>Пока не зачтено (${gradeData.grade} / 100)</strong>
+              <p>${escapeHtml(gradeData.feedback_message || 'Попробуйте ещё раз.')}</p>
             </div>`;
           }
         } else {
@@ -1814,8 +1876,8 @@ function initCuratorReview() {
           <h2 style="margin:0;">Очередь проверки (${submissions.length})</h2>
         </div>
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <span class="simulator-badge" style="background:#fffbe6; color:#8c6a00; border-color:#ffe699;">Требуют оценки: ${pendingCount}</span>
-          <span class="simulator-badge" style="background:#eefcee; color:#236823; border-color:#b8f34a;">Проверено: ${gradedCount}</span>
+          <span class="status status-review">Требуют оценки: ${pendingCount}</span>
+          <span class="status status-done">Проверено: ${gradedCount}</span>
         </div>
       </div>
       <div class="submissions-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -1916,9 +1978,9 @@ function initCuratorReview() {
           let secretHtml = '';
           if (sub.criteria) {
             secretHtml += `
-              <div style="background:#f4fbf0; border:1px solid #b8f34a; border-radius:8px; padding:10px 14px; margin-bottom:8px; font-size:12px;">
-                <strong style="color:#2b6118; display:block; margin-bottom:3px;">Критерии приёмки кейса (для куратора):</strong>
-                <span style="color:#335028;">${escapeHtml(sub.criteria)}</span>
+              <div class="criteria-note">
+                <strong style="display:block; margin-bottom:3px;">Критерии приёмки кейса (для куратора):</strong>
+                <span>${escapeHtml(sub.criteria)}</span>
               </div>
             `;
           }
@@ -2246,10 +2308,10 @@ function initCuratorParticipants() {
     }
 
     grid.innerHTML = participants.map(p => {
-      const isAccepted = p.status === 'accepted';
-      const statusColor = isAccepted ? '#236823' : p.status === 'rejected' ? '#a94f38' : '#8c6a00';
-      const statusBg = isAccepted ? '#d4f8d4' : p.status === 'rejected' ? '#ffe3da' : '#fff3cc';
-      const statusText = isAccepted ? 'Принят' : p.status === 'rejected' ? 'Отклонён' : 'Ожидает решения';
+      const [statusText, statusCss] = {
+        accepted: ['Принят', 'status-done'],
+        rejected: ['Отклонён', 'status-failed']
+      }[p.status] || ['Ожидает решения', 'status-review'];
 
       return `
         <div class="participant-item">
@@ -2258,9 +2320,7 @@ function initCuratorParticipants() {
             <div>
               <strong style="font-size:14px; display:block;">${escapeHtml(`${p.first_name || ''} ${p.last_name || ''}`.trim() || `Ученик #${p.user_id}`)}</strong>
               <span style="font-size:11px; color:var(--muted);">@${escapeHtml(p.username || '')} · ID ${Number(p.user_id)}</span>
-              <span class="sub-grade-badge" style="background:${statusBg}; color:${statusColor}; margin-top:4px; display:inline-block;">
-                ${statusText}
-              </span>
+              <span class="status ${statusCss}" style="margin-top:4px;">${statusText}</span>
               ${progressLine(progress.find(row => row.user_id === p.user_id))}
             </div>
           </div>
@@ -2407,7 +2467,7 @@ function initStudentDashboard() {
   if (schedPre) {
     api.get('/users/me/schedule').then(items => {
       if (!items || items.length === 0) {
-        schedPre.outerHTML = '<p style="color:var(--muted); font-size:13px; padding:8px 0;">Расписание пока пусто.</p>';
+        schedPre.outerHTML = '<p style="color:var(--muted); font-size:13px; padding:8px 0;">Учебный маршрут пока пуст.</p>';
         return;
       }
       const html = `<div class="interactive-feed-list">` + items.map(item => `
@@ -3031,177 +3091,213 @@ function initLiveTicker() {
 }
 
 /* ==========================================================================
-   UNIFIED MODULE: LIVE BROADCASTS & NOTIFICATIONS DRAWER
+   NOTIFICATIONS: bell dropdown, notifications page, unread toast
+   Curator broadcasts from GET /users/me/broadcasts (newest first). "Read" is
+   remembered in this browser (localStorage).
    ========================================================================== */
-function initTopbarBroadcasts() {
-  const token = localStorage.getItem('pixelstart_access');
-  if (!token) return;
+const READ_KEY = 'pixelstart_read_broadcasts';
+const TOASTED_KEY = 'pixelstart_toasted_broadcast';
 
-  // 1. Ensure drawer markup exists in DOM
-  let backdrop = document.getElementById('broadcasts-drawer-backdrop');
-  let drawer = document.getElementById('broadcasts-drawer');
-
-  if (!backdrop || !drawer) {
-    backdrop = document.createElement('div');
-    backdrop.className = 'broadcasts-drawer-backdrop';
-    backdrop.id = 'broadcasts-drawer-backdrop';
-    backdrop.innerHTML = `
-      <div class="broadcasts-drawer" id="broadcasts-drawer">
-        <div class="broadcasts-drawer-head" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Оповещения куратора</div>
-            <div style="font-size:18px; font-weight:800; color:var(--text); margin-top:2px;">Важные объявления</div>
-          </div>
-          <button class="button button-soft" id="btn-close-broadcasts" type="button" aria-label="Закрыть" style="min-height:30px; padding:0 8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="broadcasts-drawer-body" id="broadcasts-drawer-list" style="padding:16px; overflow-y:auto; max-height:calc(100vh - 85px);">
-          <div style="text-align:center; padding:32px; color:var(--muted);">Загрузка объявлений...</div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(backdrop);
-    drawer = backdrop.querySelector('#broadcasts-drawer');
+const readBroadcastIds = () => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
+  } catch {
+    return new Set();
   }
+};
 
-  // 2. Locate or inject Bell Button in topbar
-  let bellBtn = document.getElementById('btn-topbar-broadcasts');
-  let badgeEl = document.getElementById('header-broadcast-badge');
+const markBroadcastsRead = ids => {
+  const read = readBroadcastIds();
+  ids.forEach(id => read.add(Number(id)));
+  localStorage.setItem(READ_KEY, JSON.stringify([...read]));
+};
 
-  if (!bellBtn) {
-    const topActions = document.querySelector('.topbar .top-actions') || document.querySelector('.topbar');
-    if (topActions) {
-      bellBtn = document.createElement('button');
-      bellBtn.className = 'topbar-broadcast-btn';
-      bellBtn.id = 'btn-topbar-broadcasts';
-      bellBtn.type = 'button';
-      bellBtn.title = 'Оповещения куратора';
-      bellBtn.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="broadcast-badge-count" id="header-broadcast-badge" style="display:none;">0</span>
-      `;
-      topActions.prepend(bellBtn);
-      badgeEl = bellBtn.querySelector('#header-broadcast-badge');
+const byNewest = items => [...items].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+const notificationCategory = {
+  urgent: ['Срочно', 'status-failed'],
+  webinar: ['Вебинар', 'status-progress'],
+  analytics: ['Аналитика', 'status-done'],
+  update: ['Обновление', 'status-review']
+};
+
+const notificationDate = value => value
+  ? new Date(value).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  : '';
+
+// Where "Все уведомления" leads: curators manage their broadcasts, others read the feed.
+const notificationsPageUrl = role => (role === 'curator' ? '/curator/broadcast.html' : '/student/notifications.html');
+
+function notificationCard(item, read, { compact = false } = {}) {
+  const [label, css] = notificationCategory[item.category] || notificationCategory.update;
+  return `<article class="notif-item ${read ? 'is-read' : ''}" data-notification="${Number(item.id)}">
+    <div class="notif-item-head">
+      <span class="status ${css}">${label}</span>
+      <span class="notif-date">${escapeHtml(notificationDate(item.timestamp))}</span>
+    </div>
+    <strong class="notif-title">${escapeHtml(item.title || 'Объявление')}</strong>
+    ${compact ? '' : `<p class="notif-text">${escapeHtml(item.text)}</p>`}
+    <div class="notif-meta">
+      <span>${escapeHtml(item.author_name || 'Куратор')} · ${escapeHtml(item.stream_name || '')}</span>
+      ${read ? '<span>Прочитано</span>' : `<button class="button button-soft notif-read-btn" type="button" data-mark-read="${Number(item.id)}">Прочитано</button>`}
+    </div>
+  </article>`;
+}
+
+function initNotifications() {
+  if (!api.auth.access) return;
+  const topbar = document.querySelector('.topbar');
+  if (!topbar) return;
+
+  let actions = topbar.querySelector('.top-actions');
+  if (!actions) {
+    actions = document.createElement('div');
+    actions.className = 'top-actions';
+    topbar.appendChild(actions);
+  }
+  let bell = document.getElementById('btn-topbar-broadcasts');
+  if (!bell) {
+    bell = document.createElement('button');
+    bell.className = 'topbar-broadcast-btn';
+    bell.id = 'btn-topbar-broadcasts';
+    bell.type = 'button';
+    bell.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="broadcast-badge-count" id="header-broadcast-badge" hidden>0</span>`;
+    actions.prepend(bell);
+  }
+  bell.title = 'Уведомления';
+  bell.setAttribute('aria-haspopup', 'true');
+  bell.setAttribute('aria-expanded', 'false');
+  const badge = document.getElementById('header-broadcast-badge');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'notif-anchor';
+  bell.replaceWith(wrap);
+  wrap.append(bell);
+  const panel = document.createElement('div');
+  panel.className = 'notif-dropdown';
+  panel.hidden = true;
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', 'Последние уведомления');
+  wrap.append(panel);
+
+  let items = [];
+  const toggle = open => {
+    panel.hidden = !open;
+    bell.setAttribute('aria-expanded', String(open));
+  };
+
+  const render = async () => {
+    const [list, user] = await Promise.all([api.get('/users/me/broadcasts'), getCurrentUser()]);
+    items = byNewest(list);
+    const read = readBroadcastIds();
+    const unread = items.filter(item => !read.has(item.id));
+    if (badge) {
+      badge.hidden = !unread.length;
+      badge.style.display = unread.length ? 'inline-flex' : 'none';
+      badge.textContent = unread.length > 9 ? '9+' : String(unread.length);
     }
-  }
+    panel.innerHTML = `
+      <div class="notif-dropdown-head">
+        <strong>Уведомления</strong>
+        ${unread.length ? `<button class="notif-link" type="button" data-mark-all>Прочитать все</button>` : ''}
+      </div>
+      <div class="notif-dropdown-list">
+        ${items.length ? items.slice(0, 3).map(item => notificationCard(item, read.has(item.id), { compact: true })).join('')
+          : '<p class="notif-empty">Новых объявлений нет.</p>'}
+      </div>
+      <a class="button button-dark notif-all" href="${notificationsPageUrl(user.role)}">Все уведомления</a>`;
 
-  const toggleDrawer = (open) => {
-    if (open) {
-      backdrop.classList.add('open');
-      drawer.classList.add('open');
-    } else {
-      backdrop.classList.remove('open');
-      drawer.classList.remove('open');
+    // Toast once for every new unread notification, not on each page load.
+    const newest = unread[0];
+    if (newest && Number(localStorage.getItem(TOASTED_KEY) || 0) < newest.id) {
+      localStorage.setItem(TOASTED_KEY, String(newest.id));
+      showMessage(unread.length === 1
+        ? 'У вас непрочитанное уведомление от куратора.'
+        : `У вас ${unread.length} ${plural(unread.length, 'непрочитанное уведомление', 'непрочитанных уведомления', 'непрочитанных уведомлений')}.`);
+    }
+
+    const banner = document.getElementById('student-broadcast-banner');
+    if (banner && items.length) {
+      const top = items[0];
+      banner.style.display = 'flex';
+      banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+          <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:var(--brand-amber, #f07a2a);"></span>
+          <div style="font-size:13px;">
+            <strong>${escapeHtml(top.author_name || 'Куратор')}:</strong>
+            <span>${escapeHtml(top.title)}</span>
+          </div>
+        </div>
+        <button class="button button-soft" type="button" data-open-notifications style="min-height:32px; padding:0 12px; font-size:12px;">Читать</button>`;
     }
   };
 
-  bellBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isOpen = drawer.classList.contains('open');
-    toggleDrawer(!isOpen);
+  bell.addEventListener('click', event => {
+    event.stopPropagation();
+    toggle(panel.hidden);
   });
-
-  backdrop.querySelectorAll('#btn-close-broadcasts, .broadcasts-drawer-close').forEach(btn => {
-    btn.addEventListener('click', () => toggleDrawer(false));
-  });
-
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) toggleDrawer(false);
-  });
-
-  // Re-rendered after marking an item as read and by refreshPageData(); listeners above are bound once.
-  const renderBroadcasts = async () => {
-    const items = await api.get('/users/me/broadcasts');
-
-    const readIds = JSON.parse(localStorage.getItem('pixelstart_read_broadcasts') || '[]');
-    const unreadCount = items.filter(b => !readIds.includes(b.id)).length;
-
-    if (badgeEl) {
-      if (unreadCount > 0) {
-        badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
-        badgeEl.style.display = 'inline-flex';
-      } else {
-        badgeEl.style.display = 'none';
-      }
-    }
-
-    const listContainer = document.getElementById('broadcasts-drawer-list') || document.getElementById('broadcasts-list');
-    if (!listContainer) return;
-
-    if (items.length === 0) {
-      listContainer.innerHTML = '<div style="text-align:center; padding:48px 16px; color:var(--muted); font-size:13px;">Новых объявлений от кураторов нет.</div>';
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-open-notifications]')) {
+      event.stopPropagation();
+      toggle(true);
+      bell.scrollIntoView({ block: 'nearest' });
       return;
     }
+    if (!wrap.contains(event.target)) toggle(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') toggle(false);
+  });
+  panel.addEventListener('click', event => {
+    const one = event.target.closest('[data-mark-read]');
+    const all = event.target.closest('[data-mark-all]');
+    if (!one && !all) return;
+    event.stopPropagation();
+    markBroadcastsRead(all ? items.map(item => item.id) : [one.dataset.markRead]);
+    refreshPageData();
+  });
 
-    const categoryBadge = (cat) => {
-      const c = (cat || 'update').toLowerCase();
-      if (c === 'urgent') return '<span class="status status-failed">Срочно</span>';
-      if (c === 'webinar') return '<span class="status status-progress">Вебинар</span>';
-      if (c === 'analytics') return '<span class="status status-done">Аналитика</span>';
-      return '<span class="status status-review">Обновление</span>';
-    };
+  registerLoader(render);
+}
 
-    listContainer.innerHTML = items.map(b => {
-      const isRead = readIds.includes(b.id);
-      const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Сегодня';
-      return `
-        <div class="card broadcast-card-item" style="padding:16px; margin-bottom:12px; border-left:3px solid var(--accent); opacity:${isRead ? '0.75' : '1'}; transition:opacity 0.2s ease;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
-            <div>
-              ${categoryBadge(b.category || b.priority)}
-              <span style="font-size:11px; color:var(--muted); margin-left:6px;">${dateStr}</span>
-            </div>
-            <span style="font-size:11px; font-weight:700; color:var(--text);">${escapeHtml(b.author_name || 'Куратор')}</span>
-          </div>
-          <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:var(--text);">${escapeHtml(b.title || 'Объявление')}</div>
-          <p style="font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45;">${escapeHtml(b.content || '')}</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:8px;">
-            <span style="font-size:11px; color:var(--muted);">Поток: ${escapeHtml(b.stream_name || 'IT TOP')}</span>
-            ${!isRead ? `
-              <button class="button button-soft" style="min-height:26px; padding:0 8px; font-size:11px;" data-mark-broadcast="${b.id}" type="button">
-                Прочитано
-              </button>
-            ` : '<span style="font-size:11px; color:var(--muted);">Ознакомлен</span>'}
-          </div>
-        </div>
-      `;
-    }).join('');
+/* Full notifications list (student/notifications.html), newest first. */
+function initNotificationsPage() {
+  const mount = document.querySelector('[data-notifications-list]');
+  if (!mount) return;
+  let filter = 'all';
 
-    listContainer.querySelectorAll('[data-mark-broadcast]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = Number(btn.dataset.markBroadcast);
-        const cur = JSON.parse(localStorage.getItem('pixelstart_read_broadcasts') || '[]');
-        if (!cur.includes(id)) {
-          cur.push(id);
-          localStorage.setItem('pixelstart_read_broadcasts', JSON.stringify(cur));
-        }
-        run(renderBroadcasts);
-      });
+  registerLoader(async () => {
+    const items = byNewest(await api.get('/users/me/broadcasts'));
+    const read = readBroadcastIds();
+    const unreadCount = items.filter(item => !read.has(item.id)).length;
+    document.querySelectorAll('[data-notif-filter]').forEach(button => {
+      button.classList.toggle('active', button.dataset.notifFilter === filter);
     });
+    const counter = document.querySelector('[data-notif-unread-count]');
+    if (counter) counter.textContent = String(unreadCount);
+    const visible = filter === 'unread' ? items.filter(item => !read.has(item.id)) : items;
+    mount.innerHTML = visible.length
+      ? visible.map(item => notificationCard(item, read.has(item.id))).join('')
+      : `<div class="empty-state-box">${filter === 'unread' ? 'Все уведомления прочитаны.' : 'Кураторы ещё не публиковали объявлений в ваших потоках.'}</div>`;
+    mount.dataset.ids = items.map(item => item.id).join(',');
+  });
 
-    // Check for student dashboard banner mount
-    const bannerEl = document.getElementById('student-broadcast-banner');
-    if (bannerEl && items.length > 0) {
-      const topB = items[0];
-      bannerEl.style.display = 'flex';
-      bannerEl.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-          <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:#ff9800; box-shadow:0 0 8px rgba(255,152,0,0.6);"></span>
-          <div style="font-size:13px; color:var(--text);">
-            <strong style="color:var(--text);">${escapeHtml(topB.author_name || 'Куратор')}:</strong>
-            <span>${escapeHtml(topB.title)}</span> — <span style="color:var(--muted);">${escapeHtml(topB.content.substring(0, 90))}...</span>
-          </div>
-        </div>
-        <button class="button button-soft" id="btn-banner-read" type="button" style="min-height:28px; padding:0 12px; font-size:11px; white-space:nowrap;">
-          Читать
-        </button>
-      `;
-      bannerEl.querySelector('#btn-banner-read')?.addEventListener('click', () => toggleDrawer(true));
-    }
-  };
-
-  registerLoader(renderBroadcasts);
+  document.querySelectorAll('[data-notif-filter]').forEach(button => {
+    button.addEventListener('click', () => {
+      filter = button.dataset.notifFilter;
+      refreshPageData();
+    });
+  });
+  document.querySelector('[data-notif-read-all]')?.addEventListener('click', () => {
+    markBroadcastsRead((mount.dataset.ids || '').split(',').filter(Boolean));
+    refreshPageData();
+  });
+  mount.addEventListener('click', event => {
+    const one = event.target.closest('[data-mark-read]');
+    if (!one) return;
+    markBroadcastsRead([one.dataset.markRead]);
+    refreshPageData();
+  });
 }
 
 /* ==========================================================================
@@ -3235,7 +3331,7 @@ function initStudentSchedulePage() {
     if (!items || items.length === 0) {
       mount.innerHTML = `
         <div class="card" style="padding:48px; text-align:center; color:var(--muted);">
-          <p style="font-size:16px; font-weight:700; margin-bottom:8px;">Учебный план пока пуст</p>
+          <p style="font-size:16px; font-weight:700; margin-bottom:8px;">Учебный маршрут пока пуст</p>
           <p style="font-size:13px;">После зачисления в курс здесь появятся его уроки.</p>
         </div>
       `;
@@ -3591,7 +3687,10 @@ function initStudentProfilePage() {
     const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || user.username[0].toUpperCase();
     const passed = rating.courses.reduce((sum, course) => sum + course.passed, 0);
     // The league comes from the same leaderboard the student sees, so the numbers always agree.
-    const league = leaderboard.find(row => row.user_id === user.id)?.league_title || '—';
+    const place = leaderboard.find(row => row.user_id === user.id);
+    const league = place
+      ? `<span class="league-pill league-${escapeHtml((place.league || 'silver').toLowerCase())}">${escapeHtml(place.league_title)}</span>`
+      : '—';
     mount.innerHTML = `
       <div class="profile-hero-card">
         <div class="profile-avatar-wrap">${escapeHtml(initials)}</div>
@@ -3622,7 +3721,7 @@ function initStudentProfilePage() {
           <span class="profile-stat-label">${plural(streams.length, 'Поток обучения', 'Потока обучения', 'Потоков обучения')}</span>
         </div>
         <div class="profile-stat-box">
-          <span class="profile-stat-val" style="font-size:18px; font-weight:800; color:var(--brand-amber-text, #b8520f);">${escapeHtml(league)}</span>
+          <span class="profile-stat-val">${league}</span>
           <span class="profile-stat-label">Текущая лига</span>
         </div>
       </div>`;
@@ -3748,7 +3847,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initTopbarThemeToggle();
   initLiveTicker();
   initDemoSwitcher();
-  initTopbarBroadcasts();
+  initNotifications();
+  initNotificationsPage();
   initTasksPage();
   initCuratorReview();
   initCuratorParticipants();

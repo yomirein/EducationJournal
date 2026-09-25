@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,10 +20,11 @@ async def me(user=Depends(get_current_user)):
 @router.patch("/users/me", response_model=UserOut)
 async def update_me(
     data: UserUpdate,
+    background_tasks: BackgroundTasks,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    return await UserService(db).update(user, data)
+    return await UserService(db).update(user, data, background_tasks)
 
 
 @router.delete("/users/me", status_code=204)
@@ -105,7 +106,7 @@ async def leaderboard(
                 "streams": stream_names,
                 "primary_stream": stream_names[0]
                 if stream_names
-                else "IT TOP Academy",
+                else "Без потока",
             }
         )
 

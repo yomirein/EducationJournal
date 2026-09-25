@@ -14,6 +14,7 @@ from backend.app.models import (
     Task,
     StreamParticipant,
     Submission,
+    course_modules,
 )
 from backend.app.progress import stream_progress
 from backend.app.schemas import (
@@ -135,6 +136,50 @@ async def delete_stream(stream_id: int, db: AsyncSession = Depends(get_session))
         raise HTTPException(404, "Stream not found")
     await db.delete(item)
     await db.commit()
+
+
+@router.get("/modules")
+async def modules(db: AsyncSession = Depends(get_session)):
+    """Modules with their courses, for picking a module when creating a lesson."""
+    rows = await db.execute(
+        select(Module, Course)
+        .join(course_modules, course_modules.c.module_id == Module.id)
+        .join(Course, Course.id == course_modules.c.course_id)
+        .order_by(Course.id, course_modules.c.position)
+    )
+    return [
+        {"id": mod.id, "name": mod.name, "course_id": course.id, "course_title": course.title}
+        for mod, course in rows.all()
+    ]
+
+
+@router.get("/lessons")
+async def lessons(db: AsyncSession = Depends(get_session)):
+    """Lessons with module and course names, for picking a lesson when creating a task."""
+    rows = await db.execute(
+        select(Lesson, Module, Course)
+        .join(Module, Module.id == Lesson.module_id)
+        .join(course_modules, course_modules.c.module_id == Module.id)
+        .join(Course, Course.id == course_modules.c.course_id)
+        .order_by(Course.id, course_modules.c.position, Lesson.id)
+    )
+    # Lessons have no title: show the step count and the first step's title instead.
+    steps: dict[int, list[Task]] = {}
+    for task in (await db.scalars(select(Task).order_by(Task.lesson_id, Task.order_index, Task.id))).all():
+        steps.setdefault(task.lesson_id, []).append(task)
+    return [
+        {
+            "id": lesson.id,
+            "type": lesson.type,
+            "module_id": mod.id,
+            "module_name": mod.name,
+            "course_id": course.id,
+            "course_title": course.title,
+            "tasks": len(steps.get(lesson.id, [])),
+            "first_task_title": steps[lesson.id][0].title if steps.get(lesson.id) else None,
+        }
+        for lesson, mod, course in rows.all()
+    ]
 
 
 @router.post("/lessons", status_code=201)
@@ -262,7 +307,6 @@ async def curator_alerts(
     user=Depends(require_role(UserRole.admin, UserRole.curator)),
     db: AsyncSession = Depends(get_session),
 ):
-    from backend.app.models import course_modules
 
     sub_stmt = (
         select(Submission, Task, User)

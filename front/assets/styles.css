@@ -1956,6 +1956,14 @@ body.dark-theme,
   --status-progress-bg: #1a2744;
   --status-idle: #94a3b8;
   --status-idle-bg: #1a2233;
+  /* Brand tokens that components use directly: without these they stay light in the dark theme. */
+  --brand-line: #22304a;
+  --brand-mist: #0f1729;
+  --brand-ink: #eef2ff;
+  --brand-ink-2: #b4bfd6;
+  --brand-ink-3: #8a96ad;
+  --brand-amber-50: #3b2314;
+  --brand-amber-text: #fdba74;
 }
 
 html[data-theme="dark"] body,
@@ -5214,4 +5222,311 @@ html[data-theme="dark"] .user-badge-role.admin {
   background: var(--panel);
   border: 1px dashed var(--line);
   border-radius: var(--r-card);
+}
+
+
+/* ==========================================================================
+   REVIEW PASS: buttons, layout fixes, tables, notifications
+   ========================================================================== */
+
+/* One button hierarchy: primary = filled blue, secondary = blue outline, danger = red outline. */
+.button-dark,
+.button-lime {
+  background: var(--brand-blue);
+  border: 1px solid var(--brand-blue);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgb(52 87 240 / 22%);
+}
+
+.button-dark:hover,
+.button-lime:hover {
+  background: var(--brand-blue-hover);
+  border-color: var(--brand-blue-hover);
+}
+
+.button-soft {
+  background: transparent;
+  border: 1.5px solid var(--brand-blue-200);
+  color: var(--brand-blue-hover);
+}
+
+.button-soft:hover {
+  background: var(--brand-blue-50);
+  border-color: var(--brand-blue);
+}
+
+.button-danger {
+  background: transparent;
+  border: 1.5px solid var(--status-failed);
+  color: var(--status-failed);
+}
+
+.button-danger:hover {
+  background: var(--status-failed-bg);
+}
+
+html[data-theme="dark"] .button-dark,
+html[data-theme="dark"] .button-lime,
+body.dark-theme .button-dark,
+body.dark-theme .button-lime {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgb(75 110 251 / 35%);
+}
+
+html[data-theme="dark"] .button-dark:hover,
+html[data-theme="dark"] .button-lime:hover,
+body.dark-theme .button-dark:hover,
+body.dark-theme .button-lime:hover {
+  background: #6283ff;
+}
+
+html[data-theme="dark"] .button-soft,
+body.dark-theme .button-soft {
+  background: transparent;
+  border-color: #3b5bd9;
+  color: #b4c6ff;
+}
+
+html[data-theme="dark"] .button-soft:hover,
+body.dark-theme .button-soft:hover {
+  background: #1a2744;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .button-danger,
+body.dark-theme .button-danger {
+  background: transparent;
+  border-color: #f87171;
+  color: #fca5a5;
+}
+
+/* Avatars keep their size in curator lists. */
+.avatar-circle,
+.student-table-avatar {
+  flex: 0 0 36px;
+  min-width: 36px;
+}
+
+.participant-info,
+.student-badge-wrap {
+  min-width: 0;
+}
+
+/* Lesson steps stay inside the module card. */
+.lesson-nav > *,
+.lesson-step-item,
+.lesson-step-item > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lesson-step-item {
+  box-sizing: border-box;
+}
+
+.module-switch-bar {
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.module-switch-btn {
+  min-width: 52px;
+}
+
+/* Visible, focusable text boxes on the review page and in forms. */
+.task-answer,
+.review-modal textarea,
+.review-modal input,
+[data-form="reject-file"] input,
+[data-form="reject-file"] select {
+  border: 1.5px solid var(--brand-blue-200);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.task-answer:focus,
+.review-modal textarea:focus,
+[data-form="reject-file"] input:focus,
+[data-form="reject-file"] select:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgb(52 87 240 / 18%);
+}
+
+.filter-pill.active {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  color: #ffffff;
+}
+
+/* Curator route cards read as buttons. */
+.cohort-card {
+  position: relative;
+  border-left: 4px solid var(--brand-blue);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.cohort-card::after {
+  content: "Открыть →";
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--brand-blue);
+  color: #ffffff;
+  font: 700 12px var(--display);
+}
+
+.cohort-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgb(52 87 240 / 16%);
+}
+
+/* Tables sit on a card background. */
+.leaderboard-table,
+.admin-data-table,
+[data-rating-body] table {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.leaderboard-table th,
+.admin-data-table th,
+[data-rating-body] th {
+  background: var(--brand-blue-50);
+}
+
+/* League colours are the same in the profile and on the leaderboard. */
+.profile-stat-val .league-pill {
+  font-size: 15px;
+  padding: 6px 14px;
+}
+
+/* Grade note under a task. */
+.grade-note {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.grade-note strong { display: block; }
+.grade-note p { margin: 6px 0 0; font-size: 13px; }
+.grade-note--done { background: var(--status-done-bg); border-color: var(--status-done); color: var(--status-done); }
+.grade-note--pending { background: var(--status-review-bg); border-color: var(--status-review); color: var(--status-review); }
+.grade-note--failed { background: var(--status-failed-bg); border-color: var(--status-failed); color: var(--status-failed); }
+
+.criteria-note {
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--status-done);
+  border-radius: 8px;
+  background: var(--status-done-bg);
+  font-size: 12px;
+}
+
+/* Notifications: bell dropdown and page. */
+.notif-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 60;
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 18px 44px rgb(11 18 32 / 22%);
+}
+
+.notif-dropdown-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notif-dropdown-list {
+  display: grid;
+  gap: 8px;
+}
+
+.notif-link {
+  border: 0;
+  background: none;
+  color: var(--brand-blue);
+  font: 700 12px var(--display);
+  cursor: pointer;
+}
+
+.notif-all {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.notif-empty {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.notif-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand-blue);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.notif-item.is-read {
+  border-left-color: var(--line);
+  opacity: .78;
+}
+
+.notif-item-head,
+.notif-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notif-title {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.notif-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.notif-read-btn {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.notif-page-list {
+  display: grid;
+  gap: 12px;
 }

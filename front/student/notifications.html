@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Рейтинг · PixelStart</title>
+    <title>Уведомления · PixelStart</title>
     <link rel="stylesheet" href="../assets/styles.css?v=20261004">
     <script src="../assets/api.js?v=20261004" defer></script>
     <script src="../assets/app.js?v=20261004" defer></script>
@@ -37,11 +37,11 @@
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
             <span>Учебный маршрут</span>
           </a>
-          <a class="active" href="leaderboard.html">
+          <a href="leaderboard.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34"/><path d="M18 14.66V17c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/></svg></span>
             <span>Рейтинг</span>
           </a>
-          <a href="notifications.html">
+          <a class="active" href="notifications.html">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
             <span>Уведомления</span>
           </a>
@@ -67,17 +67,13 @@
       <main class="main">
         <header class="topbar">
           <div class="crumbs">
-            Обучение / <strong>Рейтинг</strong>
+            Обучение / <strong>Уведомления</strong>
           </div>
           <div class="top-actions">
             <button class="topbar-broadcast-btn" id="btn-topbar-broadcasts" type="button" title="Оповещения куратора">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               <span class="broadcast-badge-count" id="header-broadcast-badge" style="display:none;">0</span>
             </button>
-            <div class="user-streak-badge" title="Зачтённые задания">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#ff9800;"><path d="M12 2c.5 2.5-1 4.5-2 6.5-1.5 3-1 5.5.5 7.5.5.7 1.2 1.3 2 1.8 1.5-1.2 2.5-3 2.5-5.3 0-1.5-.5-3-1-4.5 2 1 4 3.5 4 6.5 0 4.4-3.6 8-8 8s-8-3.6-8-8c0-3.5 2-6.5 4.5-8.5.5 1.5 1.5 3 3 4 .5-3 1.5-5.5 2.5-8z"/></svg>
-              <span data-leaderboard-completed>0 задач</span>
-            </div>
             <button class="button button-soft" type="button" data-logout>Выйти</button>
           </div>
         </header>
@@ -85,82 +81,18 @@
         <div class="content">
           <div class="page-head">
             <div>
-              <p class="eyebrow">Зал славы и достижения</p>
-              <h1>Рейтинг учеников и <em>лиги мастерства</em></h1>
+              <p class="eyebrow">Объявления кураторов</p>
+              <h1>Все <em>уведомления</em></h1>
             </div>
-            <p class="page-lede">
-              Зарабатывай очки опыта за зачтённые задания и двигайся по учебной программе.
-            </p>
+            <p class="page-lede">Сообщения кураторов ваших потоков, новые сверху.</p>
           </div>
-
-          <!-- TOP 3 PODIUM -->
-          <div class="podium-wrapper" id="leaderboard-podium">
-            <!-- Injected by JavaScript -->
+          <div class="filter-tabs-bar" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px;">
+            <button class="filter-tab-btn active" type="button" data-notif-filter="all">Все</button>
+            <button class="filter-tab-btn" type="button" data-notif-filter="unread">Непрочитанные <span class="tab-count-pill" data-notif-unread-count>0</span></button>
+            <button class="button button-soft" type="button" data-notif-read-all style="margin-left:auto;">Отметить все прочитанными</button>
           </div>
-
-          <!-- Leaderboard Filter Tabs -->
-          <div class="filter-tabs-bar" id="leaderboard-tabs" style="margin-top:28px;">
-            <button class="filter-tab-btn active" data-filter="all" type="button">
-              Общий зачёт
-            </button>
-            <button class="filter-tab-btn" data-filter="diamond" type="button">
-              Алмазная лига
-            </button>
-            <button class="filter-tab-btn" data-filter="platinum" type="button">
-              Платиновая лига
-            </button>
-            <button class="filter-tab-btn" data-filter="gold" type="button">
-              Золотая лига
-            </button>
-          </div>
-
-          <!-- Full Table -->
-          <div class="card" style="padding:0; overflow:hidden; margin-top:14px;">
-            <div class="table-responsive">
-              <table class="leaderboard-table">
-                <thead>
-                  <tr>
-                    <th style="width:70px; text-align:center;">Ранг</th>
-                    <th>Ученик</th>
-                    <th>Лига</th>
-                    <th style="text-align:center;">Решено задач</th>
-                    <th style="text-align:right; padding-right:24px;">Опыт (XP)</th>
-                  </tr>
-                </thead>
-                <tbody id="leaderboard-tbody">
-                  <tr>
-                    <td colspan="5" style="text-align:center; padding:32px; color:var(--muted);">Загрузка рейтинга...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <section class="card" data-rating-rules style="margin-top:18px">
-            <p class="eyebrow">
-              Как считается рейтинг
-            </p>
-            <ul data-rating-rules-list style="margin:8px 0 0; padding-left:18px; line-height:1.7;">
-            </ul>
-          </section>
-
-          <!-- Sticky Student Position Bar -->
-          <div class="student-sticky-rank-bar" id="student-sticky-rank">
-            <div class="rank-stat">
-              <span class="rank-num">#</span>
-              <div>
-                <strong>Загрузка позиции</strong>
-                <span style="display:block; font-size:11px; color:var(--muted);">Данные из журнала</span>
-              </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:20px;">
-              <div style="text-align:right;">
-                <strong style="color:var(--accent); font-size:16px;">0 XP</strong>
-              </div>
-              <a class="button button-lime" href="courses.html" style="min-height:34px; padding:0 16px; font-size:12px; font-weight:700;">
-                В Студию
-              </a>
-            </div>
+          <div class="notif-page-list" data-notifications-list aria-live="polite">
+            <div class="empty-state-box">Загрузка уведомлений…</div>
           </div>
         </div>
       </main>
