@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Вход · PixelStart</title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
-    <script src="../assets/api.js?v=20260925" defer></script>
-    <script src="../assets/app.js?v=20260925" defer></script>
+    <link rel="stylesheet" href="../assets/styles.css?v=20261029">
+    <script src="../assets/theme-init.js?v=20261026"></script>
+    <script src="../assets/api.js?v=20261026" defer></script>
+    <script src="../assets/app.js?v=20261027" defer></script>
   </head>
   <body>
     <main class="auth-page">
@@ -77,25 +78,22 @@
               Быстрый вход для жюри и тестов:
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="student">
+              <button class="button button-lime button-sm quick-login-btn" type="button" data-quick-login="student">
                 <span>Войти как <strong>Ученик</strong> (Иван)</span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">student / student12345</span>
+                <span class="quick-login-cred">student / student12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="curator">
+              <button class="button button-soft button-sm quick-login-btn" type="button" data-quick-login="curator">
                 <span>Войти как <strong>Куратор</strong> (Анна)</span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">curator / curator12345</span>
+                <span class="quick-login-cred">curator / curator12345</span>
               </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:38px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="admin">
+              <button class="button button-soft button-sm quick-login-btn" type="button" data-quick-login="admin">
                 <span>Войти как <strong>Администратор</strong></span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">admin / admin12345</span>
+                <span class="quick-login-cred">admin / admin12345</span>
               </button>
             </div>
           </div>
 
-          <div style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:14px; position:relative;">
-            <span style="background:var(--card-bg, #fff); padding:0 8px; position:relative; z-index:1;">или ручной ввод данных</span>
-            <div style="position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border); z-index:0;"></div>
-          </div>
+          <div class="auth-divider" data-demo-only hidden>или ручной ввод данных</div>
 
           <form class="auth-form" data-form="login">
             <div class="field">

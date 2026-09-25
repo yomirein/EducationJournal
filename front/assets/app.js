@@ -58,18 +58,28 @@ function initLandingPage() {
     }
   });
 
+  // Only one dropdown is open at a time.
+  const closeDropdowns = except => {
+    landing.querySelectorAll('.landing-dropdown-menu.is-open').forEach(menu => {
+      if (menu !== except) menu.classList.remove('is-open');
+    });
+    landing.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => {
+      const isOpen = document.getElementById(toggle.dataset.dropdownToggle) === except;
+      toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  };
   landing.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => {
     toggle.addEventListener('click', () => {
       const menu = document.getElementById(toggle.dataset.dropdownToggle);
-      const isOpen = menu?.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', String(Boolean(isOpen)));
+      closeDropdowns(menu?.classList.contains('is-open') ? null : menu);
+      menu?.classList.toggle('is-open', toggle.getAttribute('aria-expanded') === 'true');
     });
   });
   document.addEventListener('click', event => {
-    if (!event.target.closest('.landing-dropdown')) {
-      landing.querySelectorAll('.landing-dropdown-menu.is-open').forEach(menu => menu.classList.remove('is-open'));
-      landing.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
-    }
+    if (!event.target.closest('.landing-dropdown')) closeDropdowns(null);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeDropdowns(null);
   });
 
   const profileLink = landing.querySelector('[data-profile-link]');
@@ -358,6 +368,8 @@ bind('[data-form="resend-verification"]', form => run(async () => {
 
 const verifyStatus = document.querySelector('[data-verify-status]');
 const verifyParams = new URLSearchParams(window.location.search);
+// The resend form is only useful when the link did not work.
+const showResendForm = () => document.querySelector('[data-form="resend-verification"]')?.removeAttribute('hidden');
 if (verifyStatus && verifyParams.get('change')) {
   // Link from the "confirm your new email" letter.
   api.post(`/auth/confirm-email-change?token=${encodeURIComponent(verifyParams.get('token') || '')}`)
@@ -372,6 +384,7 @@ if (verifyStatus && verifyParams.get('change')) {
   const token = verifyParams.get('token');
   if (!token) {
     verifyStatus.textContent = 'В ссылке нет токена. Запросите письмо ещё раз.';
+    showResendForm();
   } else {
     api.post(`/auth/verify-email?token=${encodeURIComponent(token)}`)
       .then(user => {
@@ -380,6 +393,7 @@ if (verifyStatus && verifyParams.get('change')) {
       .catch(error => {
         verifyStatus.textContent = `Не удалось подтвердить почту: ${errorText(error)}`;
         verifyStatus.classList.add('error-copy');
+        showResendForm();
       });
   }
 }
@@ -451,9 +465,12 @@ bind('[data-form="task-create"]', form => run(async () => {
     description: form.description.value,
     answer_json: null
   });
+  // Keep the lesson selected: admins usually add several steps to one lesson in a row.
+  const lessonId = form.lesson_id.value;
   form.reset();
   showResult(`Задание #${task.id} создано.`);
   await refreshPageData();
+  form.lesson_id.value = lessonId;
 }, 'Задание создано.'));
 
 bind('[data-form="stream-create"]', form => run(async () => {
@@ -1261,7 +1278,7 @@ function initTasksPage() {
         if (sNum === '2.2.3' || sTitle.includes('стен')) lvl = 2;
         else if (sNum === '2.3.3' || sTitle.includes('мост')) lvl = 3;
 
-        const frameUrl = `/simulators/kumir-craft/index.html?level=${lvl}&lang=ru`;
+        const frameUrl = `/simulators/kumir-craft/index.html?level=${lvl}&lang=ru&v=20261024`;
         workbenchMount.innerHTML = `
           <div style="flex:1; display:flex; flex-direction:column; height:100%; position:relative;">
             <iframe class="workbench-iframe" id="kumir-workbench-iframe" src="${frameUrl}"></iframe>
@@ -1977,9 +1994,9 @@ function initCuratorReview() {
       </div>
       <div class="submissions-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <div class="filter-pills" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button class="filter-pill ${currentStatusFilter === 'all' ? 'active' : ''}" data-sub-filter="all">Все (${submissions.length})</button>
-          <button class="filter-pill ${currentStatusFilter === 'pending' ? 'active' : ''}" data-sub-filter="pending">На проверке (${pendingCount})</button>
-          <button class="filter-pill ${currentStatusFilter === 'graded' ? 'active' : ''}" data-sub-filter="graded">Проверенные (${gradedCount})</button>
+          <button class="chip-toggle ${currentStatusFilter === 'all' ? 'active' : ''}" data-sub-filter="all">Все (${submissions.length})</button>
+          <button class="chip-toggle ${currentStatusFilter === 'pending' ? 'active' : ''}" data-sub-filter="pending">На проверке (${pendingCount})</button>
+          <button class="chip-toggle ${currentStatusFilter === 'graded' ? 'active' : ''}" data-sub-filter="graded">Проверенные (${gradedCount})</button>
           ${streams.length > 0 ? `
             <select id="curator-stream-filter" class="task-answer" style="width:auto; min-width:180px; padding:4px 10px; font-size:12px; height:34px; min-height:0; border-radius:6px; margin:0;">
               <option value="all">Все потоки (${streams.length})</option>
@@ -2014,8 +2031,8 @@ function initCuratorReview() {
       grid.innerHTML = filtered.map(sub => {
         const isGraded = !isPending(sub);
         const statusBadge = isGraded 
-          ? `<span class="sub-grade-badge sub-grade-scored">Оценка: ${sub.grade}/100</span>`
-          : `<span class="sub-grade-badge sub-grade-pending">В очереди на проверку</span>`;
+          ? `<span class="status ${isPassedSubmission(sub) ? 'status-done' : 'status-failed'} sub-grade" title="Оценка">${Number(sub.grade)} / 100</span>`
+          : '<span class="status status-review sub-grade">На проверке</span>';
         
         const initials = (sub.student_name || 'Ученик').split(' ').map(n => n[0]).join('').slice(0, 2);
 
@@ -2024,10 +2041,10 @@ function initCuratorReview() {
             <div>
               <div class="sub-header">
                 <div class="student-badge-wrap">
-                  <div class="avatar-circle">${initials}</div>
-                  <div>
-                    <strong style="font-size:14px; display:block;">${escapeHtml(sub.student_name || sub.student_username)}</strong>
-                    <span style="font-size:11px; color:var(--muted);">${escapeHtml(sub.stream_name || `Поток #${sub.stream_id}`)}</span>
+                  <div class="avatar-circle">${escapeHtml(initials)}</div>
+                  <div class="sub-student">
+                    <strong>${escapeHtml(sub.student_name || sub.student_username)}</strong>
+                    <span title="${escapeHtml(sub.stream_name || '')}">${escapeHtml(sub.stream_name || `Поток #${sub.stream_id}`)}</span>
                   </div>
                 </div>
                 ${statusBadge}
@@ -2589,8 +2606,8 @@ function initStudentDashboard() {
       }
       const html = `<div class="interactive-feed-list">` + items.map(sub => {
         const statusBadge = sub.grade === -1
-          ? `<span class="sub-grade-badge sub-grade-pending">На проверке</span>`
-          : `<span class="sub-grade-badge sub-grade-scored">${Number(sub.grade || 0)}/100</span>`;
+          ? '<span class="status status-review sub-grade">На проверке</span>'
+          : `<span class="status ${isPassedSubmission(sub) ? 'status-done' : 'status-failed'} sub-grade">${Number(sub.grade || 0)} / 100</span>`;
 
         return `
           <div class="feed-item">
@@ -2868,7 +2885,7 @@ if (lessonsPage) {
       if (switchBar) {
         switchBar.innerHTML = modules.map((m, idx) => {
           const isActive = m.id === activeModule.id;
-          return `<button class="module-switch-btn ${isActive ? 'active' : ''}" data-mod-id="${m.id}" type="button">
+          return `<button class="chip-toggle ${isActive ? 'active' : ''}" data-mod-id="${m.id}" type="button">
             М0${idx + 1}
           </button>`;
         }).join('');
@@ -3234,7 +3251,7 @@ function notificationCard(item, read, { compact = false } = {}) {
     ${compact ? '' : `<p class="notif-text">${escapeHtml(item.text)}</p>`}
     <div class="notif-meta">
       <span>${escapeHtml(item.author_name || 'Куратор')} · ${escapeHtml(item.stream_name || '')}</span>
-      ${read ? '<span>Прочитано</span>' : `<button class="button button-soft notif-read-btn" type="button" data-mark-read="${Number(item.id)}">Прочитано</button>`}
+      ${read ? '<span>Прочитано</span>' : `<button class="button button-soft button-sm" type="button" data-mark-read="${Number(item.id)}">Прочитано</button>`}
     </div>
   </article>`;
 }
@@ -3310,21 +3327,6 @@ function initNotifications() {
         ? 'У вас непрочитанное уведомление от куратора.'
         : `У вас ${unread.length} ${plural(unread.length, 'непрочитанное уведомление', 'непрочитанных уведомления', 'непрочитанных уведомлений')}.`);
     }
-
-    const banner = document.getElementById('student-broadcast-banner');
-    if (banner && items.length) {
-      const top = items[0];
-      banner.style.display = 'flex';
-      banner.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-          <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:var(--brand-amber, #f07a2a);"></span>
-          <div style="font-size:13px;">
-            <strong>${escapeHtml(top.author_name || 'Куратор')}:</strong>
-            <span>${escapeHtml(top.title)}</span>
-          </div>
-        </div>
-        <button class="button button-soft" type="button" data-open-notifications style="min-height:32px; padding:0 12px; font-size:12px;">Читать</button>`;
-    }
   };
 
   bell.addEventListener('click', event => {
@@ -3332,12 +3334,6 @@ function initNotifications() {
     toggle(panel.hidden);
   });
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-open-notifications]')) {
-      event.stopPropagation();
-      toggle(true);
-      bell.scrollIntoView({ block: 'nearest' });
-      return;
-    }
     if (!wrap.contains(event.target)) toggle(false);
   });
   document.addEventListener('keydown', event => {
@@ -3532,9 +3528,9 @@ function initStudentSchedulePage() {
 
     const tabsBar = document.getElementById('schedule-tabs');
     if (tabsBar) {
-      tabsBar.querySelectorAll('.filter-tab-btn').forEach(btn => {
+      tabsBar.querySelectorAll('.chip-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-          tabsBar.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+          tabsBar.querySelectorAll('.chip-toggle').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           activeFilter = btn.dataset.filter || 'all';
           renderList();
@@ -3653,9 +3649,9 @@ function initStudentLeaderboardPage() {
     // 3. Setup League Tabs
     const tabs = document.getElementById('leaderboard-tabs');
     if (tabs) {
-      tabs.querySelectorAll('.filter-tab-btn').forEach(btn => {
+      tabs.querySelectorAll('.chip-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-          tabs.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+          tabs.querySelectorAll('.chip-toggle').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           currentFilter = btn.dataset.filter || 'all';
           renderTable();

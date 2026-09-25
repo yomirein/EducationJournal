@@ -60,6 +60,7 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 
 ## Security invariants (do not regress)
 
+- Changing the password or the email via `PATCH /users/me` requires `current_password`. A new email is stored in `pending_email` and replaces `email` only after `POST /auth/confirm-email-change` with the token mailed to the new address.
 - Login requires `is_verified`. Password reset tokens carry a fingerprint of the password hash (`password_fingerprint`), so a link stops working after use; `/auth/forgot-password` always answers 204.
 
 - `require_role(...)` for role gates; stream endpoints use `staff = require_role(curator, admin)` plus `owned(stream_id, user, db)` (admin sees all, curator only own streams).
@@ -76,9 +77,13 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 - **Data freshness:** every block that shows API data registers its loader with `registerLoader(loader)`; every successful change calls `await refreshPageData()`, which re-runs all registered loaders. New lists and forms must follow this, never patch the DOM by hand after a mutation.
 - Use the shared helpers in the top of `app.js` instead of re-implementing them: `getCurrentUser()` / `getCourses()` (one request per page), `resolveCourseId()`, `stepIcon/stepLabel`, `courseType`, `courseCard`, `criteriaBox`, `quickLogin`, `homeForRole`. Inside the task studio, submit answers with `submitAnswer(task, input, { workbench })`.
 - Students enrol via the course page: `[data-course-enroll]` lists the course's streams with the status from `GET /users/me/applications` and posts `POST /streams/{id}/join`. Course pages load steps through `loadCourseTasks()`, which shows an enrol hint on 403 instead of an endless loading state.
+- Notifications: `initNotifications()` renders the bell dropdown (last 3, link to all), `initNotificationsPage()` the full list on `student/notifications.html`; read ids are kept in `localStorage` (`pixelstart_read_broadcasts`).
+- Admin forms pick entities from API-filled selects (`select[data-options]`: courses, curators, users, modules via `GET /panel/modules`, lessons via `GET /panel/lessons`), never raw ids.
+- Buttons: one component `.button` (`front/assets/styles.css`, section BUTTONS). Variants only change tokens `--btn-*`: `button-dark`/`button-lime` = primary (filled blue), `button-soft` = secondary (outline), `button-danger` = destructive (red outline); size `button-sm` (36px). Filters, tabs and switchers use `chip-toggle` (+ `.active`). Do not add new `*-btn` classes; extend these. Never hardcode light colours in JS or HTML: use theme tokens, the dark theme overrides them.
 - Status badges use the design system classes `status status-done|review|failed|progress`; plural forms go through `plural(n, one, few, many)`.
 - Curator pages pick streams from `select[data-stream-select]` (filled from `/users/me/streams`); `data-stream-reload="X"` reloads the `[data-load-target="X"]` block on change. Do not hardcode stream ids.
 - Demo quick-login buttons use `data-quick-login="<role>"` inside a `data-demo-only` container; no inline scripts in HTML.
+- `assets/theme-init.js` is a blocking script in every page `<head>` (before `api.js`): it sets `data-theme` from `localStorage` before first paint. Keep it first and non-deferred, or the dark theme flashes light.
 - HTML pages load assets with a cache-busting query (`assets/app.js?v=YYYYMMDD`). When you change `api.js`, `app.js` or `styles.css`, bump the `v=` value in **all** HTML files, or browsers keep the old file.
 - Pages under `/student/`, `/curator/`, `/admin/` are guarded client-side by `verifyPageAccess()` (admin may open all of them). The real authorization is on the backend.
 - `front/assets/styles.css` defines theme tokens on `:root` and dark overrides under `[data-theme="dark"]`; `--text`, `--border`, `--accent`, `--danger` are aliases used by inline styles.
@@ -86,7 +91,5 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 
 ## Open questions (don't implement without the owner)
 
-- Password reset: `front/auth/reset.html` is a stub, no backend endpoint.
-- Whether login should require `is_verified`.
-- `StreamRating` / `user_stream_rating` are never recalculated (always 0); the formula is undefined.
 - Payment flow beyond the admin `payment` flag; Markdown in broadcasts.
+- "Read" state of notifications lives in the browser (`localStorage`), not on the server.
