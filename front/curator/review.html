@@ -6,10 +6,10 @@
     <title>
       Проверка — PixelStart
     </title>
-    <link rel="stylesheet" href="../assets/styles.css?v=20260926">
-    <script src="../assets/api.js?v=20260926" defer>
+    <link rel="stylesheet" href="../assets/styles.css?v=20260925">
+    <script src="../assets/api.js?v=20260925" defer>
     </script>
-    <script src="../assets/app.js?v=20260926" defer>
+    <script src="../assets/app.js?v=20260925" defer>
     </script>
   </head>
   <body class="curator-theme">
@@ -36,9 +36,6 @@
             </b>
           </span>
         </a>
-        <p class="side-label">
-          Мой поток
-        </p>
         <nav class="side-nav">
           <a href="index.html">
             <span class="nav-icon">
@@ -73,15 +70,6 @@
             </span>
           </a>
         </nav>
-        <div class="side-user">
-          <strong>
-            Роль curator
-          </strong>
-          Доступ к своим потокам
-          <span class="role">
-            Curator
-          </span>
-        </div>
       </aside>
       <main class="main">
         <header class="topbar">
@@ -114,6 +102,50 @@
             </p>
           </div>
           <div id="submissions-board-section" class="card" style="margin-bottom:22px;"></div>
+          <section class="card" style="opacity:0.85;">
+            <h2>
+              Ручной ввод (API Fallback)
+            </h2>
+            <form class="auth-form" data-form="grade">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="stream_id">
+                    ID потока
+                  </label>
+                  <input id="stream_id" name="stream_id" type="number" value="1" required>
+                </div>
+                <div class="field">
+                  <label for="task_id">
+                    ID задания
+                  </label>
+                  <input id="task_id" name="task_id" type="number" value="1" required>
+                </div>
+                <div class="field">
+                  <label for="submission_id">
+                    ID отправки
+                  </label>
+                  <input id="submission_id" name="submission_id" type="number" required>
+                </div>
+                <div class="field">
+                  <label for="grade">
+                    Оценка -1..100
+                  </label>
+                  <input id="grade" name="grade" type="number" min="-1" max="100" required>
+                </div>
+                <div class="field full">
+                  <label for="feedback_message">
+                    Обратная связь
+                  </label>
+                  <textarea id="feedback_message" name="feedback_message" placeholder="Что получилось и что попробовать дальше">
+                  </textarea>
+                </div>
+              </div>
+              <button class="button button-dark" type="submit">
+                Сохранить оценку
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </button>
+            </form>
+          </section>
           <section class="card" style="margin-top:18px">
             <h2>
               Удалить файл с причиной
@@ -122,21 +154,21 @@
               <div class="field-grid">
                 <div class="field">
                   <label for="remove-stream">
-                    Поток
+                    ID потока
                   </label>
-                  <select id="remove-stream" name="stream_id" required data-stream-select></select>
+                  <input id="remove-stream" name="stream_id" type="number" value="1">
                 </div>
                 <div class="field">
                   <label for="remove-task">
                     ID задания
                   </label>
-                  <input id="remove-task" name="task_id" type="number" required>
+                  <input id="remove-task" name="task_id" type="number" value="1">
                 </div>
                 <div class="field">
                   <label for="remove-submission">
                     ID отправки
                   </label>
-                  <input id="remove-submission" name="submission_id" type="number" required>
+                  <input id="remove-submission" name="submission_id" type="number">
                 </div>
                 <div class="field">
                   <label for="reason">
