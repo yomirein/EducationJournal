@@ -3,6 +3,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.deps import get_current_user, require_role
+from backend.app.core.config import settings
 from backend.app.db import get_session
 from backend.app.models import (
     UserRole,
@@ -17,9 +18,11 @@ from backend.app.models import (
     Submission,
     User,
 )
-from backend.app.schemas import GradeUpdate
+from backend.app.schemas import BroadcastCreate, GradeUpdate
 
 router = APIRouter(prefix="/streams", tags=["streams"])
+# Stream management is open to curators for their own streams and to admins for all of them (see owned()).
+staff = require_role(UserRole.curator, UserRole.admin)
 
 
 async def owned(stream_id, user, db):
@@ -29,6 +32,70 @@ async def owned(stream_id, user, db):
     if user.role != UserRole.admin and item.curator_id != user.id:
         raise HTTPException(403, "Stream access denied")
     return item
+
+
+async def stream_submission(stream: Stream, task_id: int, submission_id: int, db: AsyncSession) -> Submission:
+    """Returns a submission only if it belongs to the task, the stream's course and a stream participant."""
+    item = await db.scalar(
+        select(Submission)
+        .join(Task, Task.id == Submission.task_id)
+        .join(Lesson, Lesson.id == Task.lesson_id)
+        .join(course_modules, course_modules.c.module_id == Lesson.module_id)
+        .join(
+            StreamParticipant,
+            (StreamParticipant.user_id == Submission.user_id)
+            & (StreamParticipant.stream_id == stream.id),
+        )
+        .where(
+            Submission.id == submission_id,
+            Submission.task_id == task_id,
+            course_modules.c.course_id == stream.course_id,
+        )
+    )
+    if not item:
+        raise HTTPException(404, "Submission not found")
+    return item
+
+
+def submission_row(sub: Submission, usr: User, tsk: Task, st: Stream) -> dict:
+    meta = tsk.answer_json if isinstance(tsk.answer_json, dict) else {}
+    return {
+        "id": sub.id,
+        "stream_id": st.id,
+        "stream_name": st.name,
+        "course_id": st.course_id,
+        "task_id": sub.task_id,
+        "step_number": tsk.step_number,
+        "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
+        "task_type": tsk.type,
+        "check_type": tsk.check_type,
+        "submit_type": tsk.submit_type,
+        "task_description": tsk.description,
+        "criteria": meta.get("criteria"),
+        "reference_solution": meta.get("reference_solution"),
+        "sample_tests": meta.get("sample_tests"),
+        "user_id": sub.user_id,
+        "student_name": f"{usr.first_name} {usr.last_name}",
+        "student_username": usr.username,
+        "student_email": usr.email,
+        "file_id": sub.file_id,
+        "input": sub.input,
+        "grade": sub.grade,
+        "feedback_message": sub.feedback_message,
+    }
+
+
+def submissions_query():
+    return (
+        select(Submission, User, Task, Stream)
+        .join(User, User.id == Submission.user_id)
+        .join(Task, Task.id == Submission.task_id)
+        .join(Lesson, Lesson.id == Task.lesson_id)
+        .join(Module, Module.id == Lesson.module_id)
+        .join(course_modules, course_modules.c.module_id == Module.id)
+        .join(Stream, Stream.course_id == course_modules.c.course_id)
+        .join(StreamParticipant, (StreamParticipant.stream_id == Stream.id) & (StreamParticipant.user_id == Submission.user_id))
+    )
 
 
 @router.get("")
@@ -68,27 +135,36 @@ async def join(
 @router.get("/{stream_id}/participants")
 async def participants(
     stream_id: int,
-    user=Depends(require_role(UserRole.curator)),
+    user=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, user, db)
-    return list(
-        (
-            await db.scalars(
-                select(StreamParticipant).where(
-                    StreamParticipant.stream_id == stream_id
-                )
-            )
-        ).all()
+    rows = await db.execute(
+        select(StreamParticipant, User)
+        .join(User, User.id == StreamParticipant.user_id)
+        .where(StreamParticipant.stream_id == stream_id)
+        .order_by(StreamParticipant.id)
     )
-
+    return [
+        {
+            "id": part.id,
+            "user_id": part.user_id,
+            "stream_id": part.stream_id,
+            "status": part.status,
+            "user_stream_rating": part.user_stream_rating,
+            "first_name": usr.first_name,
+            "last_name": usr.last_name,
+            "username": usr.username,
+        }
+        for part, usr in rows.all()
+    ]
 
 
 @router.post('/{stream_id}/participants/{user_id}/accept')
 async def accept_participant(
     stream_id: int,
     user_id: int,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     return await decide(stream_id, user_id, 'accept', curator, db)
@@ -98,7 +174,7 @@ async def accept_participant(
 async def reject_participant(
     stream_id: int,
     user_id: int,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     return await decide(stream_id, user_id, 'reject', curator, db)
@@ -109,7 +185,7 @@ async def decide(
     stream_id: int,
     user_id: int,
     decision: str,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, curator, db)
@@ -131,15 +207,12 @@ async def decide(
 @router.post("/{stream_id}/broadcasts", status_code=201)
 async def create_broadcast(
     stream_id: int,
-    data: dict,
-    curator=Depends(require_role(UserRole.curator)),
+    data: BroadcastCreate,
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, curator, db)
-    text = data.get("text")
-    if not isinstance(text, str) or not text.strip():
-        raise HTTPException(422, "text is required")
-    item = Broadcast(curator_id=curator.id, text=text)
+    item = Broadcast(curator_id=curator.id, text=data.text)
     db.add(item)
     await db.flush()
     db.add(StreamBroadcast(stream_id=stream_id, broadcast_id=item.id))
@@ -169,14 +242,13 @@ async def broadcasts(
         )
         if not enrolled:
             raise HTTPException(403, "Stream access denied")
-    else:
-        raise HTTPException(403, "Stream access denied")
     return list(
         (
             await db.scalars(
                 select(Broadcast)
                 .join(StreamBroadcast)
                 .where(StreamBroadcast.stream_id == stream_id)
+                .order_by(Broadcast.timestamp.desc())
             )
         ).all()
     )
@@ -184,104 +256,34 @@ async def broadcasts(
 
 @router.get("/my/submissions")
 async def my_curator_submissions(
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
-    stmt = (
-        select(Submission, User, Task, Stream)
-        .join(User, User.id == Submission.user_id)
-        .join(Task, Task.id == Submission.task_id)
-        .join(Lesson, Lesson.id == Task.lesson_id)
-        .join(Module, Module.id == Lesson.module_id)
-        .join(course_modules, course_modules.c.module_id == Module.id)
-        .join(Stream, Stream.course_id == course_modules.c.course_id)
-        .join(StreamParticipant, (StreamParticipant.stream_id == Stream.id) & (StreamParticipant.user_id == Submission.user_id))
-    )
+    stmt = submissions_query()
     if curator.role != UserRole.admin:
         stmt = stmt.where(Stream.curator_id == curator.id)
-    stmt = stmt.order_by(Submission.id.desc())
-    rows = await db.execute(stmt)
-    return [
-        {
-            "id": sub.id,
-            "stream_id": st.id,
-            "stream_name": st.name,
-            "task_id": sub.task_id,
-            "step_number": tsk.step_number,
-            "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
-            "task_type": tsk.type,
-            "check_type": tsk.check_type,
-            "submit_type": tsk.submit_type,
-            "task_description": tsk.description,
-            "criteria": (tsk.answer_json or {}).get("criteria"),
-            "reference_solution": (tsk.answer_json or {}).get("reference_solution"),
-            "sample_tests": (tsk.answer_json or {}).get("sample_tests"),
-            "user_id": sub.user_id,
-            "student_name": f"{usr.first_name} {usr.last_name}",
-            "student_username": usr.username,
-            "student_email": usr.email,
-            "file_id": sub.file_id,
-            "input": sub.input,
-            "grade": sub.grade,
-            "feedback_message": sub.feedback_message,
-        }
-        for sub, usr, tsk, st in rows.all()
-    ]
+    rows = await db.execute(stmt.order_by(Submission.id.desc()))
+    return [submission_row(*row) for row in rows.all()]
 
 
 @router.get("/{stream_id}/submissions")
 async def all_stream_submissions(
     stream_id: int,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, curator, db)
-    stmt = (
-        select(Submission, User, Task, Stream)
-        .join(User, User.id == Submission.user_id)
-        .join(Task, Task.id == Submission.task_id)
-        .join(Lesson, Lesson.id == Task.lesson_id)
-        .join(Module, Module.id == Lesson.module_id)
-        .join(course_modules, course_modules.c.module_id == Module.id)
-        .join(Stream, Stream.course_id == course_modules.c.course_id)
-        .join(StreamParticipant, (StreamParticipant.stream_id == Stream.id) & (StreamParticipant.user_id == Submission.user_id))
-        .where(Stream.id == stream_id)
-        .order_by(Submission.id.desc())
+    rows = await db.execute(
+        submissions_query().where(Stream.id == stream_id).order_by(Submission.id.desc())
     )
-    rows = await db.execute(stmt)
-    return [
-        {
-            "id": sub.id,
-            "stream_id": st.id,
-            "stream_name": st.name,
-            "task_id": sub.task_id,
-            "step_number": tsk.step_number,
-            "task_title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
-            "task_type": tsk.type,
-            "check_type": tsk.check_type,
-            "submit_type": tsk.submit_type,
-            "task_description": tsk.description,
-            "criteria": (tsk.answer_json or {}).get("criteria"),
-            "reference_solution": (tsk.answer_json or {}).get("reference_solution"),
-            "sample_tests": (tsk.answer_json or {}).get("sample_tests"),
-            "user_id": sub.user_id,
-            "student_name": f"{usr.first_name} {usr.last_name}",
-            "student_username": usr.username,
-            "student_email": usr.email,
-            "file_id": sub.file_id,
-            "input": sub.input,
-            "grade": sub.grade,
-            "feedback_message": sub.feedback_message,
-        }
-        for sub, usr, tsk, st in rows.all()
-    ]
+    return [submission_row(*row) for row in rows.all()]
 
 
 @router.get("/{stream_id}/tasks/{task_id}/submissions")
 async def submissions(
     stream_id: int,
     task_id: int,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
     await owned(stream_id, curator, db)
@@ -317,13 +319,11 @@ async def grade_submission(
     task_id: int,
     submission_id: int,
     data: GradeUpdate,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
-    await owned(stream_id, curator, db)
-    item = await db.get(Submission, submission_id)
-    if not item or item.task_id != task_id:
-        raise HTTPException(404, "Submission not found")
+    stream = await owned(stream_id, curator, db)
+    item = await stream_submission(stream, task_id, submission_id, db)
     item.grade, item.feedback_message = data.grade, data.feedback_message
     await db.commit()
     await db.refresh(item)
@@ -336,17 +336,15 @@ async def reject_submission_file(
     task_id: int,
     submission_id: int,
     reason: str,
-    curator=Depends(require_role(UserRole.curator)),
+    curator=Depends(staff),
     db: AsyncSession = Depends(get_session),
 ):
-    await owned(stream_id, curator, db)
-    item = await db.get(Submission, submission_id)
-    if not item or item.task_id != task_id:
-        raise HTTPException(404, "Submission not found")
+    stream = await owned(stream_id, curator, db)
+    item = await stream_submission(stream, task_id, submission_id, db)
     if not reason.strip():
         raise HTTPException(422, "A rejection reason is required")
     if item.file_id:
-        path = Path("uploads") / Path(item.file_id).name
+        path = Path(settings.upload_dir) / Path(item.file_id).name
         if path.exists():
             path.unlink()
         item.file_id = None

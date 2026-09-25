@@ -210,7 +210,7 @@ curl -X POST "http://localhost:8000/auth/resend-verification?email=ivan@example.
 
 Пример ссылки:
 ```
-http://localhost:3000/verify-email?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+http://127.0.0.1:8000/auth/verify.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 Токен действителен 24 часа (настраивается через `VERIFICATION_TOKEN_EXPIRE` в минутах).
@@ -374,16 +374,17 @@ curl -X POST "http://localhost:8000/auth/resend-verification?email=user@example.
 
 ## Интеграция с frontend
 
-Frontend должен:
-1. Обрабатывать `is_verified: false` при регистрации
-2. Показывать сообщение о необходимости подтверждения email
-3. Предоставлять кнопку "Отправить письмо повторно" → `/auth/resend-verification`
-4. Иметь страницу `/verify-email` для обработки ссылок из писем
+Реализовано в `front/auth/verify.html` (логика — `front/assets/app.js`, блок `[data-verify-status]`):
+1. После регистрации пользователь видит сообщение о письме с подтверждением
+2. Страница `/auth/verify.html?token=...` отправляет `POST /auth/verify-email` и показывает результат
+3. Форма на той же странице повторно отправляет письмо через `/auth/resend-verification`
+
+Ссылка в письме строится как `{FRONTEND_URL}/auth/verify.html?token=...`.
 
 Пример обработки токена из URL:
 
 ```javascript
-// /verify-email?token=...
+// /auth/verify.html?token=...
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
 

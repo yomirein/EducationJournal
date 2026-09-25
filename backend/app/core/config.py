@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite+aiosqlite:///./learning.db"
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/learning"
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire: int = 30
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     mail_starttls: bool = True
     mail_ssl_tls: bool = False
     verification_token_expire: int = 1440  # 24 hours in minutes
-    frontend_url: str = "http://localhost:3000"
+    frontend_url: str = "http://127.0.0.1:8000"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

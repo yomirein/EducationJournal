@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>
-      Авторизация — PixelStart
+      Подтверждение почты — PixelStart
     </title>
     <link rel="stylesheet" href="../assets/styles.css?v=20260925">
   </head>
@@ -34,32 +34,15 @@
             </span>
           </a>
           <h1>
-            Твой код.
+            Почта.
             <br>
             <em>
-              Твой мир.
+              Подтверждена.
             </em>
           </h1>
           <p>
-            Войди или создай профиль, чтобы курсы, задания и прогресс были привязаны к твоему аккаунту.
+            Подтверждённый адрес нужен, чтобы получать письма платформы и восстанавливать доступ.
           </p>
-          <div class="auth-terminal">
-            &gt;
-            connect_account()
-            <br>
-            <span style="color:var(--coral)">
-              jwt
-            </span>
-            =
-            <span style="color:var(--lime)">
-              ready
-            </span>
-            <br>
-            &gt;
-            <span style="color:var(--yellow)">
-              start!
-            </span>
-          </div>
         </div>
       </section>
       <section class="auth-form-side">
@@ -86,25 +69,36 @@
             </span>
           </a>
           <h2>
-            Войти в платформу
+            Подтверждение почты
           </h2>
-          <p>
-            Используй логин или почту. После входа сервер определит роль аккаунта.
+          <p data-verify-status aria-live="polite">
+            Проверяем ссылку из письма…
           </p>
-          <div class="entry-actions">
-            <a class="button button-dark" href="login.html">
-              Войти
+          <form class="auth-form" data-form="resend-verification">
+            <div class="field">
+              <label for="email">
+                Отправить письмо ещё раз
+              </label>
+              <input id="email" name="email" type="email" required placeholder="you@example.com">
+            </div>
+            <button class="button button-dark" type="submit">
+              Отправить письмо
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </button>
+          </form>
+          <p class="auth-switch">
+            <a href="login.html">
+              Перейти ко входу
             </a>
-            <a class="button button-lime" href="register.html">
-              Регистрация
-              <span>
-                +
-              </span>
-            </a>
-          </div>
+          </p>
         </div>
       </section>
     </main>
+    <div class="toast" role="status">
+    </div>
+    <script src="../assets/api.js?v=20260925" defer>
+    </script>
+    <script src="../assets/app.js?v=20260925" defer>
+    </script>
   </body>
 </html>

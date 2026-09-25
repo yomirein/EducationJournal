@@ -1,8 +1,10 @@
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 from backend.app.api.deps import get_current_user
+from backend.app.core.config import settings
 from backend.app.db import get_session
 from backend.app.models import (
     Course,
@@ -16,7 +18,7 @@ from backend.app.models import (
     course_modules,
 )
 from backend.app.repositories import CourseRepository
-from backend.app.schemas import CourseOut
+from backend.app.schemas import CourseOut, RunTestsRequest, SubmitCreate
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -140,6 +142,7 @@ async def course_tasks(
         {
             "id": tsk.id,
             "lesson_id": tsk.lesson_id,
+            "module_id": mod.id,
             "title": tsk.title or f"Шаг {tsk.step_number or tsk.id}",
             "step_number": tsk.step_number,
             "type": str(tsk.type.value if hasattr(tsk.type, "value") else tsk.type),
@@ -165,7 +168,7 @@ async def course_tasks(
 async def submit(
     course_id: int,
     task_id: int,
-    data: dict,
+    data: SubmitCreate,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -181,9 +184,8 @@ async def submit(
         course_id, user, db
     ):
         raise HTTPException(403, "Course access requires payment or enrollment")
-    answer = data.get("input", "")
-    if not isinstance(answer, str) or len(answer) > 12_000:
-        raise HTTPException(422, "Answer must be text up to 12000 characters")
+    if data.file_id and not (Path(settings.upload_dir) / data.file_id).is_file():
+        raise HTTPException(422, "Uploaded file not found")
 
     item = await db.scalar(
         select(Submission).where(
@@ -195,11 +197,11 @@ async def submit(
         db.add(item)
 
     eval_result = await run_in_threadpool(
-        evaluate_submission, task.type, task.answer_json, data.get("input"), data.get("file_id")
+        evaluate_submission, task.type, task.answer_json, data.input, data.file_id
     )
 
-    item.input = data.get("input")
-    item.file_id = data.get("file_id")
+    item.input = data.input
+    item.file_id = data.file_id
     item.grade = eval_result["grade"]
     item.feedback_message = eval_result["feedback_message"]
 
@@ -222,7 +224,7 @@ async def submit(
 async def run_task_tests(
     course_id: int,
     task_id: int,
-    data: dict,
+    data: RunTestsRequest,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -238,11 +240,8 @@ async def run_task_tests(
         raise HTTPException(400, "Only Python tasks support sample runs")
     if user.role == UserRole.student and not await has_course_access(course_id, user, db):
         raise HTTPException(403, "Course access requires payment or enrollment")
-    code = data.get("input")
-    if not isinstance(code, str) or len(code) > 12_000:
-        raise HTTPException(422, "Code must be text up to 12000 characters")
     sample_only = {**(task.answer_json or {}), "hidden_tests": []}
-    eval_result = await run_in_threadpool(evaluate_submission, task.type, sample_only, code, None)
+    eval_result = await run_in_threadpool(evaluate_submission, task.type, sample_only, data.input, None)
     return {
         "task_id": task.id,
         "grade": eval_result["grade"],

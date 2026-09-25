@@ -85,7 +85,7 @@ def test_registration_flow():
     print("  • Если SMTP не настроен — проверьте логи Docker:")
     print("    docker compose logs api | grep email")
     print("\nПисьмо содержит ссылку вида:")
-    print(f"  http://localhost:3000/verify-email?token=<VERIFICATION_TOKEN>")
+    print(f"  http://127.0.0.1:8000/auth/verify.html?token=<VERIFICATION_TOKEN>")
 
     # ========================================================================
     # Шаг 3: Попытка входа до подтверждения email
