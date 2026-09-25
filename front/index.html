@@ -3,458 +3,102 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PixelStart · Образовательная платформа спортивного программирования</title>
-    <link rel="stylesheet" href="assets/styles.css?v=20261004">
-    <script src="assets/api.js?v=20261004" defer></script>
-    <script src="assets/app.js?v=20261004" defer></script>
+    <meta name="description" content="PixelStart — образовательная платформа по программированию для школьников 1–9 классов.">
+    <title>PixelStart · Учись кодить</title>
+    <link rel="stylesheet" href="assets/styles.css?v=20260925">
+    <script src="assets/api.js?v=20260925" defer></script>
+    <script src="assets/app.js?v=20260925" defer></script>
   </head>
   <body class="landing-page">
-    <!-- Header -->
     <header class="landing-header">
-      <div class="header-content">
-        <a class="brand" href="index.html">
-          <span class="brand-mark">
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-          </span>
-          <span>
-            pixel<span>start</span>
-            <b>kids</b>
-          </span>
+      <div class="landing-shell landing-nav">
+        <a class="brand landing-brand" href="index.html" aria-label="PixelStart, на главную">
+          <span class="brand-mark"><i></i><i></i><i></i><i></i></span>
+          <span>pixel<span>start</span><b>kids</b></span>
         </a>
-        
-        <nav class="landing-nav">
-          <div class="nav-dropdown">
-            <button class="nav-button" data-dropdown="courses">
-              Курсы
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div class="dropdown-menu" data-menu="courses">
-              <a href="#" data-auth-required>Scratch 3.0 (2–4 класс)</a>
-              <a href="#" data-auth-required>Minecraft Education (3–6 класс)</a>
-              <a href="#" data-auth-required>Python Алгоритмика (5–9 класс)</a>
+        <nav class="landing-menu" aria-label="Основная навигация">
+          <div class="landing-dropdown">
+            <button class="landing-nav-button" type="button" aria-expanded="false" data-dropdown-toggle="learn-menu">Учиться <span>⌄</span></button>
+            <div class="landing-dropdown-menu" id="learn-menu">
+              <a href="student/catalog.html" data-auth-link="true">Каталог курсов</a>
+              <a href="student/courses.html" data-auth-link="true">Мои курсы</a>
             </div>
           </div>
-          
-          <div class="nav-dropdown">
-            <button class="nav-button" data-dropdown="platform">
-              Платформа
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div class="dropdown-menu" data-menu="platform">
-              <a href="#advantages">Преимущества</a>
-              <a href="#" data-auth-required>Мой прогресс</a>
-              <a href="#" data-auth-required>Рейтинги</a>
-              <a href="#" data-auth-required>Тренажёры</a>
+          <div class="landing-dropdown">
+            <button class="landing-nav-button" type="button" aria-expanded="false" data-dropdown-toggle="about-menu">О платформе <span>⌄</span></button>
+            <div class="landing-dropdown-menu" id="about-menu">
+              <a href="#benefits">Преимущества</a>
+              <a href="#courses">Направления</a>
             </div>
           </div>
-          
-          <div class="nav-dropdown">
-            <button class="nav-button" data-dropdown="help">
-              Помощь
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div class="dropdown-menu" data-menu="help">
-              <a href="#" data-auth-required>Документация</a>
-              <a href="#" data-auth-required>Обратная связь</a>
-              <a href="#contacts">Контакты</a>
-            </div>
-          </div>
+          <a class="landing-nav-link" href="student/leaderboard.html" data-auth-link="true">Рейтинг</a>
         </nav>
-        
-        <div class="header-actions">
-          <a class="button button-soft button-login" href="auth/login.html" data-hide-when-auth>
-            Войти
-          </a>
-          <div class="user-profile-btn" data-show-when-auth style="display: none;">
-            <button class="profile-avatar" data-user-menu>
-              <span class="avatar-text">У</span>
-            </button>
-            <div class="profile-dropdown" data-profile-menu style="display: none;">
-              <div class="profile-info">
-                <strong data-user-name>Пользователь</strong>
-                <small data-user-role>Ученик</small>
-              </div>
-              <a href="#" data-go-home>Мой кабинет</a>
-              <a href="#" data-logout>Выйти</a>
-            </div>
-          </div>
+        <div class="landing-nav-actions">
+          <a class="button button-dark landing-login" href="auth/login.html" data-profile-link>Войти</a>
+          <button class="landing-menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false">☰</button>
         </div>
       </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <div class="hero-text">
-          <div class="terminal-line">&gt; boot_learning_platform()</div>
-          <h1>
-            Собирай знания.
-            <br>
-            <em>Запускай идеи.</em>
-          </h1>
-          <p class="hero-lead">
-            Визуальная система образовательной платформы, на которой школьники 1–9 классов готовятся по спортивному программированию: Scratch, Minecraft Education и Python.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-dark" href="auth/register.html">
-              Начать обучение
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
-              </svg>
-            </a>
-            <a class="button button-lime" href="#advantages">
-              Узнать больше
-            </a>
+    <main>
+      <section class="landing-hero">
+        <div class="landing-shell landing-hero-grid">
+          <div class="landing-hero-copy">
+            <p class="landing-kicker">PIXELSTART / LEARNING LAB</p>
+            <h1>Код становится<br><em>своей игрой.</em></h1>
+            <p class="landing-lead">Практика программирования для школьников 1–9 классов: от первых блоков до алгоритмов и собственных проектов.</p>
+            <div class="landing-actions">
+              <a class="button button-lime" href="auth/register.html" data-auth-link="true">Начать учиться <span>↗</span></a>
+              <a class="landing-text-link" href="#courses">Посмотреть курсы <span>↓</span></a>
+            </div>
+            <div class="landing-proof"><span class="landing-proof-dot"></span><span>Scratch · Minecraft Education · Python</span></div>
           </div>
-          
-          <!-- Quick Demo Entry -->
-          <div id="landing-demo-entry" data-demo-only hidden style="margin-top:24px; padding:16px; background:rgba(11, 18, 32, 0.6); border:1px solid rgba(255,255,255,0.1); border-radius:12px;">
-            <div style="font-size:11px; text-transform:uppercase; font-weight:800; color:var(--brand-sky); letter-spacing:0.06em; margin-bottom:10px;">
-              Быстрый вход для жюри и проверки (1 клик):
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <button class="button button-lime" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="student">
-                <span>Войти как Ученик (Иван)</span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">student / student12345</span>
-              </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="curator">
-                <span>Войти как Куратор (Анна)</span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">curator / curator12345</span>
-              </button>
-              <button class="button button-soft" type="button" style="width:100%; justify-content:space-between; min-height:36px; padding:0 12px; font-size:12px; font-weight:700;" data-quick-login="admin">
-                <span>Войти как Администратор</span>
-                <span style="opacity:0.75; font-size:11px; font-family:monospace;">admin / admin12345</span>
-              </button>
-            </div>
+          <div class="landing-hero-art" aria-label="Визуальная карта обучения" role="img">
+            <div class="landing-orbit landing-orbit-one"></div>
+            <div class="landing-orbit landing-orbit-two"></div>
+            <div class="landing-code-card"><span>01</span><code>while (idea) {<br>&nbsp;&nbsp;make();<br>}</code></div>
+            <div class="landing-sticker landing-sticker-top">BUILD<br>YOUR WAY</div>
+            <div class="landing-sticker landing-sticker-bottom">+ XP</div>
+            <div class="landing-pixel-core"><span></span><b>⌘</b></div>
           </div>
         </div>
-        
-        <div class="hero-visual">
-          <div class="code-preview">
-            <div class="code-header">
-              <i></i><i></i><i></i>
-              <span>main.py</span>
-            </div>
-            <div class="code-body">
-              <pre><code><span class="code-keyword">def</span> <span class="code-function">learn</span>():
-    <span class="code-keyword">for</span> course <span class="code-keyword">in</span> platform:
-        study(course)
-        solve_tasks()
-        <span class="code-keyword">if</span> ready:
-            <span class="code-keyword">return</span> <span class="code-string">"Success!"</span>
+      </section>
 
-<span class="code-comment"># Начни свой путь</span>
-learn()</code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      <section class="landing-marquee" aria-label="Возможности PixelStart">
+        <div class="landing-marquee-track"><span>УЧИСЬ ЧЕРЕЗ ПРАКТИКУ</span><b>✦</b><span>СОЗДАВАЙ ПРОЕКТЫ</span><b>✦</b><span>РАСТИ В СВОЁМ ТЕМПЕ</span><b>✦</b></div>
+      </section>
 
-    <!-- Advantages Section -->
-    <section class="advantages-section" id="advantages">
-      <div class="section-content">
-        <div class="section-header">
-          <div class="eyebrow">Почему PixelStart</div>
-          <h2>Преимущества <em>платформы</em></h2>
-          <p class="section-lead">
-            Всё, что нужно для эффективного обучения программированию в одном месте
-          </p>
-        </div>
-        
-        <div class="advantages-grid">
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-              </svg>
-            </div>
-            <h3>Модульная структура</h3>
-            <p>Курс → Поток → Модуль → Урок → Задание. Понятная иерархия и плавный переход от простого к сложному.</p>
-          </div>
-          
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
-            </div>
-            <h3>Прогресс и рейтинги</h3>
-            <p>Отслеживай свой путь, сравнивай результаты с потоком, получай баллы за каждый зачтённый шаг.</p>
-          </div>
-          
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-            </div>
-            <h3>Автопроверка кода</h3>
-            <p>Задачи Python проверяются автоматически по набору тестов. Мгновенная обратная связь и объективная оценка.</p>
-          </div>
-          
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            </div>
-            <h3>Встроенные тренажёры</h3>
-            <p>Scratch-лаборатория и симулятор Minecraft Education. Практикуйся прямо в браузере без установки программ.</p>
-          </div>
-          
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            </div>
-            <h3>Поддержка куратора</h3>
-            <p>Проекты и сложные работы проверяет куратор. Персональная обратная связь и рекомендации по улучшению.</p>
-          </div>
-          
-          <div class="advantage-card">
-            <div class="advantage-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            </div>
-            <h3>3 курса и 30 шагов</h3>
-            <p>Scratch 3 (2–4 классы), Minecraft Education (3–6 классы), Python (5–9 классы). Демо-база готова к старту.</p>
+      <section class="landing-section landing-benefits" id="benefits">
+        <div class="landing-shell">
+          <div class="landing-section-heading"><h2>Среда, где<br><em>интересно расти.</em></h2><p>Всё необходимое для уверенного старта и заметного прогресса уже собрано в одном месте.</p></div>
+          <div class="landing-benefit-grid">
+            <article class="landing-benefit landing-benefit-feature"><span class="landing-index">01</span><h3>Путь по шагам</h3><p>Курс, модуль, урок и задание складываются в понятный маршрут без перегрузки.</p><strong>→</strong></article>
+            <article class="landing-benefit landing-benefit-blue"><span class="landing-index">02</span><h3>Учёба руками</h3><p>Scratch, Minecraft Education и Python превращают теорию в работающие проекты.</p><div class="landing-mini-grid"><i></i><i></i><i></i><i></i></div></article>
+            <article class="landing-benefit landing-benefit-line"><span class="landing-index">03</span><h3>Честный прогресс</h3><p>Баллы, достижения и рейтинг помогают видеть результат и не терять мотивацию.</p><div class="landing-progress"><span></span></div></article>
+            <article class="landing-benefit landing-benefit-dark"><span class="landing-index">04</span><h3>Обратная связь</h3><p>Автопроверка задач и поддержка куратора подсказывают, куда двигаться дальше.</p><div class="landing-avatar-stack"><i>К</i><i>А</i><i>+</i></div></article>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Courses Overview -->
-    <section class="courses-overview">
-      <div class="section-content">
-        <div class="section-header">
-          <div class="eyebrow">Учебная программа</div>
-          <h2>Курсы <em>платформы</em></h2>
+      <section class="landing-section landing-courses" id="courses">
+        <div class="landing-shell">
+          <div class="landing-section-heading landing-courses-heading"><h2>Выбери свой<br><em>первый запуск.</em></h2><a class="landing-text-link" href="student/catalog.html" data-auth-link="true">Весь каталог <span>↗</span></a></div>
+          <div class="landing-course-grid" data-landing-courses><div class="landing-course-loading">Загружаем направления...</div></div>
         </div>
-        
-        <div class="courses-grid">
-          <article class="course-preview green">
-            <div class="course-label">SCRATCH 3.0</div>
-            <h3>Первые программы в Scratch</h3>
-            <p class="course-meta">2–4 класс · 6–8 занятий · 3 модуля</p>
-            <p>Собирай простые программы из блоков, понимай последовательность, цикл, событие и условие.</p>
-            <a href="#" class="course-link" data-auth-required>
-              Подробнее
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-          </article>
-          
-          <article class="course-preview blue">
-            <div class="course-label">MINECRAFT EDUCATION</div>
-            <h3>Программируем агента</h3>
-            <p class="course-meta">3–6 класс · MakeCode · 3 модуля</p>
-            <p>Задания внутри мира Minecraft, программы собираются из блоков MakeCode.</p>
-            <a href="#" class="course-link" data-auth-required>
-              Подробнее
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-          </article>
-          
-          <article class="course-preview coral">
-            <div class="course-label">PYTHON 3</div>
-            <h3>Алгоритмика: первые задачи</h3>
-            <p class="course-meta">5–9 класс · Задачи с тестами · 3 модуля</p>
-            <p>Первые алгоритмические задачи на Python с автоматической проверкой по набору тестов.</p>
-            <a href="#" class="course-link" data-auth-required>
-              Подробнее
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-          </article>
-        </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
-    <!-- Footer -->
-    <footer class="landing-footer" id="contacts">
-      <div class="footer-content">
-        <div class="footer-main">
-          <div class="footer-brand">
-            <a class="brand" href="index.html">
-              <span class="brand-mark">
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-              </span>
-              <span>
-                pixel<span>start</span>
-                <b>kids</b>
-              </span>
-            </a>
-            <p>Образовательная платформа для подготовки школьников по спортивному программированию</p>
-          </div>
-          
-          <div class="footer-links">
-            <div class="footer-column">
-              <h4>Платформа</h4>
-              <a href="#advantages">Преимущества</a>
-              <a href="#" data-auth-required>Курсы</a>
-              <a href="#" data-auth-required>Тренажёры</a>
-            </div>
-            
-            <div class="footer-column">
-              <h4>Помощь</h4>
-              <a href="#" data-auth-required>Документация</a>
-              <a href="#contacts">Контакты</a>
-              <a href="#" data-auth-required>Обратная связь</a>
-            </div>
-            
-            <div class="footer-column">
-              <h4>Контакты</h4>
-              <a href="mailto:info@pixelstart.ru">info@pixelstart.ru</a>
-              <a href="tel:+78001234567">+7 (800) 123-45-67</a>
-              <div class="footer-social">
-                <a href="#" aria-label="GitHub" data-github-link>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="footer-bottom">
-          <div class="footer-copyright">
-            © 2026 pixelstart · Образовательная платформа
-          </div>
-          <button class="footer-btn" data-creators-modal>
-            Создатели
-          </button>
-        </div>
+    <footer class="landing-footer">
+      <div class="landing-shell landing-footer-grid">
+        <div><a class="brand landing-brand" href="index.html"><span class="brand-mark"><i></i><i></i><i></i><i></i></span><span>pixel<span>start</span><b>kids</b></span></a><p>Место, где идеи учатся работать.</p></div>
+        <div class="landing-footer-center"><span>2026 pixelstart</span><a href="mailto:hello@pixelstart.local">hello@pixelstart.local</a></div>
+        <div class="landing-footer-links"><a href="mailto:hello@pixelstart.local">Контакты</a><a class="landing-github" href="https://github.com/pixelstart" target="_blank" rel="noreferrer">GitHub ↗</a><button type="button" data-creators-open>Создатели</button></div>
       </div>
     </footer>
 
-    <!-- Auth Required Modal -->
-    <div class="modal-overlay" id="authModal" style="display: none;">
-      <div class="modal-card auth-required-modal">
-        <button class="modal-close" data-close-modal aria-label="Закрыть">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-        <div class="modal-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </div>
-        <h3>Требуется авторизация</h3>
-        <p>Для доступа к этому разделу необходимо войти в систему или создать новый аккаунт.</p>
-        <div class="modal-actions">
-          <a class="button button-dark" href="auth/login.html">
-            Войти
-          </a>
-          <a class="button button-lime" href="auth/register.html">
-            Регистрация
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Creators Modal -->
-    <div class="modal-overlay" id="creatorsModal" style="display: none;">
-      <div class="modal-card creators-modal">
-        <button class="modal-close" data-close-modal aria-label="Закрыть">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-        <h3>Команда разработки</h3>
-        <p class="modal-subtitle">Создатели образовательной платформы PixelStart</p>
-        <div class="creators-grid">
-          <div class="creator-card">
-            <div class="creator-avatar">
-              <span>АИ</span>
-            </div>
-            <div class="creator-info">
-              <strong>Алексей Иванов</strong>
-              <span>Архитектор платформы</span>
-            </div>
-          </div>
-          
-          <div class="creator-card">
-            <div class="creator-avatar">
-              <span>МП</span>
-            </div>
-            <div class="creator-info">
-              <strong>Мария Петрова</strong>
-              <span>Backend-разработчик</span>
-            </div>
-          </div>
-          
-          <div class="creator-card">
-            <div class="creator-avatar">
-              <span>ДС</span>
-            </div>
-            <div class="creator-info">
-              <strong>Дмитрий Смирнов</strong>
-              <span>Frontend-разработчик</span>
-            </div>
-          </div>
-          
-          <div class="creator-card">
-            <div class="creator-avatar">
-              <span>ЕВ</span>
-            </div>
-            <div class="creator-info">
-              <strong>Елена Волкова</strong>
-              <span>UX/UI дизайнер</span>
-            </div>
-          </div>
-          
-          <div class="creator-card">
-            <div class="creator-avatar">
-              <span>НК</span>
-            </div>
-            <div class="creator-info">
-              <strong>Николай Козлов</strong>
-              <span>Методист курсов</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <div class="landing-modal" data-auth-modal aria-hidden="true"><div class="landing-modal-backdrop" data-modal-close></div><section class="landing-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title"><button class="landing-modal-close" type="button" data-modal-close aria-label="Закрыть">×</button><span class="landing-modal-mark">⌁</span><h2 id="auth-modal-title">Сначала войдём?</h2><p>Эта возможность открывается в личном кабинете. Выберите, как продолжить.</p><div class="landing-modal-actions"><a class="button button-dark" href="auth/login.html">Авторизация</a><a class="button button-lime" href="auth/register.html">Регистрация</a></div></section></div>
+    <div class="landing-modal" data-creators-modal aria-hidden="true"><div class="landing-modal-backdrop" data-modal-close></div><section class="landing-modal-card landing-creators-card" role="dialog" aria-modal="true" aria-labelledby="creators-title"><button class="landing-modal-close" type="button" data-modal-close aria-label="Закрыть">×</button><p class="landing-kicker">PIXELSTART / TEAM</p><h2 id="creators-title">Создатели проекта</h2><div class="landing-creators-list"><div><b>Алина</b><span>Продукт и сценарии обучения</span></div><div><b>Илья</b><span>Backend и API-интеграции</span></div><div><b>Маша</b><span>Frontend и интерактивность</span></div><div><b>Тимур</b><span>Учебная программа и проверка</span></div><div><b>Софья</b><span>Визуальная система и контент</span></div></div></section></div>
     <div class="toast" role="status"></div>
   </body>
 </html>
+

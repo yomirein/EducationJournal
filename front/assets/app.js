@@ -10,6 +10,101 @@ const api = window.pixelApi;
 const toast = document.querySelector('.toast');
 const isPassedSubmission = item => item.grade >= 50 && (item.task_type !== 'code_test' || item.grade === 100);
 
+/* --- Public landing page --- */
+function initLandingPage() {
+  const landing = document.querySelector('.landing-page');
+  if (!landing) return;
+
+  const authModal = landing.querySelector('[data-auth-modal]');
+  const creatorsModal = landing.querySelector('[data-creators-modal]');
+  const openModal = modal => {
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  };
+  const closeModal = modal => {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+  const isAuthenticated = () => Boolean(api?.auth?.access);
+
+  landing.querySelector('.landing-menu-toggle')?.addEventListener('click', event => {
+    const menu = landing.querySelector('.landing-menu');
+    const isOpen = menu?.classList.toggle('is-mobile-open');
+    event.currentTarget.setAttribute('aria-expanded', String(Boolean(isOpen)));
+  });
+
+  landing.querySelectorAll('[data-modal-close]').forEach(button => {
+    button.addEventListener('click', () => {
+      closeModal(button.closest('.landing-modal'));
+    });
+  });
+
+  landing.querySelectorAll('[data-auth-link="true"]').forEach(link => {
+    link.addEventListener('click', event => {
+      if (!isAuthenticated()) {
+        event.preventDefault();
+        openModal(authModal);
+      }
+    });
+  });
+
+  landing.querySelector('[data-creators-open]')?.addEventListener('click', () => openModal(creatorsModal));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeModal(authModal);
+      closeModal(creatorsModal);
+    }
+  });
+
+  landing.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const menu = document.getElementById(toggle.dataset.dropdownToggle);
+      const isOpen = menu?.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', String(Boolean(isOpen)));
+    });
+  });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.landing-dropdown')) {
+      landing.querySelectorAll('.landing-dropdown-menu.is-open').forEach(menu => menu.classList.remove('is-open'));
+      landing.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
+    }
+  });
+
+  const profileLink = landing.querySelector('[data-profile-link]');
+  if (isAuthenticated()) {
+    api.get('/users/me').then(user => {
+      profileLink.textContent = 'Профиль';
+      profileLink.href = ({ curator: 'curator/index.html', admin: 'admin/index.html' }[user.role] || 'student/index.html');
+    }).catch(() => api.auth.clear());
+  }
+
+  const courseMount = landing.querySelector('[data-landing-courses]');
+  if (courseMount) {
+    api.get('/courses').then(courses => {
+      if (!courses.length) {
+        courseMount.innerHTML = '<p class="landing-course-empty">Скоро здесь появятся новые направления.</p>';
+        return;
+      }
+      courseMount.innerHTML = courses.slice(0, 3).map((course, index) => {
+        const kind = courseType(course.type);
+        return `<article class="landing-course landing-course-${index + 1}"><span class="landing-course-number">0${index + 1}</span><span class="landing-course-type">${escapeHtml(kind.label)}</span><h3>${escapeHtml(course.title)}</h3><p>${escapeHtml(course.goal || course.description || 'Практический курс с проектами и заданиями.')}</p><a href="student/catalog.html" data-auth-link="true">Открыть курс <span>↗</span></a></article>`;
+      }).join('');
+      courseMount.querySelectorAll('[data-auth-link="true"]').forEach(link => link.addEventListener('click', event => {
+        if (!isAuthenticated()) {
+          event.preventDefault();
+          openModal(authModal);
+        }
+      }));
+    }).catch(() => {
+      courseMount.innerHTML = '<p class="landing-course-empty">Курсы появятся после подключения сервера.</p>';
+    });
+  }
+}
+
+initLandingPage();
+
 const showMessage = (message, isError = false) => {
   if (!toast) return;
   
@@ -3862,215 +3957,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initAdminUsersPage();
   initAdminStreamsPage();
   updateThemeToggleButtons(getActiveTheme() === 'dark');
-});
-
-/* ==========================================================================
-   LANDING PAGE - NEW MAIN PAGE FUNCTIONALITY
-   ========================================================================== */
-
-// Check if user is authenticated
-function checkAuth() {
-  return !!api.auth.access;
-}
-
-// Update UI based on auth state
-function updateAuthUI() {
-  const isAuth = checkAuth();
-  
-  // Toggle visibility for auth/non-auth elements
-  document.querySelectorAll('[data-hide-when-auth]').forEach(el => {
-    el.style.display = isAuth ? 'none' : '';
-  });
-  
-  document.querySelectorAll('[data-show-when-auth]').forEach(el => {
-    el.style.display = isAuth ? '' : 'none';
-  });
-  
-  // Update user profile button
-  if (isAuth) {
-    getCurrentUser().then(user => {
-      const initials = ${user.first_name?.[0] || ''}.toUpperCase() || user.username[0].toUpperCase();
-      const fullName = ${user.first_name || ''} .trim() || user.username;
-      
-      const avatarText = document.querySelector('.avatar-text');
-      if (avatarText) avatarText.textContent = initials;
-      
-      const userName = document.querySelector('[data-user-name]');
-      if (userName) userName.textContent = fullName;
-      
-      const userRole = document.querySelector('[data-user-role]');
-      if (userRole) {
-        const roleLabels = { student: '������', curator: '�������', admin: '�������������' };
-        userRole.textContent = roleLabels[user.role] || user.role;
-      }
-    }).catch(() => {});
-  }
-}
-
-// Handle dropdown menus in header
-function initHeaderDropdowns() {
-  const dropdowns = document.querySelectorAll('.nav-dropdown');
-  
-  dropdowns.forEach(dropdown => {
-    const button = dropdown.querySelector('.nav-button');
-    
-    if (button) {
-      button.addEventListener('click', (e) => {
-        e.stopPropagation();
-        
-        // Close other dropdowns
-        dropdowns.forEach(other => {
-          if (other !== dropdown) {
-            other.classList.remove('active');
-          }
-        });
-        
-        dropdown.classList.toggle('active');
-      });
-    }
-  });
-  
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', () => {
-    dropdowns.forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  });
-}
-
-// Handle user profile dropdown
-function initProfileDropdown() {
-  const profileBtn = document.querySelector('[data-user-menu]');
-  const profileMenu = document.querySelector('[data-profile-menu]');
-  
-  if (profileBtn && profileMenu) {
-    profileBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = profileMenu.style.display !== 'none';
-      profileMenu.style.display = isVisible ? 'none' : 'block';
-    });
-    
-    document.addEventListener('click', () => {
-      profileMenu.style.display = 'none';
-    });
-    
-    profileMenu.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-  }
-  
-  // Handle logout
-  const logoutBtn = document.querySelector('[data-logout]');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      api.auth.clear();
-      window.location.href = '/index.html';
-    });
-  }
-  
-  // Handle go to home
-  const goHomeBtn = document.querySelector('[data-go-home]');
-  if (goHomeBtn) {
-    goHomeBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      getCurrentUser().then(user => {
-        const roleUrls = {
-          student: '/student/index.html',
-          curator: '/curator/index.html',
-          admin: '/admin/index.html'
-        };
-        window.location.href = roleUrls[user.role] || '/student/index.html';
-      }).catch(() => {
-        window.location.href = '/auth/login.html';
-      });
-    });
-  }
-}
-
-// Handle auth required links
-function initAuthRequiredLinks() {
-  const authModal = document.getElementById('authModal');
-  
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('[data-auth-required]');
-    if (link) {
-      e.preventDefault();
-      
-      if (checkAuth()) {
-        // User is authenticated, allow navigation
-        const href = link.getAttribute('href');
-        if (href && href !== '#') {
-          window.location.href = href;
-        }
-      } else {
-        // Show auth modal
-        if (authModal) {
-          authModal.style.display = 'flex';
-        }
-      }
-    }
-  });
-}
-
-// Handle modal close buttons
-function initModals() {
-  const modals = document.querySelectorAll('.modal-overlay');
-  
-  modals.forEach(modal => {
-    const closeBtn = modal.querySelector('[data-close-modal]');
-    
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-      });
-    }
-    
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-  });
-}
-
-// Handle creators modal
-function initCreatorsModal() {
-  const creatorsBtn = document.querySelector('[data-creators-modal]');
-  const creatorsModal = document.getElementById('creatorsModal');
-  
-  if (creatorsBtn && creatorsModal) {
-    creatorsBtn.addEventListener('click', () => {
-      creatorsModal.style.display = 'flex';
-    });
-  }
-}
-
-// Handle GitHub link
-function initGitHubLink() {
-  const githubLink = document.querySelector('[data-github-link]');
-  if (githubLink) {
-    githubLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      showMessage('������ �� GitHub ����� ��������� �����');
-    });
-  }
-}
-
-// Initialize landing page
-function initLandingPage() {
-  if (!document.body.classList.contains('landing-page')) return;
-  
-  updateAuthUI();
-  initHeaderDropdowns();
-  initProfileDropdown();
-  initAuthRequiredLinks();
-  initModals();
-  initCreatorsModal();
-  initGitHubLink();
-}
-
-// Add to DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  initLandingPage();
 });
