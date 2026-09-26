@@ -22,7 +22,13 @@ UI text, user-facing error messages in the frontend, docs and commit discussion 
 - `backend/scripts/seed.py` — **destructive** demo seed; requires `PIXELSTART_ALLOW_DEMO_SEED=1`.
 - `backend/tests/test_curriculum.py` — unit tests (no server). `backend/tests/manual/` — scripts against a running server (not collected by unittest: the folder has no `__init__.py` and file names don't start with `test`).
 - `front/assets/api.js` — the only HTTP client (`window.pixelApi`: `get/post/put/patch/delete/upload`, token storage, one refresh retry on 401).
-- `front/assets/app.js` — all page logic; each page is activated by DOM markers (`data-form`, `data-load`, element ids) and `init*` functions called on `DOMContentLoaded`.
+- `front/assets/css/` — plain stylesheets, no build step or local `@import` chain. Every page explicitly loads `core/base.css` (reset and theme tokens), `shared/ui.css` (buttons, forms, cards, tables), and `shared/layout.css` (navigation, header, demo controls), then the shared components and page styles it renders. `shared/` also contains courses, participants, task content, notifications and profiles; `student/`, `curator/`, `admin/`, `public/` contain page styles. Keep a component's responsive rules and dark overrides in its own file, in cascade order. Shared classes such as `.auth-form` belong in `shared/ui.css`, even when their name mentions a page. Check light/dark and mobile layouts when changing stylesheet order.
+- `front/assets/js/` — page logic, split into plain classic scripts (no build step, no modules): they share one global scope, so load order matters. Each page lists the scripts it needs in its `<script defer>` tags: a fixed base set (`core/*` and `shared/*`, same on every page), then the page-specific files, then `shared/theme-sync.js` last.
+  - `core/` — `ui` (toast, `run`, `bind`, `api`), `util` (`plural`, `escapeHtml`, `safeHref`), `session` (`getCurrentUser`, `getCourses`), `course-helpers`, `page-data` (`registerLoader`, `refreshPageData`), `access` (logout, role guard), `user` (sidebar user).
+  - `shared/` — theme, quick login, demo switcher, ticker, notifications, profile, and the curator/admin helpers `api-output`, `stream-pickers`, `option-selects`.
+  - `forms/` — `data-form` handlers: `auth`, `account`, `admin`, `curator`.
+  - `student/`, `curator/`, `admin/` — one file per page or feature; `landing.js` for `index.html`.
+  - A new page feature is a new file: it registers its own `DOMContentLoaded` handler, and you add it to that page's script tags. Each `init*` returns early when its DOM markers (`data-form`, ids) are missing.
 - `front/simulators/` — standalone Scratch and Kumir-Craft apps embedded via iframe, talk to the task page with `postMessage`.
 - `docs/` — curriculum source text, email setup docs, roadmap.
 
@@ -40,7 +46,7 @@ uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 
 python -m unittest discover -s backend/tests -t .           # unit tests
 python -m compileall -q backend
-node --check front/assets/app.js && node --check front/assets/api.js
+find front/assets -name '*.js' -exec node --check {} \;
 PIXELSTART_ALLOW_API_SMOKE=1 python -m backend.tests.manual.api_smoke  # needs running server + requests
 ```
 
@@ -53,7 +59,7 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 - **Request bodies are Pydantic schemas** in `schemas.py` — never `data: dict`. Partial updates use `model_dump(exclude_unset=True)`.
 - **Endpoints that return ORM `User` objects must set `response_model=UserOut`**, otherwise `password_hash` leaks.
 - Errors: `raise HTTPException(status, "English message")`. Integrity violations on commit → rollback + 409. Every new `detail` text needs a Russian translation in `ERROR_TEXTS` in `front/assets/api.js` (validation errors are translated there by type); errors carry `error.status` for the UI.
-- Some endpoints return hand-built dicts (e.g. submissions, schedule, leaderboard). When adding fields, keep existing keys: `front/assets/app.js` reads them directly.
+- Some endpoints return hand-built dicts (e.g. submissions, schedule, leaderboard). When adding fields, keep existing keys: the scripts in `front/assets/js/` read them directly.
 - DB access: async SQLAlchemy 2 (`select(...)`, `await db.scalar/scalars/execute`). Sessions come from `Depends(get_session)`.
 - Datetimes are timezone-aware (`datetime.now(timezone.utc)`).
 - Schema changes need an Alembic revision in `backend/migrations/versions/` (`alembic -c backend/alembic.ini revision --autogenerate -m "..."`). Migrations use PostgreSQL syntax; SQLite is not supported.
@@ -75,18 +81,18 @@ There is no linter or formatter config. Match the surrounding style: 4-space Pyt
 ## Frontend gotchas
 
 - **Data freshness:** every block that shows API data registers its loader with `registerLoader(loader)`; every successful change calls `await refreshPageData()`, which re-runs all registered loaders. New lists and forms must follow this, never patch the DOM by hand after a mutation.
-- Use the shared helpers in the top of `app.js` instead of re-implementing them: `getCurrentUser()` / `getCourses()` (one request per page), `resolveCourseId()`, `stepIcon/stepLabel`, `courseType`, `courseCard`, `criteriaBox`, `quickLogin`, `homeForRole`. Inside the task studio, submit answers with `submitAnswer(task, input, { workbench })`.
+- Use the shared helpers in `front/assets/js/core/` instead of re-implementing them: `getCurrentUser()` / `getCourses()` (one request per page), `resolveCourseId()`, `stepIcon/stepLabel`, `courseType`, `courseCard`, `criteriaBox`, `quickLogin`, `homeForRole`. Inside the task studio, submit answers with `submitAnswer(task, input, { workbench })`.
 - Students enrol via the course page: `[data-course-enroll]` lists the course's streams with the status from `GET /users/me/applications` and posts `POST /streams/{id}/join`. Course pages load steps through `loadCourseTasks()`, which shows an enrol hint on 403 instead of an endless loading state.
 - Notifications: `initNotifications()` renders the bell dropdown (last 3, link to all), `initNotificationsPage()` the full list on `student/notifications.html`; read ids are kept in `localStorage` (`pixelstart_read_broadcasts`).
 - Admin forms pick entities from API-filled selects (`select[data-options]`: courses, curators, users, modules via `GET /panel/modules`, lessons via `GET /panel/lessons`), never raw ids.
-- Buttons: one component `.button` (`front/assets/styles.css`, section BUTTONS). Variants only change tokens `--btn-*`: `button-dark`/`button-lime` = primary (filled blue), `button-soft` = secondary (outline), `button-danger` = destructive (red outline); size `button-sm` (36px). Filters, tabs and switchers use `chip-toggle` (+ `.active`). Do not add new `*-btn` classes; extend these. Never hardcode light colours in JS or HTML: use theme tokens, the dark theme overrides them.
+- Buttons: one component `.button` (`front/assets/css/shared/ui.css`). Variants only change tokens `--btn-*`: `button-dark`/`button-lime` = primary (filled blue), `button-soft` = secondary (outline), `button-danger` = destructive (red outline); size `button-sm` (36px). Filters, tabs and switchers use `chip-toggle` (+ `.active`). Do not add new `*-btn` classes; extend these. Never hardcode light colours in JS or HTML: use theme tokens, the dark theme overrides them.
 - Status badges use the design system classes `status status-done|review|failed|progress`; plural forms go through `plural(n, one, few, many)`.
 - Curator pages pick streams from `select[data-stream-select]` (filled from `/users/me/streams`); `data-stream-reload="X"` reloads the `[data-load-target="X"]` block on change. Do not hardcode stream ids.
 - Demo quick-login buttons use `data-quick-login="<role>"` inside a `data-demo-only` container; no inline scripts in HTML.
 - `assets/theme-init.js` is a blocking script in every page `<head>` (before `api.js`): it sets `data-theme` from `localStorage` before first paint. Keep it first and non-deferred, or the dark theme flashes light.
-- HTML pages load assets with a cache-busting query (`assets/app.js?v=YYYYMMDD`). When you change `api.js`, `app.js` or `styles.css`, bump the `v=` value in **all** HTML files, or browsers keep the old file.
+- HTML pages load assets with a cache-busting query (`assets/js/core/ui.js?v=YYYYMMDDNN`). After changing any file in `front/assets/`, run `python scripts/bump_assets.py` (sets one fresh `v=` in **all** HTML files), or browsers keep the old file.
 - Pages under `/student/`, `/curator/`, `/admin/` are guarded client-side by `verifyPageAccess()` (admin may open all of them). The real authorization is on the backend.
-- `front/assets/styles.css` defines theme tokens on `:root` and dark overrides under `[data-theme="dark"]`; `--text`, `--border`, `--accent`, `--danger` are aliases used by inline styles.
+- `front/assets/css/core/base.css` defines theme tokens on `:root` and dark overrides under `[data-theme="dark"]`; `--text`, `--border`, `--accent`, `--danger` are aliases used by inline styles.
 - Quick demo login buttons are shown only on `localhost`/`127.0.0.1`.
 
 ## Open questions (don't implement without the owner)

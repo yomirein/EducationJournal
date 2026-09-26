@@ -1,0 +1,315 @@
+.course-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--brand-blue-200);
+  border-radius: var(--r-card);
+  background: var(--brand-blue-50);
+}
+
+.course-banner h2 {
+  margin: 0 0 6px;
+  font: 700 26px var(--display);
+  color: var(--brand-ink);
+}
+
+.course-banner p {
+  margin: 0;
+  color: var(--brand-ink-2);
+  font-size: 15px;
+}
+
+.module-list {
+  display: grid;
+  gap: 10px;
+}
+
+.module-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+
+.module-row:hover {
+  border-color: var(--brand-blue);
+}
+
+.module-index {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-field);
+  background: var(--brand-blue-50);
+  color: var(--brand-blue);
+  font: 700 13px var(--display);
+}
+
+.module-row h3 {
+  margin: 0 0 4px;
+  font: 700 17px var(--display);
+  color: var(--brand-ink);
+}
+
+.module-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.module-progress {
+  color: var(--brand-blue-hover);
+  font: 700 13px var(--display);
+}
+
+.lesson-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.lesson-sidebar {
+  position: sticky;
+  top: 92px;
+  align-self: start;
+}
+
+.lesson-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.lesson-nav a {
+  padding: 12px;
+  border-radius: var(--r-field);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.lesson-nav a.active,
+.lesson-nav a:hover {
+  background: var(--brand-blue-50);
+  color: var(--brand-blue-hover);
+  font-weight: 700;
+}
+
+.lesson-main h2 {
+  margin: 0 0 12px;
+  font: 700 30px var(--display);
+}
+
+.lesson-main > p {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .lesson-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .lesson-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 620px) {
+  .course-banner {
+    display: block;
+  }
+
+  .course-banner .button {
+    margin-top: 18px;
+  }
+
+  .module-row {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .module-progress {
+    grid-column: 2;
+  }
+
+  .lesson-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+html[data-theme="dark"] .module-row,
+html.dark .module-row {
+  background: #131c30;
+  border-color: #22304a;
+  color: #eef2ff;
+}
+
+html[data-theme="dark"] .module-row h3 {
+  color: #eef2ff;
+}
+
+.module-switch-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 14px;
+}
+
+.lesson-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.lesson-step-item:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.lesson-step-item.active {
+  background: var(--green-soft);
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--border-hover);
+}
+
+.lesson-step-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  min-width: 24px;
+  text-align: center;
+}
+
+.step-detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 18px;
+}
+
+.step-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.module-row {
+  border-radius: 12px;
+}
+
+.course-banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgb(21 33 28 / 10%);
+}
+
+.course-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 34%, rgb(255 255 255 / 22%) 50%, transparent 66%);
+  transform: translateX(-120%);
+  animation: course-shine 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.course-banner h2,
+.course-banner strong {
+  color: var(--brand-ink);
+}
+
+.course-banner p {
+  color: var(--brand-ink-2);
+}
+
+/* --brand-ink stays dark in the dark theme, so the banner uses the theme text colours there. */
+
+html[data-theme="dark"] .course-banner h2,
+html[data-theme="dark"] .course-banner strong {
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .course-banner p {
+  color: var(--muted);
+}
+
+.module-row {
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  animation: soft-rise .4s both;
+}
+
+.module-row:nth-child(2) {
+  animation-delay: .06s;
+}
+
+.module-row:nth-child(3) {
+  animation-delay: .12s;
+}
+
+.module-row:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgb(21 33 28 / 9%);
+}
+
+@keyframes course-shine {
+  0%, 72%, 100% { transform: translateX(-120%); }
+  88% { transform: translateX(120%); }
+}
+
+@keyframes soft-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 620px) {
+  .course-banner {
+    padding: 20px;
+  }
+
+  .module-row {
+    padding: 14px;
+    gap: 10px;
+  }
+}
+
+/* Lesson steps stay inside the module card. */
+
+.lesson-nav > *,
+.lesson-step-item,
+.lesson-step-item > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lesson-step-item {
+  box-sizing: border-box;
+}

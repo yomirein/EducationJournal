@@ -71,6 +71,7 @@ const FIELD_NAMES = {
 // Pydantic validation issue -> short Russian sentence.
 const validationText = issue => {
   const field = FIELD_NAMES[issue.loc?.[issue.loc.length - 1]] || 'Поле';
+
   switch (issue.type) {
     case 'missing': return `«${field}»: заполните поле.`;
     case 'string_too_short': return `«${field}»: минимум ${issue.ctx?.min_length} символов.`;
@@ -84,6 +85,7 @@ const validationText = issue => {
 const errorMessage = (body, status) => {
   if (Array.isArray(body.detail)) return body.detail.map(validationText).join(' ');
   if (typeof body.detail === 'string') return ERROR_TEXTS[body.detail] || body.detail;
+
   return `Ошибка сервера (${status}). Попробуйте ещё раз.`;
 };
 
@@ -109,6 +111,7 @@ async function request(path, options = {}, canRefresh = true) {
     
     if (refreshResponse.ok) {
       auth.save(await refreshResponse.json());
+
       return request(path, options, false);
     }
     
@@ -119,6 +122,7 @@ async function request(path, options = {}, canRefresh = true) {
     const body = await response.json().catch(() => ({}));
     const error = new Error(errorMessage(body, response.status));
     error.status = response.status;
+
     throw error;
   }
   

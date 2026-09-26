@@ -1,0 +1,117 @@
+html[data-theme="dark"] .feed-item {
+  background: #131c30;
+  border-color: #22304a;
+  color: #eef2ff;
+}
+
+.interactive-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--brand-mist);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.feed-item:hover {
+  background: #ffffff;
+  border-color: var(--lime-dark);
+  transform: translateX(4px);
+}
+
+.feed-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.feed-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.radar-card {
+  margin-top: 20px;
+  background: #0b1220;
+  color: #eef2ff;
+  border: 1px solid #22304a;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-card::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(52, 87, 240, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.radar-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .radar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.radar-svg-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.radar-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radar-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.radar-metric-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #bac4d8;
+}
+
+.radar-metric-bar {
+  height: 6px;
+  background: #1c2842;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.radar-metric-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-sky));
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}

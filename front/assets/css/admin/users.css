@@ -1,0 +1,57 @@
+.user-badge-role {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.user-badge-role.student {
+  background: var(--brand-blue-50);
+  color: var(--brand-blue);
+}
+
+.user-badge-role.curator {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.user-badge-role.admin {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+html[data-theme="dark"] .user-badge-role.student {
+  background: #1a2744;
+  color: #9bb7fd;
+}
+
+html[data-theme="dark"] .user-badge-role.curator {
+  background: #3b2810;
+  color: #fbbf24;
+}
+
+html[data-theme="dark"] .user-badge-role.admin {
+  background: #3d152c;
+  color: #f472b6;
+}
+
+.user-badge-pay {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.user-badge-pay.paid {
+  background: var(--status-done-bg);
+  color: var(--status-done);
+}
+
+.user-badge-pay.unpaid {
+  background: var(--status-idle-bg);
+  color: var(--status-idle);
+}

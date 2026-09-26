@@ -1,0 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Onest:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+
+  /* Brand Core Tokens */
+  --brand-blue: #3457f0;
+  --brand-blue-hover: #2641c9;
+  --brand-blue-50: #eaf0fe;
+  --brand-blue-200: #c9d5fc;
+  --brand-sky: #7c95ff;
+  --brand-night: #0b1220;
+  --brand-night-2: #131c30;
+  --brand-amber: #f07a2a;
+  --brand-amber-text: #b8520f;
+  --brand-amber-50: #fff1e6;
+  --brand-ink: #0f172a;
+  --brand-ink-2: #4a546b;
+  --brand-ink-3: #7c869c;
+  --brand-line: #e1e6f0;
+  --brand-mist: #f4f6fb;
+  --brand-paper: #ffffff;
+
+  /* Semantic Status Tokens */
+  --status-done: #17915a;
+  --status-done-bg: #e4f5ec;
+  --status-review: #6e4fe8;
+  --status-review-bg: #efebfe;
+  --status-returned: #b8520f;
+  --status-returned-bg: #fff1e6;
+  --status-failed: #d23b3b;
+  --status-failed-bg: #fcebeb;
+  --status-progress: #3457f0;
+  --status-progress-bg: #eaf0fe;
+  --status-idle: #5e677d;
+  --status-idle-bg: #f0f2f6;
+
+  /* Spacing Scale (4, 8, 12, 16, 24, 32, 48, 64) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Radii Scale (8, 12, 16, 999) */
+  --r-field: 8px;
+  --r-btn: 12px;
+  --r-card: 16px;
+  --r-pill: 999px;
+
+  /* Backward Compatibility Aliases for stylesFOR UI */
+  --lime: var(--brand-blue);
+  --lime-dark: var(--brand-blue-hover);
+  --ink: var(--brand-ink);
+  --muted: var(--brand-ink-2);
+  --paper: var(--brand-mist);
+  --panel: var(--brand-paper);
+  --line: var(--brand-line);
+  --blue: var(--brand-blue-200);
+  --coral: var(--brand-amber);
+  --yellow: var(--brand-blue-50);
+  --green-soft: var(--brand-blue-50);
+  --display: "Onest", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --body: "Onest", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  --text: var(--ink);
+  --border: var(--line);
+  --border-hover: var(--brand-blue);
+  --surface: var(--panel);
+  --surface-hover: var(--brand-blue-50);
+  --bg: var(--paper);
+  --accent: var(--brand-blue);
+  --accent-lime: var(--brand-blue);
+  --danger: var(--status-failed);
+  --shadow-sm: 0 1px 3px rgba(11, 18, 32, 0.06);
+  --shadow-md: 0 4px 12px rgba(11, 18, 32, 0.08);
+  --shadow-lg: 0 12px 32px rgba(11, 18, 32, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible,
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid var(--brand-blue);
+  outline-offset: 3px;
+}
+
+h2 em {
+  color: var(--brand-blue);
+  font-style: normal;
+}
+
+.admin-theme,
+.curator-theme {
+  --brand-blue: #3457f0;
+  --brand-blue-hover: #2641c9;
+  --brand-blue-50: #eaf0fe;
+  --brand-blue-200: #c9d5fc;
+  --lime: var(--brand-blue);
+  --lime-dark: var(--brand-blue-hover);
+  --green-soft: var(--brand-blue-50);
+  font-size: 14px;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: .12s;
+}
+
+@media (max-width: 620px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: .01ms;
+  }
+}
+
+html[data-theme="dark"],
+html.dark,
+body.dark-theme,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0b1220;
+  --panel: #131c30;
+  --panel-hover: #1c2842;
+  --surface: #131c30;
+  --surface-hover: #1c2842;
+  --bg: #0b1220;
+  --ink: #eef2ff;
+  --text: #eef2ff;
+  --muted: #8a96ad;
+  --line: #22304a;
+  --border: #22304a;
+  --border-hover: var(--brand-sky);
+  --brand-blue: #4b6efb;
+  --brand-blue-hover: #7c95ff;
+  --brand-blue-50: #1a2744;
+  --brand-blue-200: #2a3d66;
+  --green-soft: #102d20;
+  --blue: #1c2a44;
+  --coral: #3d2318;
+  --yellow: #362814;
+  --accent: #4b6efb;
+  --accent-lime: #4b6efb;
+  --lime: #4b6efb;
+  --lime-dark: #7c95ff;
+  --status-done: #34d399;
+  --status-done-bg: #102d20;
+  --status-review: #a78bfa;
+  --status-review-bg: #231d45;
+  --status-returned: #fb923c;
+  --status-returned-bg: #3b2314;
+  --status-failed: #f87171;
+  --status-failed-bg: #3b1818;
+  --status-progress: #60a5fa;
+  --status-progress-bg: #1a2744;
+  --status-idle: #94a3b8;
+  --status-idle-bg: #1a2233;
+  /* Brand tokens that components use directly: without these they stay light in the dark theme. */
+  --brand-line: #22304a;
+  --brand-mist: #0f1729;
+  --brand-ink: #eef2ff;
+  --brand-ink-2: #b4bfd6;
+  --brand-ink-3: #8a96ad;
+  --brand-amber-50: #3b2314;
+  --brand-amber-text: #fdba74;
+}
+
+html[data-theme="dark"] body,
+html.dark body,
+body.dark-theme {
+  background: #0b1220;
+  color: #eef2ff;
+}
+
+html[data-theme="dark"] .curator-theme,
+html.dark .curator-theme,
+body.dark-theme .curator-theme,
+.curator-theme[data-theme="dark"] {
+  --paper: #0b1220;
+  --panel: #131c30;
+  --panel-hover: #1c2842;
+  --line: #22304a;
+  --muted: #8a96ad;
+  --green-soft: #102d20;
+}
+
+html[data-theme="dark"] .admin-theme,
+html.dark .admin-theme,
+body.dark-theme .admin-theme,
+.admin-theme[data-theme="dark"] {
+  --paper: #0b1220;
+  --panel: #131c30;
+  --panel-hover: #1c2842;
+  --line: #22304a;
+  --muted: #8a96ad;
+  --green-soft: #102d20;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid var(--lime-dark);
+  outline-offset: 3px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
